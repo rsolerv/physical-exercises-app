@@ -40,7 +40,7 @@ jobs:
         run: npm run build -- --base-href /${{ github.event.repository.name }}/
 
       - name: Preparar carpeta de salida para GitHub Pages
-        run: cp dist/physical-exercises/browser/index.html dist/physical-exercises/browser/404.html
+        run: cp dist/physical-exercises-app/browser/index.html dist/physical-exercises-app/browser/404.html
 
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
@@ -48,7 +48,7 @@ jobs:
       - name: Subir artefacto de Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist/physical-exercises/browser
+          path: dist/physical-exercises-app/browser
 
       - name: Publicar en GitHub Pages
         id: deployment
