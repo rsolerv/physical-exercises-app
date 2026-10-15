@@ -1,0 +1,221 @@
+{
+  "version": 1,
+  "categorias": [
+    { "nombre": "Abdomen", "descripcion": "Estabilidad del abdomen y de la zona media." },
+    { "nombre": "Cadera", "descripcion": "Movilidad y fortalecimiento de la cadera." },
+    { "nombre": "Cervicales", "descripcion": "Movilidad y fortalecimiento de la zona cervical." },
+    { "nombre": "Glúteo", "descripcion": "Fortalecimiento del glúteo." },
+    { "nombre": "Isquiotibiales", "descripcion": "Fortalecimiento de la parte posterior del muslo." },
+    { "nombre": "Lumbar", "descripcion": "Fortalecimiento de la zona lumbar." },
+    { "nombre": "Rodilla", "descripcion": "Fortalecimiento y movilidad de la rodilla y del cuádriceps." }
+  ],
+  "ejercicios": [
+    {
+      "nombre": "Apretar pelota contra pared",
+      "descripcion": "Colocar la pelota contra la pared y apretarla con el talón mientras se carga el peso en la otra pierna. Mantener el cuádriceps apretado.",
+      "categorias": ["Rodilla"],
+      "enlacesYoutube": ["https://www.youtube.com/watch?v=d2noomh9tWA"],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "2 series de 10 repeticiones."
+    },
+    {
+      "nombre": "Apretar pelota de pie",
+      "descripcion": "De pie, con la pelota entre las rodillas, apoyar el peso casi por completo en una pierna y apretar la pelota con la pierna libre.",
+      "categorias": ["Rodilla"],
+      "enlacesYoutube": ["https://www.youtube.com/watch?v=d2noomh9tWA"],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "3 series de 10 repeticiones."
+    },
+    {
+      "nombre": "Arrodillarse",
+      "descripcion": "Delante de un espejo, para controlar que ni la pierna ni la rodilla se desplacen hacia los lados, arrodillarse con la cadera ligeramente hacia fuera para no sobrecargar. Hacerlo con cada pierna.",
+      "categorias": ["Rodilla"],
+      "enlacesYoutube": [],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "2 series de 12 repeticiones con cada pierna."
+    },
+    {
+      "nombre": "Bicho muerto",
+      "descripcion": "Tumbarse boca arriba con caderas y rodillas a 90 grados y los brazos estirados hacia el techo. Llevar lentamente hacia atrás un brazo y la pierna contraria, volver y repetir con el otro lado.",
+      "categorias": ["Abdomen"],
+      "enlacesYoutube": [],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "2 series de 12 repeticiones."
+    },
+    {
+      "nombre": "Cangrejo de rodilla",
+      "descripcion": "Con una banda elástica cerrada justo por debajo de las rodillas y en tensión, separar las piernas a la anchura de las caderas con los pies hacia delante. Andar de lado sin perder la tensión de la banda y sin juntar demasiado las piernas.",
+      "categorias": ["Glúteo", "Rodilla"],
+      "enlacesYoutube": [],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "2 series de unos 25 pasos, o hasta notar cansancio."
+    },
+    {
+      "nombre": "Doblar pierna hacia atrás",
+      "descripcion": "De pie, doblar la rodilla llevando el talón hacia el glúteo y volver despacio.",
+      "categorias": ["Isquiotibiales"],
+      "enlacesYoutube": [],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "2 series de 10 repeticiones."
+    },
+    {
+      "nombre": "Estirar rodilla con tensión",
+      "descripcion": "Atar una banda elástica cerrada a una mesa u otro punto fijo y pasarla por detrás de la rodilla. Con la banda en tensión y la rodilla doblada, apretar el cuádriceps y estirar la pierna. Mantener la fuerza 5 segundos al final del estiramiento.",
+      "categorias": ["Rodilla"],
+      "enlacesYoutube": [],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "2 series de 12 repeticiones."
+    },
+    {
+      "nombre": "Eversión de cadera a una pierna",
+      "descripcion": "Tumbado boca abajo, levantar cada pierna estirada, alternando.",
+      "categorias": ["Cadera", "Glúteo"],
+      "enlacesYoutube": ["https://www.youtube.com/watch?v=Fy9bkJpPHng&t=2s"],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "2 series de 13 repeticiones."
+    },
+    {
+      "nombre": "Fortalecer sartorio",
+      "descripcion": "Sentado, con una banda elástica cerrada sujeta al pie sano y a la rodilla de la pierna a trabajar, deslizar el pie a lo largo de la otra pierna hasta su rodilla y mantener 5 segundos. Bajar y repetir.",
+      "categorias": ["Rodilla"],
+      "enlacesYoutube": ["https://www.youtube.com/watch?v=R1W00Zq34cQ"],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "2 series de 8 repeticiones."
+    },
+    {
+      "nombre": "Isquiotibiales boca abajo con pelota",
+      "descripcion": "Tumbado boca abajo con una pelota entre los tobillos, doblar las piernas hasta 90 grados apretando la pelota.",
+      "categorias": ["Isquiotibiales"],
+      "enlacesYoutube": ["https://www.youtube.com/watch?v=Fy9bkJpPHng&t=2s"],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "2 series de 12 repeticiones."
+    },
+    {
+      "nombre": "Levantar pierna de pie",
+      "descripcion": "Con una banda elástica larga atada a una mesa, estirar la banda con la pierna siempre recta hacia todas las direcciones: delante, detrás y a cada lado.",
+      "categorias": ["Cadera"],
+      "enlacesYoutube": [],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "2 series de 13 repeticiones en cada dirección."
+    },
+    {
+      "nombre": "Levantar pierna sentado",
+      "descripcion": "Sentado con la pierna recta y una banda elástica enrollada en ella, sujetando el otro extremo con el pie contrario o con la pata de una silla, levantar la pierna. Girar el pie hacia dentro o hacia fuera para trabajar músculos más internos o externos.",
+      "categorias": ["Rodilla"],
+      "enlacesYoutube": ["https://www.youtube.com/watch?v=rjGCeDTRiqg"],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "2 series de 13 repeticiones."
+    },
+    {
+      "nombre": "Levantar piernas con pelota",
+      "descripcion": "Tumbado boca abajo con una pelota entre los tobillos, levantar un poco las piernas apretando la pelota.",
+      "categorias": ["Cadera", "Glúteo", "Isquiotibiales"],
+      "enlacesYoutube": ["https://www.youtube.com/watch?v=Fy9bkJpPHng&t=2s"],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "3 series de 8 repeticiones."
+    },
+    {
+      "nombre": "Masaje de rótula",
+      "descripcion": "Con la pierna estirada y relajada, mover suavemente la rótula de lado a lado y de arriba abajo.",
+      "categorias": ["Rodilla"],
+      "enlacesYoutube": [],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "Hacerlo al final de la sesión, con la pierna ya descansada."
+    },
+    {
+      "nombre": "Puente de glúteos",
+      "descripcion": "Tumbado boca arriba con las rodillas dobladas, apretar los glúteos y elevar la cadera. Arriba, mantener la posición unos segundos y bajar despacio.",
+      "categorias": ["Glúteo"],
+      "enlacesYoutube": ["https://www.youtube.com/watch?v=Fy9bkJpPHng"],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "3 series de 12 repeticiones."
+    },
+    {
+      "nombre": "Puente de glúteos con pelota en las rodillas",
+      "descripcion": "Con un balón blando entre las rodillas, de forma que queden alineadas con las caderas, hacer el puente de glúteos apretando en todo momento los glúteos y la pelota. Variante: mantener la posición arriba unos segundos.",
+      "categorias": ["Glúteo", "Rodilla"],
+      "enlacesYoutube": ["https://www.youtube.com/watch?v=X-PUzI1LFik"],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "3 series de 10 repeticiones."
+    },
+    {
+      "nombre": "Sentadilla con banda elástica en las rodillas",
+      "descripcion": "Con una banda elástica cerrada en tensión justo por debajo de las rodillas, los pies paralelos y las piernas algo más separadas que la cadera, empujar ligeramente las rodillas hacia fuera y bajar en sentadilla. Mantener 10 segundos abajo.",
+      "categorias": ["Glúteo", "Rodilla"],
+      "enlacesYoutube": [],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "3 series de 10 repeticiones."
+    },
+    {
+      "nombre": "Sentadilla isométrica en pared",
+      "descripcion": "Con la espalda apoyada en la pared, bajar a posición de sentadilla. Apretar el cuádriceps, el glúteo y las puntas de los pies contra el suelo y mantener entre 10 y 20 segundos.",
+      "categorias": ["Glúteo", "Rodilla"],
+      "enlacesYoutube": [],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "1 serie."
+    },
+    {
+      "nombre": "Sentadilla parcial",
+      "descripcion": "Apretar los dedos de los pies contra el suelo, con el glúteo y el cuádriceps apretados y la espalda recta, y bajar lentamente hasta unos 45 grados. Mantener 15 segundos.",
+      "categorias": ["Glúteo", "Rodilla"],
+      "enlacesYoutube": [],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "2 series de 10 repeticiones."
+    },
+    {
+      "nombre": "Sentadilla sumo",
+      "descripcion": "Con las piernas muy separadas, como un luchador de sumo, y las rodillas alineadas con los pies, bajar sin pasar nunca de 90 grados. Al principio sin peso; más adelante se puede sujetar un peso contra el pecho.",
+      "categorias": ["Cadera", "Glúteo", "Rodilla"],
+      "enlacesYoutube": ["https://www.youtube.com/watch?v=V59NOPvb_RU&t=390s"],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "3 series de 10 repeticiones. El ejercicio empieza en el minuto 6:30 del vídeo."
+    },
+    {
+      "nombre": "Step",
+      "descripcion": "Subir al step con una pierna y bajar con la misma pierna.",
+      "categorias": ["Glúteo", "Rodilla"],
+      "enlacesYoutube": [],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "4 series de 12 repeticiones."
+    },
+    {
+      "nombre": "Superman",
+      "descripcion": "Tumbado boca abajo, elevar un poco el tronco con las manos en la cabeza o con los brazos estirados y mantener 5 segundos. Variante: elevar también las piernas.",
+      "categorias": ["Lumbar"],
+      "enlacesYoutube": [],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "2 series de 10 repeticiones."
+    },
+    {
+      "nombre": "Vasto medial tumbado con pelota",
+      "descripcion": "Tumbado boca abajo con una pelota entre las rodillas, extender la pierna hacia arriba apretando la pelota durante todo el movimiento y con el pie a 90 grados.",
+      "categorias": ["Rodilla"],
+      "enlacesYoutube": ["https://www.youtube.com/watch?v=d2noomh9tWA"],
+      "enlacesWeb": [],
+      "imagenes": [],
+      "observaciones": "3 series de 8 repeticiones."
+    }
+  ]
+}

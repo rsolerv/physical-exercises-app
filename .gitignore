@@ -1,0 +1,21 @@
+﻿# Dependencias
+node_modules/
+
+# Build de Angular
+dist/
+.angular/
+
+# Cobertura de pruebas
+coverage/
+
+# Logs
+*.log
+
+# Entorno
+.env
+.env.*
+
+# Editor / SO
+.vscode/
+.DS_Store
+Thumbs.db
