@@ -1,0 +1,24 @@
+.shell__contenedor {
+  height: 100vh;
+}
+
+.shell__menu-lateral {
+  width: 260px;
+}
+
+.shell__contenido {
+  padding: 16px;
+}
+
+.shell__enlace-activo {
+  font-weight: 600;
+}
+
+// Diseño responsive: el menú lateral se oculta por defecto en pantallas
+// estrechas (móvil) y se abre bajo demanda con el botón de la barra superior
+// (Principio IV de la constitución).
+@media (max-width: 599px) {
+  .shell__menu-lateral {
+    width: 220px;
+  }
+}

@@ -92,8 +92,7 @@
               "branches": 80,
               "functions": 80,
               "lines": 80
-            },
-            "webWorkerTsConfig": "tsconfig.worker.json"
+            }
           }
         },
         "lint": {

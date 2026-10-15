@@ -1,12 +1,9 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component } from '@angular/core';
+import { ShellComponent } from './presentation/compartido/shell/shell.component';
 
 @Component({
-  imports: [RouterOutlet],
+  imports: [ShellComponent],
   selector: 'app-root',
-  styleUrl: './app.scss',
-  templateUrl: './app.html',
+  template: `<app-shell />`,
 })
-export class App {
-  protected readonly title = signal('physical-exercises');
-}
+export class App {}

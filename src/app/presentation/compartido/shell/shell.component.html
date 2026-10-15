@@ -1,0 +1,25 @@
+<mat-sidenav-container class="shell__contenedor">
+  <mat-sidenav #menuLateral mode="side" opened class="shell__menu-lateral">
+    <mat-nav-list>
+      @for (entrada of entradasMenu; track entrada.ruta) {
+        <a mat-list-item [routerLink]="entrada.ruta" routerLinkActive="shell__enlace-activo">
+          <mat-icon matListItemIcon>{{ entrada.icono }}</mat-icon>
+          <span matListItemTitle>{{ entrada.etiqueta }}</span>
+        </a>
+      }
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <mat-toolbar color="primary" class="shell__barra-superior">
+      <button mat-icon-button (click)="menuLateral.toggle()" aria-label="Abrir o cerrar el menú de navegación">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span>Gestión de Ejercicios Físicos</span>
+    </mat-toolbar>
+
+    <main class="shell__contenido">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>
