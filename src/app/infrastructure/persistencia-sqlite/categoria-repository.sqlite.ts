@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import type { Categoria } from '../../domain/categoria/categoria.entity';
 import { validarCategoria } from '../../domain/categoria/validar-categoria';
 import { CategoriaRepositoryPort } from '../../application/ports/categoria-repository.port';
-import { ErrorNoEncontrado, ErrorNombreDuplicado, ErrorOperacionNoPermitida } from '../../domain/errores/errores-dominio';
+import { ErrorNoEncontrado, ErrorOperacionNoPermitida } from '../../domain/errores/errores-dominio';
 import { SqliteConexionService } from './sqlite-conexion.service';
 
 interface FilaCategoria {
@@ -54,6 +54,15 @@ export class CategoriaRepositorySqlite implements CategoriaRepositoryPort {
       [id, nombre, descripcion ?? null]
     );
     return { id, nombre, descripcion, esGenerica: false };
+  }
+
+  async crearGenerica(nombre: string): Promise<Categoria> {
+    const id = crypto.randomUUID();
+    await this.conexion.ejecutarSinResultado(
+      'INSERT INTO categoria (id, nombre, es_generica) VALUES (?, ?, 1)',
+      [id, nombre]
+    );
+    return { id, nombre, esGenerica: true };
   }
 
   async actualizar(id: string, cambios: { nombre?: string; descripcion?: string }): Promise<Categoria> {

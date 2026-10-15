@@ -46,6 +46,15 @@ describe('CategoriaRepositorySqlite', () => {
     expect(generica.esGenerica).toBe(true);
   });
 
+  it('crearGenerica() crea la categoría de fábrica "Sin categoría" con esGenerica = true', async () => {
+    const creada = await repositorio.crearGenerica('Sin categoría');
+    expect(creada.esGenerica).toBe(true);
+    expect(creada.nombre).toBe('Sin categoría');
+
+    const generica = await repositorio.obtenerGenerica();
+    expect(generica.id).toBe(creada.id);
+  });
+
   it('actualiza el nombre y la descripción de una categoría', async () => {
     const creada = await repositorio.crear('Rodilla');
     const actualizada = await repositorio.actualizar(creada.id, { nombre: 'Rodillas', descripcion: 'Nueva desc' });

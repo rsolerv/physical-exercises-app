@@ -15,6 +15,13 @@ export abstract class CategoriaRepositoryPort {
 
   abstract crear(nombre: string, descripcion?: string): Promise<Categoria>;
 
+  /**
+   * Crea la categoría de fábrica "Sin categoría" (`esGenerica = true`).
+   * Solo debe invocarse una vez, durante la siembra del catálogo predefinido
+   * (FR-034, FR-011).
+   */
+  abstract crearGenerica(nombre: string): Promise<Categoria>;
+
   abstract actualizar(id: string, cambios: { nombre?: string; descripcion?: string }): Promise<Categoria>;
 
   /**
