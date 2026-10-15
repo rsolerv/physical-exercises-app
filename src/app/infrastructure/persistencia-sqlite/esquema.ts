@@ -39,13 +39,14 @@ CREATE TABLE IF NOT EXISTS ejercicio_enlace (
 );
 
 CREATE TABLE IF NOT EXISTS ejercicio_imagen (
-  id TEXT PRIMARY KEY,
   ejercicio_id TEXT NOT NULL REFERENCES ejercicio(id) ON DELETE CASCADE,
+  id TEXT NOT NULL,
   tipo TEXT NOT NULL CHECK (tipo IN ('url', 'archivo')),
   valor_url TEXT,
   contenido_base64 TEXT,
   tipo_mime TEXT,
-  nombre_archivo TEXT
+  nombre_archivo TEXT,
+  PRIMARY KEY (ejercicio_id, id)
 );
 
 CREATE TABLE IF NOT EXISTS planificacion (
