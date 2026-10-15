@@ -1,0 +1,50 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { TestBed } from '@angular/core/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { BibliotecaListadoComponent } from '../../../src/app/presentation/biblioteca-ejercicios/biblioteca-listado.component';
+import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejercicio-repository.port';
+import type { Ejercicio } from '../../../src/app/domain/ejercicio/ejercicio.entity';
+
+function ejercicio(nombre: string): Ejercicio {
+  return { id: nombre, nombre, descripcion: 'desc', categoriaIds: ['cat-1'], enlaces: [], imagenes: [] };
+}
+
+describe('BibliotecaListadoComponent', () => {
+  function configurar(ejercicios: Ejercicio[]) {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([]),
+        provideNoopAnimations(),
+        { provide: EjercicioRepositoryPort, useValue: { listarTodos: vi.fn().mockResolvedValue(ejercicios) } },
+      ],
+    });
+  }
+
+  async function crearComponente() {
+    const fixture = TestBed.createComponent(BibliotecaListadoComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  it('muestra el listado de ejercicios (incluido el catálogo predefinido)', async () => {
+    configurar([ejercicio('Sentadilla'), ejercicio('Plancha')]);
+    const fixture = await crearComponente();
+
+    const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(texto).toContain('Sentadilla');
+    expect(texto).toContain('Plancha');
+  });
+
+  it('muestra un mensaje cuando no hay ningún ejercicio registrado (FR-029, CL1)', async () => {
+    configurar([]);
+    const fixture = await crearComponente();
+
+    const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(texto).toContain('No hay ejercicios');
+  });
+});

@@ -1,0 +1,27 @@
+<section class="biblioteca-listado">
+  <h2>Mis ejercicios</h2>
+
+  <a mat-flat-button color="primary" routerLink="nuevo">
+    <mat-icon>add</mat-icon>
+    Nuevo ejercicio
+  </a>
+  <a mat-stroked-button routerLink="categorias">
+    <mat-icon>label</mat-icon>
+    Gestionar categorías
+  </a>
+
+  @if (recursoEjercicios.isLoading()) {
+    <mat-spinner diameter="32" />
+  } @else if ((recursoEjercicios.value() ?? []).length === 0) {
+    <p class="biblioteca-listado__vacio">No hay ejercicios registrados todavía.</p>
+  } @else {
+    <mat-nav-list>
+      @for (ejercicio of recursoEjercicios.value(); track ejercicio.id) {
+        <a mat-list-item [routerLink]="['/ejercicios', ejercicio.id]">
+          <span matListItemTitle>{{ ejercicio.nombre }}</span>
+          <span matListItemLine>{{ ejercicio.descripcion }}</span>
+        </a>
+      }
+    </mat-nav-list>
+  }
+</section>

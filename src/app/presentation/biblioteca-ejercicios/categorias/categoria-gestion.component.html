@@ -1,0 +1,30 @@
+<section class="categoria-gestion">
+  <h2>Categorías</h2>
+
+  <mat-nav-list>
+    @for (categoria of categorias(); track categoria.id) {
+      <mat-list-item>
+        <span matListItemTitle>{{ categoria.nombre }}</span>
+        @if (!categoria.esGenerica) {
+          <button mat-icon-button matListItemMeta (click)="eliminarCategoria(categoria.id)" aria-label="Eliminar categoría">
+            <mat-icon>delete</mat-icon>
+          </button>
+        }
+      </mat-list-item>
+    }
+  </mat-nav-list>
+  @if (errorEliminacion()) {
+    <mat-error>{{ errorEliminacion() }}</mat-error>
+  }
+
+  <form class="categoria-gestion__alta" (submit)="$event.preventDefault(); crearCategoria(nombreNuevaCategoria()); nombreNuevaCategoria.set('')">
+    <mat-form-field appearance="outline">
+      <mat-label>Nueva categoría</mat-label>
+      <input matInput [value]="nombreNuevaCategoria()" (input)="nombreNuevaCategoria.set($any($event.target).value)" />
+    </mat-form-field>
+    @if (errorCreacion()) {
+      <mat-error>{{ errorCreacion() }}</mat-error>
+    }
+    <button mat-flat-button color="primary" type="submit">Crear categoría</button>
+  </form>
+</section>

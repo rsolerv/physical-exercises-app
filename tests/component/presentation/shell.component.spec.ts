@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideZonelessChangeDetection } from '@angular/core';
@@ -7,11 +7,20 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { ShellComponent } from '../../../src/app/presentation/compartido/shell/shell.component';
 import { routes } from '../../../src/app/app.routes';
 import { MENU_PRINCIPAL } from '../../../src/app/presentation/compartido/shell/menu-principal';
+import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejercicio-repository.port';
+import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
 
 describe('ShellComponent (navegación)', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), provideRouter(routes), provideNoopAnimations()],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter(routes),
+        provideNoopAnimations(),
+        // Puertos requeridos por las rutas de historias de usuario ya implementadas (p. ej. US1).
+        { provide: EjercicioRepositoryPort, useValue: { listarTodos: vi.fn().mockResolvedValue([]) } },
+        { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue([]) } },
+      ],
     });
   });
 
