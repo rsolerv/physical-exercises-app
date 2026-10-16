@@ -16,7 +16,7 @@
 <form class="planificacion-constructor" (submit)="$event.preventDefault(); guardar()">
   <section class="planificacion-constructor__seccion">
     <mat-form-field appearance="outline">
-      <mat-label>Nombre (obligatorio)</mat-label>
+      <mat-label>Nombre</mat-label>
       <input matInput [formField]="formulario.nombre" />
       @if (formulario.nombre().errors().length > 0 && formulario.nombre().touched()) {
         <mat-error>{{ formulario.nombre().errors()[0].message }}</mat-error>
