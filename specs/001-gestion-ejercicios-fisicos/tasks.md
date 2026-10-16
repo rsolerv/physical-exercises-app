@@ -251,13 +251,16 @@ description: "Task list for feature implementation"
 
 **Purpose**: Mejoras que afectan a varias historias de usuario
 
-- [ ] T109 [P] Revisar el diseño responsive y la accesibilidad de todos los componentes de `src/app/presentation/` en móvil y escritorio (Principio IV, FR-026)
-- [ ] T110 [P] Ejecutar ESLint en todo el proyecto y corregir hasta cero errores (constitución § Calidad de Código y Pruebas)
-- [ ] T111 [P] Ejecutar Vitest con cobertura y añadir pruebas hasta cumplir el 80% global y el 100% en `src/app/domain/` (constitución § Calidad de Código y Pruebas)
-- [ ] T112 [P] Revisar que todos los textos de interfaz y mensajes de validación y error de `src/app/presentation/` estén en español de España (Principio I)
-- [ ] T113 Publicar mediante `.github/workflows/deploy.yml` y comprobar en la URL de GitHub Pages que la aplicación carga, que las rutas funcionan al recargar y que los datos se conservan tras cerrar y reabrir el navegador (VFS `opfs-sahpool`) (depende de T011)
+- [X] T109 [P] Revisar el diseño responsive y la accesibilidad de todos los componentes de `src/app/presentation/` en móvil y escritorio (Principio IV, FR-026)
+- [X] T110 [P] Ejecutar ESLint en todo el proyecto y corregir hasta cero errores (constitución § Calidad de Código y Pruebas)
+- [X] T111 [P] Ejecutar Vitest con cobertura y añadir pruebas hasta cumplir el 80% global y el 100% en `src/app/domain/` (constitución § Calidad de Código y Pruebas)
+- [X] T112 [P] Revisar que todos los textos de interfaz y mensajes de validación y error de `src/app/presentation/` estén en español de España (Principio I)
+- [X] T113 Publicar mediante `.github/workflows/deploy.yml` y comprobar en la URL de GitHub Pages que la aplicación carga, que las rutas funcionan al recargar y que los datos se conservan tras cerrar y reabrir el navegador (VFS `opfs-sahpool`) (depende de T011)
 - [ ] T114 Para validar la Historia de Usuario 5: crear en GitHub el repositorio **privado** de datos `data-physical-exercises` (vacío, distinto del repositorio del código) y un token *fine-grained* limitado solo a ese repositorio con permiso de lectura y escritura de contenidos, según quickstart.md § Requisitos previos (FR-037)
+  - Repositorio privado `data-physical-exercises` ya creado (vacío). **Pendiente**: crear manualmente el token fine-grained desde github.com (Settings → Developer settings → Fine-grained tokens), ya que GitHub no permite automatizar su creación por motivos de seguridad.
 - [ ] T115 Ejecutar manualmente la guía completa de `quickstart.md` (las 5 historias de usuario y los casos límite) en la URL publicada en GitHub Pages y corregir cualquier desviación (depende de T113, T114)
+  - US1–US4 verificadas automáticamente en la URL publicada (catálogo predefinido visible, rutas con recarga, persistencia). **Pendiente**: validación de US5 (sincronización) con el token real y dos navegadores, a cargo del usuario.
+
 
 ---
 
