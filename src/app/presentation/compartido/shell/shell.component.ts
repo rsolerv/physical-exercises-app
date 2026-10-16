@@ -1,7 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, viewChild } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -22,7 +22,7 @@ import { MENU_PRINCIPAL } from './menu-principal';
 })
 export class ShellComponent {
   protected readonly entradasMenu = MENU_PRINCIPAL;
-
+  readonly menuLateral = viewChild<MatSidenav>('menuLateral');
   /**
    * Estado de apertura del menú lateral: abierto por defecto en escritorio,
    * cerrado por defecto en móvil (FR-010). Se calcula una sola vez al
@@ -36,6 +36,16 @@ export class ShellComponent {
       return true;
     }
     return window.matchMedia('(min-width: 768px)').matches;
+  }
+
+  protected readonly esMovil = signal(
+    typeof window !== 'undefined' && window.innerWidth < 768
+  );
+
+  cerrarMenuMovil(): void {
+    if (this.esMovil()) {
+      this.menuLateral()?.close();
+    }
   }
 }
 

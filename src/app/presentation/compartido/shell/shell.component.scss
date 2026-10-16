@@ -38,7 +38,7 @@
 // `ShellComponent.menuAbierto` según el ancho de viewport.
 @include movil {
   .shell__menu-lateral {
-    width: 220px;
+    width: 100%;
   }
 }
 
