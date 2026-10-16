@@ -1,0 +1,72 @@
+<app-cabecera-pagina [titulo]="titulo">
+  <div acciones>
+    <a mat-stroked-button routerLink="/planificacion">
+      <mat-icon>arrow_back</mat-icon>
+      Volver
+    </a>
+    @if (modoEdicion) {
+      <button mat-stroked-button type="button" (click)="duplicar()">
+        <mat-icon>content_copy</mat-icon>
+        Duplicar
+      </button>
+    }
+  </div>
+</app-cabecera-pagina>
+
+<form class="planificacion-constructor" (submit)="$event.preventDefault(); guardar()">
+  <section class="planificacion-constructor__seccion">
+    <mat-form-field appearance="outline">
+      <mat-label>Nombre (obligatorio)</mat-label>
+      <input matInput [formField]="formulario.nombre" />
+      @if (formulario.nombre().errors().length > 0 && formulario.nombre().touched()) {
+        <mat-error>{{ formulario.nombre().errors()[0].message }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Fecha de inicio (solo lunes; vacío = plantilla)</mat-label>
+      <input matInput type="date" [value]="fechaInicio() ?? ''" (change)="establecerFechaInicio($any($event.target).value)" />
+      @if (errorFecha()) {
+        <mat-error>{{ errorFecha() }}</mat-error>
+      }
+    </mat-form-field>
+  </section>
+
+  <section class="planificacion-constructor__seccion">
+    <h3>Ejercicios por día</h3>
+    @if (errorDia()) {
+      <mat-error>{{ errorDia() }}</mat-error>
+    }
+    <div class="planificacion-constructor__dias">
+      @for (dia of diasOrdenados; track dia) {
+        <div class="planificacion-constructor__dia">
+          <h4>{{ etiquetasDia[dia] }}</h4>
+          <mat-chip-set>
+            @for (ejercicioId of ejerciciosPorDia()[dia]; track ejercicioId) {
+              <mat-chip (removed)="quitarEjercicioDeDia(dia, ejercicioId)">
+                {{ nombresEjercicios().get(ejercicioId) ?? ejercicioId }}
+                <button matChipRemove type="button" aria-label="Quitar ejercicio">
+                  <mat-icon>cancel</mat-icon>
+                </button>
+              </mat-chip>
+            }
+          </mat-chip-set>
+          <mat-form-field appearance="outline" class="planificacion-constructor__selector">
+            <mat-label>Añadir ejercicio</mat-label>
+            <mat-select #selector (selectionChange)="anadirEjercicioADia(dia, selector.value); selector.value = null">
+              @for (ejercicio of ejercicios(); track ejercicio.id) {
+                <mat-option [value]="ejercicio.id">{{ ejercicio.nombre }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      }
+    </div>
+  </section>
+
+  @if (errorAlGuardar()) {
+    <mat-error>{{ errorAlGuardar() }}</mat-error>
+  }
+
+  <button mat-flat-button color="primary" type="submit" [disabled]="guardando()">Guardar planificación</button>
+</form>

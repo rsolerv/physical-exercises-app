@@ -1,3 +1,6 @@
+@use '../../../../styles/espaciado' as *;
+@use '../../../../styles/breakpoints' as *;
+
 .shell__contenedor {
   height: 100vh;
 }
@@ -7,18 +10,35 @@
 }
 
 .shell__contenido {
-  padding: 16px;
+  padding: $espaciado-2;
 }
 
+// Tratamiento visual del enlace activo más allá de `font-weight` (FR-012):
+// fondo con el token de sistema M3 para que sea distinguible sin depender
+// únicamente del peso de la fuente.
 .shell__enlace-activo {
   font-weight: 600;
+  background-color: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+  border-radius: 8px;
+}
+
+// El botón de alternar menú debe tener un tamaño cómodo para interacción
+// táctil (FR-011): el `mat-icon-button` de Material ya ofrece un área
+// mínima de 48x48px, se refuerza explícitamente para no depender solo del
+// valor por defecto.
+.shell__barra-superior button[mat-icon-button] {
+  min-width: 48px;
+  min-height: 48px;
 }
 
 // Diseño responsive: el menú lateral se oculta por defecto en pantallas
 // estrechas (móvil) y se abre bajo demanda con el botón de la barra superior
-// (Principio IV de la constitución).
-@media (max-width: 599px) {
+// (Principio IV de la constitución); el estado inicial lo calcula
+// `ShellComponent.menuAbierto` según el ancho de viewport.
+@include movil {
   .shell__menu-lateral {
     width: 220px;
   }
 }
+

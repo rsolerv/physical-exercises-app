@@ -1,9 +1,9 @@
 <section class="categoria-gestion">
-  <h2>Categorías</h2>
+  <app-cabecera-pagina titulo="Categorías" />
 
   <mat-nav-list>
     @for (categoria of categorias(); track categoria.id) {
-      <mat-list-item>
+      <mat-list-item class="categoria-gestion__item">
         <span matListItemTitle>{{ categoria.nombre }}</span>
         @if (!categoria.esGenerica) {
           <button mat-icon-button matListItemMeta (click)="eliminarCategoria(categoria.id)" aria-label="Eliminar categoría">

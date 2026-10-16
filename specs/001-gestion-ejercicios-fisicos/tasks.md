@@ -1,4 +1,4 @@
----
+---
 
 description: "Task list for feature implementation"
 ---
@@ -131,22 +131,22 @@ description: "Task list for feature implementation"
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T049 [P] [US2] Test del caso de uso puro `extraer-id-youtube` (formatos `youtube.com/watch?v=`, `youtu.be/`, `youtube.com/embed/`; URL que no es de YouTube → nulo) en `tests/unit/domain/extraer-id-youtube.spec.ts`
-- [ ] T050 [P] [US2] Test del caso de uso "buscar ejercicios" con puertos simulados (texto parcial sin distinguir mayúsculas sobre nombre y descripción FR-013; una o varias categorías FR-012; lista vacía sin error CL3; biblioteca vacía CL1) en `tests/unit/application/buscar-ejercicios.use-case.spec.ts`
-- [ ] T051 [P] [US2] Test de componente del reproductor de YouTube embebido (muestra el iframe de `youtube-nocookie.com/embed/<id>` FR-015; muestra "vídeo no disponible" si falla CL5, FR-033) en `tests/component/presentation/youtube-embed.component.spec.ts`
-- [ ] T052 [P] [US2] Test de componente de previsualización de enlace externo (iframe sandboxed; si el sitio no se puede embeber, ofrece "abrir en una pestaña nueva" FR-016) en `tests/component/presentation/enlace-embed.component.spec.ts`
-- [ ] T053 [P] [US2] Test de componente de búsqueda (filtro por categorías, texto libre, mensaje cuando no hay resultados FR-031) en `tests/component/presentation/busqueda-ejercicios.component.spec.ts`
-- [ ] T054 [P] [US2] Test de integración de rutas de búsqueda y de los componentes embebidos en la ficha de ejercicio (navegar a la ruta de búsqueda muestra el buscador; abrir un ejercicio con vídeo de YouTube muestra el reproductor embebido dentro de la ficha) en `tests/component/presentation/shell-busqueda.integration.spec.ts`
+- [X] T049 [P] [US2] Test del caso de uso puro `extraer-id-youtube` (formatos `youtube.com/watch?v=`, `youtu.be/`, `youtube.com/embed/`; URL que no es de YouTube → nulo) en `tests/unit/domain/extraer-id-youtube.spec.ts`
+- [X] T050 [P] [US2] Test del caso de uso "buscar ejercicios" con puertos simulados (texto parcial sin distinguir mayúsculas sobre nombre y descripción FR-013; una o varias categorías FR-012; lista vacía sin error CL3; biblioteca vacía CL1) en `tests/unit/application/buscar-ejercicios.use-case.spec.ts`
+- [X] T051 [P] [US2] Test de componente del reproductor de YouTube embebido (muestra el iframe de `youtube-nocookie.com/embed/<id>` FR-015; muestra "vídeo no disponible" si falla CL5, FR-033) en `tests/component/presentation/youtube-embed.component.spec.ts`
+- [X] T052 [P] [US2] Test de componente de previsualización de enlace externo (iframe sandboxed; si el sitio no se puede embeber, ofrece "abrir en una pestaña nueva" FR-016) en `tests/component/presentation/enlace-embed.component.spec.ts`
+- [X] T053 [P] [US2] Test de componente de búsqueda (filtro por categorías, texto libre, mensaje cuando no hay resultados FR-031) en `tests/component/presentation/busqueda-ejercicios.component.spec.ts`
+- [X] T054 [P] [US2] Test de integración de rutas de búsqueda y de los componentes embebidos en la ficha de ejercicio (navegar a la ruta de búsqueda muestra el buscador; abrir un ejercicio con vídeo de YouTube muestra el reproductor embebido dentro de la ficha) en `tests/component/presentation/shell-busqueda.integration.spec.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T055 [P] [US2] Implementar el caso de uso puro `extraer-id-youtube` en `src/app/domain/ejercicio/extraer-id-youtube.ts` (depende de T049)
-- [ ] T056 [US2] Implementar el caso de uso "buscar ejercicios" en `src/app/application/casos-uso/buscar-ejercicios.use-case.ts` (depende de T040, T050)
-- [ ] T057 [P] [US2] Construir el componente de búsqueda en `src/app/presentation/busqueda-ejercicios/` (depende de T053, T056)
-- [ ] T058 [P] [US2] Construir el componente del reproductor de YouTube embebido en `src/app/presentation/compartido/embebidos/youtube-embed.component.ts` (depende de T051, T055)
-- [ ] T059 [P] [US2] Construir el componente de previsualización de enlace externo en `src/app/presentation/compartido/embebidos/enlace-embed.component.ts` (depende de T052)
-- [ ] T060 [US2] Integrar los componentes embebidos en la ficha de ejercicio de `src/app/presentation/biblioteca-ejercicios/` y en los resultados de `src/app/presentation/busqueda-ejercicios/` (depende de T046, T057, T058, T059, T054)
-- [ ] T061 [US2] Integrar la ruta y el menú de búsqueda en `src/app/presentation/compartido/shell/` (depende de T023, T057, T054)
+- [X] T055 [P] [US2] Implementar el caso de uso puro `extraer-id-youtube` en `src/app/domain/ejercicio/extraer-id-youtube.ts` (depende de T049)
+- [X] T056 [US2] Implementar el caso de uso "buscar ejercicios" en `src/app/application/casos-uso/buscar-ejercicios.use-case.ts` (depende de T040, T050)
+- [X] T057 [P] [US2] Construir el componente de búsqueda en `src/app/presentation/busqueda-ejercicios/` (depende de T053, T056)
+- [X] T058 [P] [US2] Construir el componente del reproductor de YouTube embebido en `src/app/presentation/compartido/embebidos/youtube-embed.component.ts` (depende de T051, T055)
+- [X] T059 [P] [US2] Construir el componente de previsualización de enlace externo en `src/app/presentation/compartido/embebidos/enlace-embed.component.ts` (depende de T052)
+- [X] T060 [US2] Integrar los componentes embebidos en la ficha de ejercicio de `src/app/presentation/biblioteca-ejercicios/` y en los resultados de `src/app/presentation/busqueda-ejercicios/` (depende de T046, T057, T058, T059, T054)
+- [X] T061 [US2] Integrar la ruta y el menú de búsqueda en `src/app/presentation/compartido/shell/` (depende de T023, T057, T054)
 
 **Checkpoint**: Las Historias de Usuario 1 y 2 funcionan de forma independiente.
 

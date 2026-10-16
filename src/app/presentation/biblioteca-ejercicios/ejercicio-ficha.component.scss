@@ -1,0 +1,35 @@
+@use '../../../styles/espaciado' as *;
+
+.ejercicio-ficha__descripcion {
+  margin-bottom: $espaciado-2;
+}
+
+.ejercicio-ficha__categorias {
+  margin-bottom: $espaciado-2;
+}
+
+.ejercicio-ficha__observaciones {
+  margin-bottom: $espaciado-3;
+  color: var(--mat-sys-on-surface-variant, #5f6368);
+}
+
+.ejercicio-ficha__seccion {
+  margin-top: $espaciado-3;
+
+  h3 {
+    margin-bottom: $espaciado-2;
+  }
+}
+
+.ejercicio-ficha__imagenes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $espaciado-2;
+}
+
+.ejercicio-ficha__imagen {
+  max-width: 240px;
+  max-height: 240px;
+  border-radius: 8px;
+  object-fit: cover;
+}

@@ -47,4 +47,35 @@ describe('BibliotecaListadoComponent', () => {
     const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(texto).toContain('No hay ejercicios');
   });
+
+  it('renderiza app-cabecera-pagina con el título "Mis ejercicios" (FR-001)', async () => {
+    configurar([ejercicio('Sentadilla')]);
+    const fixture = await crearComponente();
+
+    const cabecera = (fixture.nativeElement as HTMLElement).querySelector('app-cabecera-pagina');
+    expect(cabecera).toBeTruthy();
+    expect(cabecera?.textContent).toContain('Mis ejercicios');
+  });
+
+  it('renderiza app-estado-vacio cuando la lista está vacía (FR-003)', async () => {
+    configurar([]);
+    const fixture = await crearComponente();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-estado-vacio')).toBeTruthy();
+  });
+
+  it('no renderiza app-estado-vacio cuando hay ejercicios', async () => {
+    configurar([ejercicio('Sentadilla')]);
+    const fixture = await crearComponente();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-estado-vacio')).toBeNull();
+  });
+
+  it('renderiza cada ejercicio como elemento de lista diferenciado (FR-002)', async () => {
+    configurar([ejercicio('Sentadilla'), ejercicio('Plancha')]);
+    const fixture = await crearComponente();
+
+    const tarjetas = (fixture.nativeElement as HTMLElement).querySelectorAll('.biblioteca-listado__tarjeta');
+    expect(tarjetas.length).toBe(2);
+  });
 });

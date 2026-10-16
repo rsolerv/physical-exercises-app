@@ -1,0 +1,23 @@
+@use '../../../../../styles/espaciado' as *;
+
+.estado-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: $espaciado-2;
+  margin-top: $espaciado-6;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.estado-vacio__icono {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+}
+
+.estado-vacio__mensaje {
+  font: var(--mat-sys-body-large);
+  margin: 0;
+  max-width: 40ch;
+}

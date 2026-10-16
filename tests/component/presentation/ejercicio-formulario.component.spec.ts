@@ -1,25 +1,35 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { EjercicioFormularioComponent } from '../../../src/app/presentation/biblioteca-ejercicios/ejercicio-formulario.component';
 import { GestionarEjercicioUseCase } from '../../../src/app/application/casos-uso/gestionar-ejercicio.use-case';
 import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
+import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejercicio-repository.port';
+import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
 import type { Categoria } from '../../../src/app/domain/categoria/categoria.entity';
 
 describe('EjercicioFormularioComponent', () => {
   const categorias: Categoria[] = [{ id: 'cat-1', nombre: 'Rodilla', esGenerica: false }];
+  let mostrarExito: ReturnType<typeof vi.fn>;
+  let mostrarError: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
+    mostrarExito = vi.fn();
+    mostrarError = vi.fn();
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
+        provideRouter([]),
         provideNoopAnimations(),
         { provide: CategoriaRepositoryPort, useValue: { listarTodas: () => Promise.resolve(categorias) } },
+        { provide: EjercicioRepositoryPort, useValue: { obtenerPorId: vi.fn().mockResolvedValue(null) } },
         {
           provide: GestionarEjercicioUseCase,
           useValue: { crear: vi.fn().mockResolvedValue({}), actualizar: vi.fn().mockResolvedValue({}) },
         },
+        { provide: MensajeFeedbackService, useValue: { mostrarExito, mostrarError } },
       ],
     });
   });
@@ -202,9 +212,12 @@ describe('EjercicioFormularioComponent', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
+        provideRouter([]),
         provideNoopAnimations(),
         { provide: CategoriaRepositoryPort, useValue: { listarTodas: () => Promise.resolve(categorias) } },
+        { provide: EjercicioRepositoryPort, useValue: { obtenerPorId: vi.fn().mockResolvedValue(null) } },
         { provide: GestionarEjercicioUseCase, useValue: { crear: () => Promise.reject(new Error('fallo simulado')) } },
+        { provide: MensajeFeedbackService, useValue: { mostrarExito, mostrarError } },
       ],
     });
     const fixture = crearComponente();
@@ -218,5 +231,112 @@ describe('EjercicioFormularioComponent', () => {
     await componente.guardar();
 
     expect(componente.errorAlGuardar()).toBe('fallo simulado');
+    expect(mostrarError).toHaveBeenCalled();
+  });
+
+  it('guardar() invoca MensajeFeedbackService.mostrarExito cuando los datos son válidos (FR-008)', async () => {
+    const fixture = crearComponente();
+    const componente = fixture.componentInstance;
+
+    componente.formulario.nombre().value.set('Sentadilla');
+    componente.formulario.descripcion().value.set('Flexionar rodillas');
+    componente.alternarCategoria('cat-1');
+    fixture.detectChanges();
+
+    await componente.guardar();
+
+    expect(mostrarExito).toHaveBeenCalled();
+  });
+
+  it('agrupa el formulario en 5 secciones identificables por su propio encabezado (FR-005)', () => {
+    const fixture = crearComponente();
+    const titulosEsperados = ['Datos básicos', 'Categorías', 'Enlaces', 'Imágenes', 'Observaciones'];
+
+    const encabezados = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('h3')).map(
+      (elemento) => elemento.textContent?.trim()
+    );
+
+    for (const titulo of titulosEsperados) {
+      expect(encabezados.some((encabezado) => encabezado?.includes(titulo))).toBe(true);
+    }
+  });
+
+  it('marca visiblemente "Nombre del ejercicio", "Descripción" y "Categorías" como obligatorios antes de guardar (FR-007)', () => {
+    const fixture = crearComponente();
+
+    const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(texto).toMatch(/Nombre del ejercicio.*(\*|obligatorio)/is);
+    expect(texto).toMatch(/Descripción.*(\*|obligatorio)/is);
+    expect(texto).toMatch(/Categorías.*(\*|obligatorio)/is);
+  });
+
+  describe('modo edición', () => {
+    function configurarEdicion(ejercicioExistente: {
+      id: string;
+      nombre: string;
+      descripcion: string;
+      categoriaIds: string[];
+      enlaces: unknown[];
+      imagenes: unknown[];
+      observaciones?: string;
+    }) {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideRouter([]),
+          provideNoopAnimations(),
+          { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => ejercicioExistente.id } } } },
+          { provide: CategoriaRepositoryPort, useValue: { listarTodas: () => Promise.resolve(categorias) } },
+          { provide: EjercicioRepositoryPort, useValue: { obtenerPorId: vi.fn().mockResolvedValue(ejercicioExistente) } },
+          {
+            provide: GestionarEjercicioUseCase,
+            useValue: { crear: vi.fn().mockResolvedValue({}), actualizar: vi.fn().mockResolvedValue({ id: ejercicioExistente.id }) },
+          },
+          { provide: MensajeFeedbackService, useValue: { mostrarExito, mostrarError } },
+        ],
+      });
+    }
+
+    it('precarga los datos del ejercicio existente', async () => {
+      configurarEdicion({
+        id: 'ej-1',
+        nombre: 'Sentadilla',
+        descripcion: 'Flexionar rodillas',
+        categoriaIds: ['cat-1'],
+        enlaces: [],
+        imagenes: [],
+        observaciones: 'Cuidado con la espalda',
+      });
+      const fixture = crearComponente();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      const componente = fixture.componentInstance;
+
+      expect(componente.modelo().nombre).toBe('Sentadilla');
+      expect(componente.modelo().observaciones).toBe('Cuidado con la espalda');
+      expect(componente.categoriaIdsSeleccionadas()).toEqual(['cat-1']);
+    });
+
+    it('guardar() llama a actualizar() en vez de crear()', async () => {
+      configurarEdicion({
+        id: 'ej-1',
+        nombre: 'Sentadilla',
+        descripcion: 'Flexionar rodillas',
+        categoriaIds: ['cat-1'],
+        enlaces: [],
+        imagenes: [],
+      });
+      const fixture = crearComponente();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      const componente = fixture.componentInstance;
+      const gestionarEjercicio = TestBed.inject(GestionarEjercicioUseCase);
+
+      await componente.guardar();
+
+      expect(gestionarEjercicio.actualizar).toHaveBeenCalledWith('ej-1', expect.objectContaining({ nombre: 'Sentadilla' }));
+      expect(gestionarEjercicio.crear).not.toHaveBeenCalled();
+    });
   });
 });

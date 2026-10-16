@@ -1,0 +1,10 @@
+// Escala de espaciado de 8px compartida por toda la aplicación
+// (contracts/design-tokens.contract.md). Ningún estilo nuevo debe introducir
+// valores de margin/padding/gap en píxeles que no sean múltiplos de 8
+// (excepto los bordes de 1px).
+
+$espaciado-1: 8px; // separación mínima entre elementos relacionados (icono + texto)
+$espaciado-2: 16px; // padding interno de tarjetas, separación entre campos de formulario
+$espaciado-3: 24px; // separación entre secciones dentro de una misma pantalla
+$espaciado-4: 32px; // padding de la cabecera de página, margen bajo el título
+$espaciado-6: 48px; // separación entre bloques mayores (p. ej. antes del estado vacío)

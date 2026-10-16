@@ -1,0 +1,13 @@
+// Clases de utilidad compartidas (contracts/componentes-presentacion.contract.md,
+// "Fuera de alcance de este contrato").
+@use 'espaciado' as *;
+
+// Centra de forma consistente el indicador de carga (`mat-progress-spinner`)
+// dentro de su contenedor, en vez de dejarlo pegado al margen izquierdo
+// (FR-004).
+.contenido--centrado {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: $espaciado-6 0;
+}

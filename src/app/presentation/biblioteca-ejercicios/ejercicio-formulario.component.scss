@@ -1,0 +1,18 @@
+@use '../../../styles/espaciado' as *;
+
+.ejercicio-formulario {
+  display: flex;
+  flex-direction: column;
+  gap: $espaciado-3;
+}
+
+.ejercicio-formulario__seccion {
+  display: flex;
+  flex-direction: column;
+  gap: $espaciado-2;
+
+  h3 {
+    margin: 0;
+    font: var(--mat-sys-title-medium);
+  }
+}

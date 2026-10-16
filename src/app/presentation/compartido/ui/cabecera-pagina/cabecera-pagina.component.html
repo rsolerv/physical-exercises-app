@@ -1,0 +1,11 @@
+<header class="cabecera-pagina">
+  <div class="cabecera-pagina__texto">
+    <h1 class="cabecera-pagina__titulo">{{ titulo() }}</h1>
+    @if (descripcion()) {
+      <p class="cabecera-pagina__descripcion">{{ descripcion() }}</p>
+    }
+  </div>
+  <div class="cabecera-pagina__acciones">
+    <ng-content select="[acciones]" />
+  </div>
+</header>

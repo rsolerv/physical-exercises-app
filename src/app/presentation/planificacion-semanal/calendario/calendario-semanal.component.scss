@@ -1,0 +1,38 @@
+@use '../../../../styles/espaciado' as *;
+@use '../../../../styles/breakpoints' as *;
+
+.calendario-semanal__lista {
+  margin-bottom: $espaciado-3;
+}
+
+.calendario-semanal__item {
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.calendario-semanal__item--seleccionada {
+  background: var(--mat-sys-secondary-container, #e8eaed);
+}
+
+.calendario-semanal__titulo-semana {
+  margin-bottom: $espaciado-2;
+}
+
+.calendario-semanal__cuadricula {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: $espaciado-2;
+
+  @include movil {
+    grid-template-columns: 1fr;
+  }
+}
+
+.calendario-semanal__dia--vacio {
+  opacity: 0.6;
+}
+
+.calendario-semanal__sin-ejercicios {
+  color: var(--mat-sys-on-surface-variant, #5f6368);
+  font-style: italic;
+}

@@ -1,0 +1,16 @@
+<div class="youtube-embed">
+  @if (urlSegura(); as src) {
+    <iframe
+      class="youtube-embed__iframe"
+      [src]="src"
+      title="Vídeo de YouTube del ejercicio"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen
+    ></iframe>
+  } @else {
+    <p class="youtube-embed__aviso">
+      <mat-icon>videocam_off</mat-icon>
+      Vídeo no disponible.
+    </p>
+  }
+</div>

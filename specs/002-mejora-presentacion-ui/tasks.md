@@ -1,4 +1,4 @@
----
+---
 
 description: "Task list template for feature implementation"
 ---
@@ -32,10 +32,10 @@ Proyecto único (Angular SPA sin backend). Todas las rutas son relativas a la ra
 
 **Purpose**: Crear los tokens de diseño compartidos (espaciado, breakpoints, utilidades) exigidos por `contracts/design-tokens.contract.md`, sin los cuales ningún componente de las historias de usuario puede implementarse de forma coherente.
 
-- [ ] T001 [P] Create spacing-scale partial `src/styles/_espaciado.scss` con `$espaciado-1` (8px) a `$espaciado-6` (48px), según `contracts/design-tokens.contract.md`
-- [ ] T002 [P] Create breakpoint-mixins partial `src/styles/_breakpoints.scss` con los mixins `movil` (hasta 599px), `tablet` (768–1024px) y `escritorio` (1280px en adelante), según `contracts/design-tokens.contract.md`
-- [ ] T003 [P] Create utility partial `src/styles/_utilidades.scss` con la clase `.contenido--centrado` para centrar de forma consistente el indicador de carga (`mat-progress-spinner`), según `research.md` § 3
-- [ ] T004 Update `src/styles.scss` añadiendo `@use 'styles/espaciado'`, `@use 'styles/breakpoints'` y `@use 'styles/utilidades'`, sin modificar la configuración existente de `mat.theme()` (depende de T001, T002, T003)
+- [X] T001 [P] Create spacing-scale partial `src/styles/_espaciado.scss` con `$espaciado-1` (8px) a `$espaciado-6` (48px), según `contracts/design-tokens.contract.md`
+- [X] T002 [P] Create breakpoint-mixins partial `src/styles/_breakpoints.scss` con los mixins `movil` (hasta 599px), `tablet` (768–1024px) y `escritorio` (1280px en adelante), según `contracts/design-tokens.contract.md`
+- [X] T003 [P] Create utility partial `src/styles/_utilidades.scss` con la clase `.contenido--centrado` para centrar de forma consistente el indicador de carga (`mat-progress-spinner`), según `research.md` § 3
+- [X] T004 Update `src/styles.scss` añadiendo `@use 'styles/espaciado'`, `@use 'styles/breakpoints'` y `@use 'styles/utilidades'`, sin modificar la configuración existente de `mat.theme()` (depende de T001, T002, T003)
 
 **Checkpoint**: Tokens de diseño disponibles para toda la aplicación.
 
@@ -47,12 +47,12 @@ Proyecto único (Angular SPA sin backend). Todas las rutas son relativas a la ra
 
 **⚠️ CRITICAL**: Ninguna tarea de las historias de usuario (Fase 3+) puede empezar hasta completar esta fase.
 
-- [ ] T005 [P] Write failing spec `tests/component/presentation/compartido/ui/cabecera-pagina.component.spec.ts`: el `input` `titulo` (obligatorio) se renderiza como encabezado semántico; el `input` `descripcion` (opcional) solo se muestra si se provee; el contenido proyectado en `[acciones]` se renderiza dentro del componente
-- [ ] T006 [P] Write failing spec `tests/component/presentation/compartido/ui/estado-vacio.component.spec.ts`: el `input` `icono` (obligatorio) se renderiza con `aria-hidden="true"`; el `input` `mensaje` (obligatorio) se muestra como texto visible; el contenido proyectado opcional en `[accion]` solo aparece si se provee
-- [ ] T007 [P] Write failing spec `tests/component/presentation/compartido/ui/mensaje-feedback.service.spec.ts`: `mostrarExito(texto)` y `mostrarError(texto)` invocan `MatSnackBar.open` con el texto recibido y una duración de 4000 ms, sin requerir que el usuario mueva el foco
-- [ ] T008 Implement `CabeceraPaginaComponent` standalone en `src/app/presentation/compartido/ui/cabecera-pagina/cabecera-pagina.component.ts` + `.html` + `.scss` (inputs `titulo: string` obligatorio y `descripcion?: string` opcional; `<ng-content select="[acciones]">`; usa `$espaciado-4` y la variable `--mat-sys-headline-small`) — hace pasar T005
-- [ ] T009 Implement `EstadoVacioComponent` standalone en `src/app/presentation/compartido/ui/estado-vacio/estado-vacio.component.ts` + `.html` + `.scss` (inputs `icono: string` y `mensaje: string` obligatorios; `<ng-content select="[accion]">` opcional; icono marcado `aria-hidden="true"`; usa `$espaciado-6` y la variable `--mat-sys-on-surface-variant`) — hace pasar T006
-- [ ] T010 Implement `MensajeFeedbackService` en `src/app/presentation/compartido/ui/mensaje-feedback.service.ts`, envolviendo `MatSnackBar` con los métodos `mostrarExito(texto: string)` y `mostrarError(texto: string)`, duración de 4000 ms — hace pasar T007
+- [X] T005 [P] Write failing spec `tests/component/presentation/compartido/ui/cabecera-pagina.component.spec.ts`: el `input` `titulo` (obligatorio) se renderiza como encabezado semántico; el `input` `descripcion` (opcional) solo se muestra si se provee; el contenido proyectado en `[acciones]` se renderiza dentro del componente
+- [X] T006 [P] Write failing spec `tests/component/presentation/compartido/ui/estado-vacio.component.spec.ts`: el `input` `icono` (obligatorio) se renderiza con `aria-hidden="true"`; el `input` `mensaje` (obligatorio) se muestra como texto visible; el contenido proyectado opcional en `[accion]` solo aparece si se provee
+- [X] T007 [P] Write failing spec `tests/component/presentation/compartido/ui/mensaje-feedback.service.spec.ts`: `mostrarExito(texto)` y `mostrarError(texto)` invocan `MatSnackBar.open` con el texto recibido y una duración de 4000 ms, sin requerir que el usuario mueva el foco
+- [X] T008 Implement `CabeceraPaginaComponent` standalone en `src/app/presentation/compartido/ui/cabecera-pagina/cabecera-pagina.component.ts` + `.html` + `.scss` (inputs `titulo: string` obligatorio y `descripcion?: string` opcional; `<ng-content select="[acciones]">`; usa `$espaciado-4` y la variable `--mat-sys-headline-small`) — hace pasar T005
+- [X] T009 Implement `EstadoVacioComponent` standalone en `src/app/presentation/compartido/ui/estado-vacio/estado-vacio.component.ts` + `.html` + `.scss` (inputs `icono: string` y `mensaje: string` obligatorios; `<ng-content select="[accion]">` opcional; icono marcado `aria-hidden="true"`; usa `$espaciado-6` y la variable `--mat-sys-on-surface-variant`) — hace pasar T006
+- [X] T010 Implement `MensajeFeedbackService` en `src/app/presentation/compartido/ui/mensaje-feedback.service.ts`, envolviendo `MatSnackBar` con los métodos `mostrarExito(texto: string)` y `mostrarError(texto: string)`, duración de 4000 ms — hace pasar T007
 
 **Checkpoint**: Fundamento compartido listo (tokens + 2 componentes + servicio de feedback); las historias de usuario pueden empezar.
 
@@ -66,17 +66,17 @@ Proyecto único (Angular SPA sin backend). Todas las rutas son relativas a la ra
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T011 [P] [US1] Update failing assertions en `tests/component/presentation/biblioteca-listado.component.spec.ts`: debe renderizar `app-cabecera-pagina` con `titulo="Mis ejercicios"`, `app-estado-vacio` cuando la lista esté vacía, y cada ejercicio como elemento de lista diferenciado
-- [ ] T012 [P] [US1] Update failing assertions en `tests/component/presentation/categoria-gestion.component.spec.ts`: debe renderizar `app-cabecera-pagina`, y debe invocar `MensajeFeedbackService.mostrarExito`/`mostrarError` al crear o eliminar una categoría
+- [X] T011 [P] [US1] Update failing assertions en `tests/component/presentation/biblioteca-listado.component.spec.ts`: debe renderizar `app-cabecera-pagina` con `titulo="Mis ejercicios"`, `app-estado-vacio` cuando la lista esté vacía, y cada ejercicio como elemento de lista diferenciado
+- [X] T012 [P] [US1] Update failing assertions en `tests/component/presentation/categoria-gestion.component.spec.ts`: debe renderizar `app-cabecera-pagina`, y debe invocar `MensajeFeedbackService.mostrarExito`/`mostrarError` al crear o eliminar una categoría
 
 ### Implementation for User Story 1
 
-- [ ] T013 [US1] Update `src/app/presentation/biblioteca-ejercicios/biblioteca-listado.component.html` para usar `<app-cabecera-pagina titulo="Mis ejercicios">` proyectando los botones "Nuevo ejercicio"/"Gestionar categorías" en `[acciones]`, y `<app-estado-vacio icono="fitness_center" mensaje="No hay ejercicios registrados todavía.">` proyectando el botón "Nuevo ejercicio" en `[accion]` cuando la lista esté vacía (FR-001, FR-003) — depende de T008, T009
-- [ ] T014 [US1] Update `src/app/presentation/biblioteca-ejercicios/biblioteca-listado.component.html` y create `src/app/presentation/biblioteca-ejercicios/biblioteca-listado.component.scss` para renderizar cada ejercicio como tarjeta/fila con `$espaciado-2`/`$espaciado-3`, truncando nombre y descripción (máx. 2 líneas, `text-overflow: ellipsis`) para que nombres/descripciones largos no rompan el diseño ni provoquen scroll horizontal (FR-002, Edge Case de truncamiento) — depende de T013
-- [ ] T015 [US1] Update `src/app/presentation/biblioteca-ejercicios/biblioteca-listado.component.ts` para importar `CabeceraPaginaComponent`/`EstadoVacioComponent` y envolver el `<mat-spinner>` existente con la clase `.contenido--centrado` (FR-004) — depende de T008, T009, T013
-- [ ] T016 [P] [US1] Update `src/app/presentation/biblioteca-ejercicios/categorias/categoria-gestion.component.html` y `.ts` para usar `<app-cabecera-pagina titulo="Categorías">` e inyectar `MensajeFeedbackService`, llamando a `mostrarExito`/`mostrarError` al crear o eliminar una categoría, conservando los mensajes inline `errorEliminacion()`/`errorCreacion()` como detalle adicional (FR-008) — depende de T008, T010
-- [ ] T017 [US1] Create `src/app/presentation/biblioteca-ejercicios/categorias/categoria-gestion.component.scss` aplicando los mixins de `_breakpoints.scss` para que el listado de categorías use una sola columna en móvil y una disposición más densa en tablet/escritorio (FR-010, FR-011) — depende de T016
-- [ ] T018 [US1] Apply el checklist de `contracts/accesibilidad.contract.md` (A1–A8) a las pantallas de listado de ejercicios y gestión de categorías: contraste, foco visible y flujo completo de crear/eliminar categoría solo con teclado (FR-015) — depende de T013, T014, T015, T016, T017
+- [X] T013 [US1] Update `src/app/presentation/biblioteca-ejercicios/biblioteca-listado.component.html` para usar `<app-cabecera-pagina titulo="Mis ejercicios">` proyectando los botones "Nuevo ejercicio"/"Gestionar categorías" en `[acciones]`, y `<app-estado-vacio icono="fitness_center" mensaje="No hay ejercicios registrados todavía.">` proyectando el botón "Nuevo ejercicio" en `[accion]` cuando la lista esté vacía (FR-001, FR-003) — depende de T008, T009
+- [X] T014 [US1] Update `src/app/presentation/biblioteca-ejercicios/biblioteca-listado.component.html` y create `src/app/presentation/biblioteca-ejercicios/biblioteca-listado.component.scss` para renderizar cada ejercicio como tarjeta/fila con `$espaciado-2`/`$espaciado-3`, truncando nombre y descripción (máx. 2 líneas, `text-overflow: ellipsis`) para que nombres/descripciones largos no rompan el diseño ni provoquen scroll horizontal (FR-002, Edge Case de truncamiento) — depende de T013
+- [X] T015 [US1] Update `src/app/presentation/biblioteca-ejercicios/biblioteca-listado.component.ts` para importar `CabeceraPaginaComponent`/`EstadoVacioComponent` y envolver el `<mat-spinner>` existente con la clase `.contenido--centrado` (FR-004) — depende de T008, T009, T013
+- [X] T016 [P] [US1] Update `src/app/presentation/biblioteca-ejercicios/categorias/categoria-gestion.component.html` y `.ts` para usar `<app-cabecera-pagina titulo="Categorías">` e inyectar `MensajeFeedbackService`, llamando a `mostrarExito`/`mostrarError` al crear o eliminar una categoría, conservando los mensajes inline `errorEliminacion()`/`errorCreacion()` como detalle adicional (FR-008) — depende de T008, T010
+- [X] T017 [US1] Create `src/app/presentation/biblioteca-ejercicios/categorias/categoria-gestion.component.scss` aplicando los mixins de `_breakpoints.scss` para que el listado de categorías use una sola columna en móvil y una disposición más densa en tablet/escritorio (FR-010, FR-011) — depende de T016
+- [X] T018 [US1] Apply el checklist de `contracts/accesibilidad.contract.md` (A1–A8) a las pantallas de listado de ejercicios y gestión de categorías: contraste, foco visible y flujo completo de crear/eliminar categoría solo con teclado (FR-015) — depende de T013, T014, T015, T016, T017
 
 **Checkpoint**: La Historia de Usuario 1 debe ser completamente funcional y verificable de forma independiente.
 
@@ -90,15 +90,15 @@ Proyecto único (Angular SPA sin backend). Todas las rutas son relativas a la ra
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T019 [US2] Update failing assertions en `tests/component/presentation/ejercicio-formulario.component.spec.ts`: las 5 secciones (datos básicos, categorías, enlaces, imágenes, observaciones) deben ser identificables por un contenedor/encabezado propio, los campos "Nombre del ejercicio", "Descripción" y "Categorías" deben marcarse visiblemente como obligatorios antes de enviar, y debe invocarse `MensajeFeedbackService` al guardar con éxito o con error
+- [X] T019 [US2] Update failing assertions en `tests/component/presentation/ejercicio-formulario.component.spec.ts`: las 5 secciones (datos básicos, categorías, enlaces, imágenes, observaciones) deben ser identificables por un contenedor/encabezado propio, los campos "Nombre del ejercicio", "Descripción" y "Categorías" deben marcarse visiblemente como obligatorios antes de enviar, y debe invocarse `MensajeFeedbackService` al guardar con éxito o con error
 
 ### Implementation for User Story 2
 
-- [ ] T020 [US2] Update `src/app/presentation/biblioteca-ejercicios/ejercicio-formulario.component.html` agrupando cada bloque existente (datos básicos, categorías, enlaces, imágenes, observaciones) en un contenedor con encabezado propio (`<h3>` + `$espaciado-3` de separación entre bloques) en vez de `<fieldset>` sin separación visual (FR-005) — depende de T019
-- [ ] T021 [US2] Update `src/app/presentation/biblioteca-ejercicios/ejercicio-formulario.component.html` para marcar visiblemente "Nombre del ejercicio", "Descripción" y "Categorías" como obligatorios (p. ej. asterisco o etiqueta "(obligatorio)") antes de que el usuario intente guardar (FR-007) — depende de T020
-- [ ] T022 [US2] Create `src/app/presentation/biblioteca-ejercicios/ejercicio-formulario.component.scss` aplicando espaciado consistente entre bloques y confirmando que cada `mat-error` permanece junto a su campo (FR-006) — depende de T020
-- [ ] T023 [US2] Update `src/app/presentation/biblioteca-ejercicios/ejercicio-formulario.component.ts` para inyectar `MensajeFeedbackService` y llamar a `mostrarExito`/`mostrarError` tras `guardar()`, conservando `errorAlGuardar()` como mensaje inline adicional en caso de fallo (FR-008) — depende de T010, T019
-- [ ] T024 [US2] Apply el checklist de `contracts/accesibilidad.contract.md` (A1–A8) al formulario de ejercicio: navegación completa por teclado, incluidos los chips de categoría y los botones de quitar enlace/imagen (FR-015) — depende de T020, T021, T022, T023
+- [X] T020 [US2] Update `src/app/presentation/biblioteca-ejercicios/ejercicio-formulario.component.html` agrupando cada bloque existente (datos básicos, categorías, enlaces, imágenes, observaciones) en un contenedor con encabezado propio (`<h3>` + `$espaciado-3` de separación entre bloques) en vez de `<fieldset>` sin separación visual (FR-005) — depende de T019
+- [X] T021 [US2] Update `src/app/presentation/biblioteca-ejercicios/ejercicio-formulario.component.html` para marcar visiblemente "Nombre del ejercicio", "Descripción" y "Categorías" como obligatorios (p. ej. asterisco o etiqueta "(obligatorio)") antes de que el usuario intente guardar (FR-007) — depende de T020
+- [X] T022 [US2] Create `src/app/presentation/biblioteca-ejercicios/ejercicio-formulario.component.scss` aplicando espaciado consistente entre bloques y confirmando que cada `mat-error` permanece junto a su campo (FR-006) — depende de T020
+- [X] T023 [US2] Update `src/app/presentation/biblioteca-ejercicios/ejercicio-formulario.component.ts` para inyectar `MensajeFeedbackService` y llamar a `mostrarExito`/`mostrarError` tras `guardar()`, conservando `errorAlGuardar()` como mensaje inline adicional en caso de fallo (FR-008) — depende de T010, T019
+- [X] T024 [US2] Apply el checklist de `contracts/accesibilidad.contract.md` (A1–A8) al formulario de ejercicio: navegación completa por teclado, incluidos los chips de categoría y los botones de quitar enlace/imagen (FR-015) — depende de T020, T021, T022, T023
 
 **Checkpoint**: Las Historias de Usuario 1 y 2 deben funcionar de forma independiente.
 
@@ -112,15 +112,15 @@ Proyecto único (Angular SPA sin backend). Todas las rutas son relativas a la ra
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T025 [P] [US3] Update failing assertions en `tests/component/presentation/shell.component.spec.ts`: el menú lateral debe ocultarse por defecto en viewport móvil y mostrarse por defecto en escritorio, y la entrada de menú de la ruta activa debe llevar una clase/atributo de "activo" visualmente distinguible más allá de `font-weight`
-- [ ] T026 [P] [US3] Create failing spec `tests/component/presentation/compartido/pagina-en-construccion.component.spec.ts`: debe renderizar `app-cabecera-pagina` y `app-estado-vacio` con `icono="construction"` y el mensaje "Esta sección todavía no está disponible." en vez de un `<p>` plano
+- [X] T025 [P] [US3] Update failing assertions en `tests/component/presentation/shell.component.spec.ts`: el menú lateral debe ocultarse por defecto en viewport móvil y mostrarse por defecto en escritorio, y la entrada de menú de la ruta activa debe llevar una clase/atributo de "activo" visualmente distinguible más allá de `font-weight`
+- [X] T026 [P] [US3] Create failing spec `tests/component/presentation/compartido/pagina-en-construccion.component.spec.ts`: debe renderizar `app-cabecera-pagina` y `app-estado-vacio` con `icono="construction"` y el mensaje "Esta sección todavía no está disponible." en vez de un `<p>` plano
 
 ### Implementation for User Story 3
 
-- [ ] T027 [US3] Update `src/app/presentation/compartido/shell/shell.component.scss` usando los mixins de `_breakpoints.scss` para ocultar el menú lateral por defecto en móvil y mostrarlo por defecto en escritorio, y asegurar que el botón de alternar menú cumple un tamaño de toque cómodo (FR-010, FR-011) — depende de T025
-- [ ] T028 [US3] Update `src/app/presentation/compartido/shell/shell.component.scss` para que `.shell__enlace-activo` use un tratamiento visual más allá de `font-weight` (p. ej. fondo con la variable `--mat-sys-secondary-container`) (FR-012) — depende de T025
-- [ ] T029 [US3] Update `src/app/presentation/compartido/shell/pagina-en-construccion.component.ts` para renderizar `<app-cabecera-pagina>` + `<app-estado-vacio icono="construction" mensaje="Esta sección todavía no está disponible.">` en vez del `<p>` plano actual (FR-013) — depende de T008, T009, T026
-- [ ] T030 [US3] Apply el checklist de `contracts/accesibilidad.contract.md` (A1–A8) al shell y al menú de navegación: recorrido completo de las 5 entradas del menú solo con teclado, con foco visible en cada una (FR-015) — depende de T027, T028, T029
+- [X] T027 [US3] Update `src/app/presentation/compartido/shell/shell.component.scss` usando los mixins de `_breakpoints.scss` para ocultar el menú lateral por defecto en móvil y mostrarlo por defecto en escritorio, y asegurar que el botón de alternar menú cumple un tamaño de toque cómodo (FR-010, FR-011) — depende de T025
+- [X] T028 [US3] Update `src/app/presentation/compartido/shell/shell.component.scss` para que `.shell__enlace-activo` use un tratamiento visual más allá de `font-weight` (p. ej. fondo con la variable `--mat-sys-secondary-container`) (FR-012) — depende de T025
+- [X] T029 [US3] Update `src/app/presentation/compartido/shell/pagina-en-construccion.component.ts` para renderizar `<app-cabecera-pagina>` + `<app-estado-vacio icono="construction" mensaje="Esta sección todavía no está disponible.">` en vez del `<p>` plano actual (FR-013) — depende de T008, T009, T026
+- [X] T030 [US3] Apply el checklist de `contracts/accesibilidad.contract.md` (A1–A8) al shell y al menú de navegación: recorrido completo de las 5 entradas del menú solo con teclado, con foco visible en cada una (FR-015) — depende de T027, T028, T029
 
 **Checkpoint**: Las 3 historias de usuario deben ser ahora funcionales e independientemente verificables.
 
@@ -130,11 +130,11 @@ Proyecto único (Angular SPA sin backend). Todas las rutas son relativas a la ra
 
 **Purpose**: Mejoras que afectan a las tres historias de usuario y cierre de calidad de toda la feature.
 
-- [ ] T031 [P] Update `tests/component/presentation/shell-biblioteca.integration.spec.ts` si la integración shell+biblioteca cambió de estructura DOM tras T013–T029
-- [ ] T032 Run `npm run lint` y corregir cualquier infracción (incluida la regla de accesibilidad de plantillas `angular.configs.templateAccessibility`) en los archivos modificados por esta feature
-- [ ] T033 Run `npm test -- --coverage` y confirmar que la cobertura global se mantiene en ≥80% (umbral de `angular.json`), añadiendo pruebas para cualquier rama sin cubrir en `CabeceraPaginaComponent`, `EstadoVacioComponent` o `MensajeFeedbackService`
-- [ ] T034 Execute el recorrido manual completo de `quickstart.md` (las 3 historias de usuario + validación de accesibilidad) y registrar el resultado de las 8 filas de `contracts/accesibilidad.contract.md`
-- [ ] T035 [P] Review `contracts/componentes-presentacion.contract.md` y `contracts/design-tokens.contract.md` frente a la implementación final; actualizar la documentación si hubo alguna desviación necesaria
+- [X] T031 [P] Update `tests/component/presentation/shell-biblioteca.integration.spec.ts` si la integración shell+biblioteca cambió de estructura DOM tras T013–T029
+- [X] T032 Run `npm run lint` y corregir cualquier infracción (incluida la regla de accesibilidad de plantillas `angular.configs.templateAccessibility`) en los archivos modificados por esta feature
+- [X] T033 Run `npm test -- --coverage` y confirmar que la cobertura global se mantiene en ≥80% (umbral de `angular.json`), añadiendo pruebas para cualquier rama sin cubrir en `CabeceraPaginaComponent`, `EstadoVacioComponent` o `MensajeFeedbackService`
+- [X] T034 Execute el recorrido manual completo de `quickstart.md` (las 3 historias de usuario + validación de accesibilidad) y registrar el resultado de las 8 filas de `contracts/accesibilidad.contract.md`
+- [X] T035 [P] Review `contracts/componentes-presentacion.contract.md` y `contracts/design-tokens.contract.md` frente a la implementación final; actualizar la documentación si hubo alguna desviación necesaria
 
 ---
 

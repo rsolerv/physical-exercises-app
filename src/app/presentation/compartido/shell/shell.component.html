@@ -1,8 +1,13 @@
 <mat-sidenav-container class="shell__contenedor">
-  <mat-sidenav #menuLateral mode="side" opened class="shell__menu-lateral">
+  <mat-sidenav #menuLateral mode="side" [(opened)]="menuAbierto" class="shell__menu-lateral">
     <mat-nav-list>
       @for (entrada of entradasMenu; track entrada.ruta) {
-        <a mat-list-item [routerLink]="entrada.ruta" routerLinkActive="shell__enlace-activo">
+        <a
+          mat-list-item
+          [routerLink]="entrada.ruta"
+          routerLinkActive="shell__enlace-activo"
+          ariaCurrentWhenActive="page"
+        >
           <mat-icon matListItemIcon>{{ entrada.icono }}</mat-icon>
           <span matListItemTitle>{{ entrada.etiqueta }}</span>
         </a>
@@ -12,7 +17,12 @@
 
   <mat-sidenav-content>
     <mat-toolbar color="primary" class="shell__barra-superior">
-      <button mat-icon-button (click)="menuLateral.toggle()" aria-label="Abrir o cerrar el menú de navegación">
+      <button
+        mat-icon-button
+        (click)="menuLateral.toggle()"
+        aria-label="Abrir o cerrar el menú de navegación"
+        [attr.aria-expanded]="menuAbierto()"
+      >
         <mat-icon>menu</mat-icon>
       </button>
       <span>Gestión de Ejercicios Físicos</span>

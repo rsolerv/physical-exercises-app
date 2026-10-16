@@ -1,0 +1,67 @@
+<section class="calendario-semanal">
+  <app-cabecera-pagina titulo="Planificación semanal" descripcion="Consulta y organiza tus planificaciones y plantillas.">
+    <div acciones>
+      <a mat-flat-button color="primary" routerLink="nueva">
+        <mat-icon>add</mat-icon>
+        Nueva planificación
+      </a>
+    </div>
+  </app-cabecera-pagina>
+
+  @if (recursoPlanificaciones.isLoading()) {
+    <div class="contenido--centrado">
+      <mat-spinner diameter="32" />
+    </div>
+  } @else if ((recursoPlanificaciones.value() ?? []).length === 0) {
+    <app-estado-vacio icono="calendar_month" mensaje="No hay ninguna planificación creada todavía.">
+      <a accion mat-flat-button color="primary" routerLink="nueva">
+        <mat-icon>add</mat-icon>
+        Crear mi primera planificación
+      </a>
+    </app-estado-vacio>
+  } @else {
+    <mat-nav-list class="calendario-semanal__lista">
+      @for (planificacion of recursoPlanificaciones.value(); track planificacion.id) {
+        <mat-list-item
+          class="calendario-semanal__item"
+          [class.calendario-semanal__item--seleccionada]="planificacionMostrada()?.id === planificacion.id"
+          (click)="seleccionar(planificacion)"
+        >
+          <span matListItemTitle>{{ planificacion.nombre }}</span>
+          <span matListItemLine>{{ planificacion.fechaInicio ? ('Semana del ' + planificacion.fechaInicio) : 'Plantilla' }}</span>
+          <a mat-icon-button matListItemMeta [routerLink]="[planificacion.id]" aria-label="Editar planificación">
+            <mat-icon>edit</mat-icon>
+          </a>
+        </mat-list-item>
+      }
+    </mat-nav-list>
+
+    @if (planificacionMostrada(); as planificacion) {
+      <h3 class="calendario-semanal__titulo-semana">{{ planificacion.nombre }}</h3>
+      <div class="calendario-semanal__cuadricula">
+        @for (dia of diasOrdenados; track dia) {
+          @if (obtenerDia(planificacion, dia); as diaPlan) {
+            <mat-card
+              class="calendario-semanal__dia"
+              [class.calendario-semanal__dia--con-ejercicios]="diaPlan.ejercicioIds.length > 0"
+              [class.calendario-semanal__dia--vacio]="diaPlan.ejercicioIds.length === 0"
+            >
+              <mat-card-header>
+                <mat-card-title>{{ etiquetasDia[dia] }}</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                @if (diaPlan.ejercicioIds.length === 0) {
+                  <p class="calendario-semanal__sin-ejercicios">Sin ejercicios</p>
+                } @else {
+                  @for (nombre of nombresEjercicios(diaPlan.ejercicioIds); track nombre) {
+                    <mat-chip>{{ nombre }}</mat-chip>
+                  }
+                }
+              </mat-card-content>
+            </mat-card>
+          }
+        }
+      </div>
+    }
+  }
+</section>

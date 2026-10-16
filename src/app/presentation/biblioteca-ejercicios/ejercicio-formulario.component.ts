@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { form, required, FormField } from '@angular/forms/signals';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,8 +11,11 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { from } from 'rxjs';
 import { GestionarEjercicioUseCase } from '../../application/casos-uso/gestionar-ejercicio.use-case';
 import { CategoriaRepositoryPort } from '../../application/ports/categoria-repository.port';
+import { EjercicioRepositoryPort } from '../../application/ports/ejercicio-repository.port';
 import type { Categoria } from '../../domain/categoria/categoria.entity';
 import type { EnlaceEjercicio, ImagenEjercicio, TipoEnlaceEjercicio } from '../../domain/ejercicio/ejercicio.entity';
+import { MensajeFeedbackService } from '../compartido/ui/mensaje-feedback.service';
+import { CabeceraPaginaComponent } from '../compartido/ui/cabecera-pagina/cabecera-pagina.component';
 
 const TAMANO_MAXIMO_IMAGEN_BYTES = 5 * 1024 * 1024;
 
@@ -25,17 +29,36 @@ interface ModeloFormularioEjercicio {
  * Formulario de alta/edición de ejercicio (Historia de Usuario 1). Los campos
  * simples (nombre, descripción, observaciones) usan Signal Forms; los enlaces,
  * las imágenes y las categorías se gestionan con signals directos porque son
- * listas de longitud variable.
+ * listas de longitud variable. En modo edición (ruta `ejercicios/:id/editar`)
+ * precarga los datos existentes y llama a `actualizar()` en vez de `crear()`.
  */
 @Component({
   selector: 'app-ejercicio-formulario',
   standalone: true,
-  imports: [FormField, MatFormFieldModule, MatInputModule, MatButtonModule, MatSelectModule, MatIconModule, MatChipsModule],
+  imports: [
+    FormField,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatSelectModule,
+    MatIconModule,
+    MatChipsModule,
+    CabeceraPaginaComponent,
+  ],
   templateUrl: './ejercicio-formulario.component.html',
+  styleUrl: './ejercicio-formulario.component.scss',
 })
 export class EjercicioFormularioComponent {
   private readonly gestionarEjercicio = inject(GestionarEjercicioUseCase);
   private readonly categoriaRepository = inject(CategoriaRepositoryPort);
+  private readonly ejercicioRepository = inject(EjercicioRepositoryPort);
+  private readonly mensajeFeedback = inject(MensajeFeedbackService);
+  private readonly ruta = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
+  protected readonly ejercicioId = this.ruta.snapshot.paramMap.get('id');
+  protected readonly modoEdicion = this.ejercicioId !== null;
+  protected readonly titulo = this.modoEdicion ? 'Editar ejercicio' : 'Nuevo ejercicio';
 
   readonly modelo = signal<ModeloFormularioEjercicio>({ nombre: '', descripcion: '', observaciones: '' });
   readonly formulario = form(this.modelo, (ruta) => {
@@ -58,6 +81,25 @@ export class EjercicioFormularioComponent {
 
   readonly guardando = signal(false);
   readonly errorAlGuardar = signal<string | null>(null);
+
+  constructor() {
+    if (this.ejercicioId) {
+      void this.cargarParaEdicion(this.ejercicioId);
+    }
+  }
+
+  private async cargarParaEdicion(id: string): Promise<void> {
+    const ejercicio = await this.ejercicioRepository.obtenerPorId(id);
+    if (!ejercicio) return;
+    this.modelo.set({
+      nombre: ejercicio.nombre,
+      descripcion: ejercicio.descripcion,
+      observaciones: ejercicio.observaciones ?? '',
+    });
+    this.categoriaIdsSeleccionadas.set(ejercicio.categoriaIds);
+    this.enlaces.set(ejercicio.enlaces);
+    this.imagenes.set(ejercicio.imagenes);
+  }
 
   anadirEnlace(tipo: TipoEnlaceEjercicio, url: string): void {
     if (!url.trim()) return;
@@ -115,16 +157,24 @@ export class EjercicioFormularioComponent {
     this.guardando.set(true);
     this.errorAlGuardar.set(null);
     try {
-      await this.gestionarEjercicio.crear({
+      const datos = {
         nombre: this.modelo().nombre,
         descripcion: this.modelo().descripcion,
         categoriaIds: this.categoriaIdsSeleccionadas(),
         enlaces: this.enlaces(),
         imagenes: this.imagenes(),
         observaciones: this.modelo().observaciones,
-      });
+      };
+      const guardado =
+        this.modoEdicion && this.ejercicioId
+          ? await this.gestionarEjercicio.actualizar(this.ejercicioId, datos)
+          : await this.gestionarEjercicio.crear(datos);
+      this.mensajeFeedback.mostrarExito('Ejercicio guardado.');
+      await this.router.navigate(guardado?.id ? ['/ejercicios', guardado.id] : ['/ejercicios']);
     } catch (error) {
-      this.errorAlGuardar.set(error instanceof Error ? error.message : 'No se ha podido guardar el ejercicio.');
+      const mensaje = error instanceof Error ? error.message : 'No se ha podido guardar el ejercicio.';
+      this.errorAlGuardar.set(mensaje);
+      this.mensajeFeedback.mostrarError(mensaje);
     } finally {
       this.guardando.set(false);
     }

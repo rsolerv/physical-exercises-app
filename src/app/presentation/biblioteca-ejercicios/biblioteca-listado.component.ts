@@ -5,6 +5,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { EjercicioRepositoryPort } from '../../application/ports/ejercicio-repository.port';
+import { CabeceraPaginaComponent } from '../compartido/ui/cabecera-pagina/cabecera-pagina.component';
+import { EstadoVacioComponent } from '../compartido/ui/estado-vacio/estado-vacio.component';
 
 /**
  * Listado de la biblioteca de ejercicios (Historia de Usuario 1): muestra
@@ -14,8 +16,17 @@ import { EjercicioRepositoryPort } from '../../application/ports/ejercicio-repos
 @Component({
   selector: 'app-biblioteca-listado',
   standalone: true,
-  imports: [RouterLink, MatListModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule],
+  imports: [
+    RouterLink,
+    MatListModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    CabeceraPaginaComponent,
+    EstadoVacioComponent,
+  ],
   templateUrl: './biblioteca-listado.component.html',
+  styleUrl: './biblioteca-listado.component.scss',
 })
 export class BibliotecaListadoComponent {
   private readonly ejercicioRepository = inject(EjercicioRepositoryPort);
@@ -24,3 +35,4 @@ export class BibliotecaListadoComponent {
     loader: () => this.ejercicioRepository.listarTodos(),
   });
 }
+

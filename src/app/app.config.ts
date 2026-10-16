@@ -9,6 +9,8 @@ import { EjercicioRepositoryPort } from './application/ports/ejercicio-repositor
 import { EjercicioRepositorySqlite } from './infrastructure/persistencia-sqlite/ejercicio-repository.sqlite';
 import { CategoriaRepositoryPort } from './application/ports/categoria-repository.port';
 import { CategoriaRepositorySqlite } from './infrastructure/persistencia-sqlite/categoria-repository.sqlite';
+import { PlanificacionRepositoryPort } from './application/ports/planificacion-repository.port';
+import { PlanificacionRepositorySqlite } from './infrastructure/persistencia-sqlite/planificacion-repository.sqlite';
 import { SembrarCatalogoPredefinidoPort } from './application/ports/sembrar-catalogo-predefinido.port';
 import { SembrarCatalogoPredefinidoUseCase } from './application/casos-uso/sembrar-catalogo-predefinido.use-case';
 import { ArrancarAplicacionUseCase } from './application/casos-uso/arrancar-aplicacion.use-case';
@@ -24,6 +26,7 @@ export const appConfig: ApplicationConfig = {
     { provide: AjustesRepositoryPort, useExisting: AjustesRepositorySqlite },
     { provide: EjercicioRepositoryPort, useExisting: EjercicioRepositorySqlite },
     { provide: CategoriaRepositoryPort, useExisting: CategoriaRepositorySqlite },
+    { provide: PlanificacionRepositoryPort, useExisting: PlanificacionRepositorySqlite },
     { provide: SembrarCatalogoPredefinidoPort, useExisting: SembrarCatalogoPredefinidoUseCase },
     // Carga toda la información almacenada y siembra el catálogo predefinido al abrir la app (FR-001, FR-034).
     provideAppInitializer(() => inject(ArrancarAplicacionUseCase).ejecutar()),

@@ -1,0 +1,43 @@
+<section class="busqueda-ejercicios">
+  <app-cabecera-pagina titulo="Buscar ejercicios" descripcion="Filtra por categoría o por texto libre." />
+
+  <div class="busqueda-ejercicios__filtros">
+    <mat-form-field appearance="outline" class="busqueda-ejercicios__campo-texto">
+      <mat-label>Buscar por nombre o descripción</mat-label>
+      <input matInput [value]="texto()" (input)="texto.set($any($event.target).value)" />
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+
+    @if (categorias().length > 0) {
+      <mat-chip-listbox class="busqueda-ejercicios__categorias" multiple>
+        @for (categoria of categorias(); track categoria.id) {
+          <mat-chip-option
+            [selected]="categoriaIdsSeleccionadas().includes(categoria.id)"
+            (click)="alternarCategoria(categoria.id)"
+          >
+            {{ categoria.nombre }}
+          </mat-chip-option>
+        }
+      </mat-chip-listbox>
+    }
+  </div>
+
+  @if (recursoTotalEjercicios.isLoading() || recursoResultados.isLoading()) {
+    <div class="contenido--centrado">
+      <mat-spinner diameter="32" />
+    </div>
+  } @else if ((recursoTotalEjercicios.value() ?? []).length === 0) {
+    <app-estado-vacio icono="search_off" mensaje="No hay ejercicios registrados todavía." />
+  } @else if ((recursoResultados.value() ?? []).length === 0) {
+    <app-estado-vacio icono="search_off" mensaje="No se han encontrado ejercicios con los criterios seleccionados." />
+  } @else {
+    <mat-nav-list>
+      @for (ejercicio of recursoResultados.value(); track ejercicio.id) {
+        <a mat-list-item class="busqueda-ejercicios__tarjeta" [routerLink]="['/ejercicios', ejercicio.id]">
+          <span matListItemTitle>{{ ejercicio.nombre }}</span>
+          <span matListItemLine>{{ ejercicio.descripcion }}</span>
+        </a>
+      }
+    </mat-nav-list>
+  }
+</section>

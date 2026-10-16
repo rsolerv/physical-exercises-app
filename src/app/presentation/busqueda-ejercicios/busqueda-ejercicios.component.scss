@@ -1,0 +1,17 @@
+@use '../../../styles/espaciado' as *;
+
+.busqueda-ejercicios__filtros {
+  display: flex;
+  flex-direction: column;
+  gap: $espaciado-2;
+  margin-bottom: $espaciado-3;
+}
+
+.busqueda-ejercicios__campo-texto {
+  width: 100%;
+}
+
+.busqueda-ejercicios__tarjeta {
+  margin-bottom: $espaciado-2;
+  border-radius: 8px;
+}

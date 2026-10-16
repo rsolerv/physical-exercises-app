@@ -1,0 +1,19 @@
+<div class="enlace-embed">
+  <iframe
+    class="enlace-embed__iframe"
+    [src]="urlSegura()"
+    sandbox="allow-scripts allow-popups allow-forms"
+    title="Previsualización del enlace externo"
+    (load)="onCargado()"
+    (error)="onError()"
+  ></iframe>
+  @if (noEmbebible()) {
+    <p class="enlace-embed__aviso">
+      <mat-icon>open_in_new</mat-icon>
+      Este sitio no se puede mostrar dentro de la aplicación.
+      <a class="enlace-embed__fallback" mat-stroked-button [href]="url()" target="_blank" rel="noopener noreferrer">
+        Abrir en una pestaña nueva
+      </a>
+    </p>
+  }
+</div>

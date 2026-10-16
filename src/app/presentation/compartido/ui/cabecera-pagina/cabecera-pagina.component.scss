@@ -1,0 +1,38 @@
+@use '../../../../../styles/espaciado' as *;
+@use '../../../../../styles/breakpoints' as *;
+
+.cabecera-pagina {
+  display: flex;
+  flex-direction: column;
+  gap: $espaciado-2;
+  padding: $espaciado-4 0;
+
+  @include tablet {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  @include escritorio {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.cabecera-pagina__titulo {
+  font: var(--mat-sys-headline-small);
+  margin: 0;
+}
+
+.cabecera-pagina__descripcion {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0;
+}
+
+.cabecera-pagina__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $espaciado-2;
+}

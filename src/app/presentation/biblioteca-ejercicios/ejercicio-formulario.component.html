@@ -1,22 +1,27 @@
+<app-cabecera-pagina [titulo]="titulo" />
+
 <form class="ejercicio-formulario" (submit)="$event.preventDefault(); guardar()">
-  <mat-form-field appearance="outline">
-    <mat-label>Nombre del ejercicio</mat-label>
-    <input matInput [formField]="formulario.nombre" />
-    @if (formulario.nombre().errors().length > 0 && formulario.nombre().touched()) {
-      <mat-error>{{ formulario.nombre().errors()[0].message }}</mat-error>
-    }
-  </mat-form-field>
+  <section class="ejercicio-formulario__seccion">
+    <h3>Datos básicos</h3>
+    <mat-form-field appearance="outline">
+      <mat-label>Nombre del ejercicio (obligatorio)</mat-label>
+      <input matInput [formField]="formulario.nombre" />
+      @if (formulario.nombre().errors().length > 0 && formulario.nombre().touched()) {
+        <mat-error>{{ formulario.nombre().errors()[0].message }}</mat-error>
+      }
+    </mat-form-field>
 
-  <mat-form-field appearance="outline">
-    <mat-label>Descripción</mat-label>
-    <textarea matInput [formField]="formulario.descripcion"></textarea>
-    @if (formulario.descripcion().errors().length > 0 && formulario.descripcion().touched()) {
-      <mat-error>{{ formulario.descripcion().errors()[0].message }}</mat-error>
-    }
-  </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Descripción (obligatorio)</mat-label>
+      <textarea matInput [formField]="formulario.descripcion"></textarea>
+      @if (formulario.descripcion().errors().length > 0 && formulario.descripcion().touched()) {
+        <mat-error>{{ formulario.descripcion().errors()[0].message }}</mat-error>
+      }
+    </mat-form-field>
+  </section>
 
-  <fieldset>
-    <legend>Categorías</legend>
+  <section class="ejercicio-formulario__seccion">
+    <h3>Categorías (obligatorio)</h3>
     <mat-chip-listbox>
       @for (categoria of categorias(); track categoria.id) {
         <mat-chip-option
@@ -30,32 +35,35 @@
     @if (categoriaIdsSeleccionadas().length === 0) {
       <mat-error>El ejercicio debe pertenecer al menos a una categoría.</mat-error>
     }
-  </fieldset>
+  </section>
 
-  <fieldset>
-    <legend>Enlaces (web y YouTube)</legend>
+  <section class="ejercicio-formulario__seccion">
+    <h3>Enlaces (web y YouTube)</h3>
     @for (enlace of enlaces(); track $index) {
       <p>{{ enlace.tipo }}: {{ enlace.url }} <button mat-icon-button type="button" (click)="quitarEnlace($index)"><mat-icon>close</mat-icon></button></p>
     }
     @for (error of erroresEnlaces(); track error) {
       <mat-error>{{ error }}</mat-error>
     }
-  </fieldset>
+  </section>
 
-  <fieldset>
-    <legend>Imágenes (URL o archivo, máximo 5 MB)</legend>
+  <section class="ejercicio-formulario__seccion">
+    <h3>Imágenes (URL o archivo, máximo 5 MB)</h3>
     @for (imagen of imagenes(); track imagen.id) {
       <p>{{ imagen.tipo === 'url' ? imagen.valorUrl : imagen.nombreArchivo }} <button mat-icon-button type="button" (click)="quitarImagen($index)"><mat-icon>close</mat-icon></button></p>
     }
     @if (errorImagen()) {
       <mat-error>{{ errorImagen() }}</mat-error>
     }
-  </fieldset>
+  </section>
 
-  <mat-form-field appearance="outline">
-    <mat-label>Observaciones (opcional)</mat-label>
-    <textarea matInput [formField]="formulario.observaciones"></textarea>
-  </mat-form-field>
+  <section class="ejercicio-formulario__seccion">
+    <h3>Observaciones</h3>
+    <mat-form-field appearance="outline">
+      <mat-label>Observaciones (opcional)</mat-label>
+      <textarea matInput [formField]="formulario.observaciones"></textarea>
+    </mat-form-field>
+  </section>
 
   @if (errorAlGuardar()) {
     <mat-error>{{ errorAlGuardar() }}</mat-error>

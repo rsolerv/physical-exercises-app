@@ -10,6 +10,18 @@ import { MENU_PRINCIPAL } from '../../../src/app/presentation/compartido/shell/m
 import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejercicio-repository.port';
 import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
 
+function simularMatchMedia(coincide: boolean): void {
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn().mockImplementation((query: string) => ({
+      matches: coincide,
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }))
+  );
+}
+
 describe('ShellComponent (navegación)', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -30,7 +42,7 @@ describe('ShellComponent (navegación)', () => {
     fixture.detectChanges();
 
     expect(harness).toBeTruthy();
-    expect(fixture.nativeElement.querySelector('.pagina-en-construccion')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-estado-vacio')).toBeTruthy();
   });
 
   it('muestra una entrada de menú por cada historia de usuario, en español', () => {
@@ -49,5 +61,35 @@ describe('ShellComponent (navegación)', () => {
       await harness.navigateByUrl(entrada.ruta);
       expect(harness.routeNativeElement).toBeTruthy();
     }
+  });
+
+  it('el menú lateral está cerrado por defecto en viewport móvil (FR-010)', () => {
+    simularMatchMedia(false);
+    const fixture = TestBed.createComponent(ShellComponent);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.menuAbierto()).toBe(false);
+  });
+
+  it('el menú lateral está abierto por defecto en viewport de escritorio (FR-010)', () => {
+    simularMatchMedia(true);
+    const fixture = TestBed.createComponent(ShellComponent);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.menuAbierto()).toBe(true);
+  });
+
+  it('la entrada de menú de la ruta activa lleva un indicador adicional más allá de font-weight (aria-current)', async () => {
+    simularMatchMedia(true);
+    const harness = await RouterTestingHarness.create();
+    const fixtureShell = TestBed.createComponent(ShellComponent);
+    fixtureShell.detectChanges();
+
+    await harness.navigateByUrl('/ejercicios');
+    fixtureShell.detectChanges();
+    await fixtureShell.whenStable();
+
+    const enlaceActivo = (fixtureShell.nativeElement as HTMLElement).querySelector('.shell__enlace-activo');
+    expect(enlaceActivo?.getAttribute('aria-current')).toBe('page');
   });
 });

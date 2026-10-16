@@ -1,0 +1,7 @@
+<div class="estado-vacio">
+  <mat-icon class="estado-vacio__icono" aria-hidden="true">{{ icono() }}</mat-icon>
+  <p class="estado-vacio__mensaje">{{ mensaje() }}</p>
+  <div class="estado-vacio__accion">
+    <ng-content select="[accion]" />
+  </div>
+</div>

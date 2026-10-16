@@ -7,6 +7,8 @@ import { MatInputModule } from '@angular/material/input';
 import { CategoriaRepositoryPort } from '../../../application/ports/categoria-repository.port';
 import { GestionarCategoriaUseCase } from '../../../application/casos-uso/gestionar-categoria.use-case';
 import { ErrorNombreDuplicado, ErrorOperacionNoPermitida } from '../../../domain/errores/errores-dominio';
+import { CabeceraPaginaComponent } from '../../compartido/ui/cabecera-pagina/cabecera-pagina.component';
+import { MensajeFeedbackService } from '../../compartido/ui/mensaje-feedback.service';
 
 /**
  * Gestión de categorías (Historia de Usuario 1): listado alfabético, alta y
@@ -16,12 +18,14 @@ import { ErrorNombreDuplicado, ErrorOperacionNoPermitida } from '../../../domain
 @Component({
   selector: 'app-categoria-gestion',
   standalone: true,
-  imports: [MatListModule, MatButtonModule, MatIconModule, MatFormFieldModule, MatInputModule],
+  imports: [MatListModule, MatButtonModule, MatIconModule, MatFormFieldModule, MatInputModule, CabeceraPaginaComponent],
   templateUrl: './categoria-gestion.component.html',
+  styleUrl: './categoria-gestion.component.scss',
 })
 export class CategoriaGestionComponent {
   private readonly categoriaRepository = inject(CategoriaRepositoryPort);
   private readonly gestionarCategoria = inject(GestionarCategoriaUseCase);
+  private readonly mensajeFeedback = inject(MensajeFeedbackService);
 
   private readonly recursoCategorias = resource({
     loader: () => this.categoriaRepository.listarTodas(),
@@ -38,12 +42,11 @@ export class CategoriaGestionComponent {
       await this.gestionarCategoria.crear(nombre);
       this.nombreNuevaCategoria.set('');
       this.recursoCategorias.reload();
+      this.mensajeFeedback.mostrarExito('Categoría creada.');
     } catch (error) {
-      if (error instanceof ErrorNombreDuplicado) {
-        this.errorCreacion.set(error.message);
-      } else {
-        this.errorCreacion.set('No se ha podido crear la categoría.');
-      }
+      const mensaje = error instanceof ErrorNombreDuplicado ? error.message : 'No se ha podido crear la categoría.';
+      this.errorCreacion.set(mensaje);
+      this.mensajeFeedback.mostrarError(mensaje);
     }
   }
 
@@ -57,12 +60,12 @@ export class CategoriaGestionComponent {
     try {
       await this.gestionarCategoria.eliminar(id);
       this.recursoCategorias.reload();
+      this.mensajeFeedback.mostrarExito('Categoría eliminada.');
     } catch (error) {
-      if (error instanceof ErrorOperacionNoPermitida) {
-        this.errorEliminacion.set(error.message);
-      } else {
-        this.errorEliminacion.set('No se ha podido eliminar la categoría.');
-      }
+      const mensaje = error instanceof ErrorOperacionNoPermitida ? error.message : 'No se ha podido eliminar la categoría.';
+      this.errorEliminacion.set(mensaje);
+      this.mensajeFeedback.mostrarError(mensaje);
     }
   }
 }
+

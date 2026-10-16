@@ -1,0 +1,63 @@
+<section class="ejercicio-ficha">
+  @if (recursoEjercicio.isLoading()) {
+    <div class="contenido--centrado">
+      <mat-spinner diameter="32" />
+    </div>
+  } @else if (recursoEjercicio.value(); as ejercicio) {
+    <app-cabecera-pagina [titulo]="ejercicio.nombre">
+      <div acciones>
+        <a mat-stroked-button routerLink="editar">
+          <mat-icon>edit</mat-icon>
+          Editar
+        </a>
+        <button mat-stroked-button color="warn" type="button" (click)="eliminar()">
+          <mat-icon>delete</mat-icon>
+          Eliminar
+        </button>
+      </div>
+    </app-cabecera-pagina>
+
+    <p class="ejercicio-ficha__descripcion">{{ ejercicio.descripcion }}</p>
+
+    <mat-chip-set class="ejercicio-ficha__categorias">
+      @for (nombre of nombresCategorias(); track nombre) {
+        <mat-chip>{{ nombre }}</mat-chip>
+      }
+    </mat-chip-set>
+
+    @if (ejercicio.observaciones) {
+      <p class="ejercicio-ficha__observaciones">{{ ejercicio.observaciones }}</p>
+    }
+
+    @if (enlacesYoutube().length > 0) {
+      <section class="ejercicio-ficha__seccion">
+        <h3>Vídeos</h3>
+        @for (enlace of enlacesYoutube(); track enlace.url) {
+          <app-youtube-embed [url]="enlace.url" />
+        }
+      </section>
+    }
+
+    @if (enlacesWeb().length > 0) {
+      <section class="ejercicio-ficha__seccion">
+        <h3>Enlaces</h3>
+        @for (enlace of enlacesWeb(); track enlace.url) {
+          <app-enlace-embed [url]="enlace.url" />
+        }
+      </section>
+    }
+
+    @if (ejercicio.imagenes.length > 0) {
+      <section class="ejercicio-ficha__seccion">
+        <h3>Imágenes</h3>
+        <div class="ejercicio-ficha__imagenes">
+          @for (imagen of ejercicio.imagenes; track imagen.id) {
+            <img class="ejercicio-ficha__imagen" [src]="imagenSrc(imagen)" alt="Imagen del ejercicio" />
+          }
+        </div>
+      </section>
+    }
+  } @else {
+    <app-estado-vacio icono="error_outline" mensaje="El ejercicio solicitado no se ha encontrado." />
+  }
+</section>

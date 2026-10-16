@@ -1,0 +1,34 @@
+@use '../../../../styles/espaciado' as *;
+@use '../../../../styles/breakpoints' as *;
+
+.categoria-gestion {
+  display: flex;
+  flex-direction: column;
+  gap: $espaciado-3;
+}
+
+.categoria-gestion__item {
+  @include tablet {
+    max-width: 480px;
+  }
+
+  @include escritorio {
+    max-width: 480px;
+  }
+}
+
+.categoria-gestion__alta {
+  display: flex;
+  flex-direction: column;
+  gap: $espaciado-2;
+
+  @include tablet {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  @include escritorio {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}

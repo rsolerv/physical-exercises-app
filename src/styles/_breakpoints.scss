@@ -1,0 +1,21 @@
+// Mixins de breakpoints responsive (contracts/design-tokens.contract.md),
+// acordados en /speckit-clarify: móvil hasta 599px, tablet 768–1024px,
+// escritorio 1280px en adelante.
+
+@mixin movil {
+  @media (max-width: 599px) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (min-width: 768px) and (max-width: 1024px) {
+    @content;
+  }
+}
+
+@mixin escritorio {
+  @media (min-width: 1280px) {
+    @content;
+  }
+}
