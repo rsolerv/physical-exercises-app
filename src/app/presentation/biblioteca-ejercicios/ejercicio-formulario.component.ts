@@ -4,9 +4,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatSelectModule } from '@angular/material/select';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatListModule } from '@angular/material/list';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { from } from 'rxjs';
 import { GestionarEjercicioUseCase } from '../../application/casos-uso/gestionar-ejercicio.use-case';
@@ -40,9 +41,10 @@ interface ModeloFormularioEjercicio {
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatSelectModule,
+    MatButtonToggleModule,
     MatIconModule,
     MatChipsModule,
+    MatListModule,
     CabeceraPaginaComponent,
   ],
   templateUrl: './ejercicio-formulario.component.html',
@@ -75,9 +77,13 @@ export class EjercicioFormularioComponent {
       .filter((enlace) => !esUrlValida(enlace.url))
       .map((enlace) => `El enlace "${enlace.url}" no tiene un formato de URL válido.`)
   );
+  readonly nuevoEnlaceTipo = signal<TipoEnlaceEjercicio>('web');
+  readonly nuevoEnlaceUrl = signal('');
 
   readonly imagenes = signal<ImagenEjercicio[]>([]);
   readonly errorImagen = signal<string | null>(null);
+  readonly nuevaImagenTipo = signal<'url' | 'archivo'>('url');
+  readonly nuevaImagenUrl = signal('');
 
   readonly guardando = signal(false);
   readonly errorAlGuardar = signal<string | null>(null);
@@ -104,6 +110,12 @@ export class EjercicioFormularioComponent {
   anadirEnlace(tipo: TipoEnlaceEjercicio, url: string): void {
     if (!url.trim()) return;
     this.enlaces.update((actuales) => [...actuales, { tipo, url }]);
+  }
+
+  /** Invocado desde el formulario: añade el enlace introducido y limpia el campo. */
+  agregarEnlaceDesdeFormulario(): void {
+    this.anadirEnlace(this.nuevoEnlaceTipo(), this.nuevoEnlaceUrl());
+    this.nuevoEnlaceUrl.set('');
   }
 
   quitarEnlace(indice: number): void {
@@ -142,6 +154,22 @@ export class EjercicioFormularioComponent {
 
   quitarImagen(indice: number): void {
     this.imagenes.update((actuales) => actuales.filter((_, i) => i !== indice));
+  }
+
+  /** Invocado desde el formulario: añade la imagen por URL introducida y limpia el campo. */
+  agregarImagenUrlDesdeFormulario(): void {
+    this.anadirImagenDesdeUrl(this.nuevaImagenUrl());
+    this.nuevaImagenUrl.set('');
+  }
+
+  /** Invocado desde el formulario al elegir un archivo de imagen; limpia el input tras leerlo. */
+  async onArchivoImagenSeleccionado(evento: Event): Promise<void> {
+    const input = evento.target as HTMLInputElement;
+    const archivo = input.files?.[0];
+    if (archivo) {
+      await this.anadirImagenDesdeArchivo(archivo);
+    }
+    input.value = '';
   }
 
   alternarCategoria(categoriaId: string): void {

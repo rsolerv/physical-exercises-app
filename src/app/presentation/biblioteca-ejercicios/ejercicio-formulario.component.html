@@ -4,7 +4,7 @@
   <section class="ejercicio-formulario__seccion">
     <h3>Datos básicos</h3>
     <mat-form-field appearance="outline">
-      <mat-label>Nombre del ejercicio (obligatorio)</mat-label>
+      <mat-label>Nombre del ejercicio</mat-label>
       <input matInput [formField]="formulario.nombre" />
       @if (formulario.nombre().errors().length > 0 && formulario.nombre().touched()) {
         <mat-error>{{ formulario.nombre().errors()[0].message }}</mat-error>
@@ -12,7 +12,7 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline">
-      <mat-label>Descripción (obligatorio)</mat-label>
+      <mat-label>Descripción</mat-label>
       <textarea matInput [formField]="formulario.descripcion"></textarea>
       @if (formulario.descripcion().errors().length > 0 && formulario.descripcion().touched()) {
         <mat-error>{{ formulario.descripcion().errors()[0].message }}</mat-error>
@@ -21,7 +21,7 @@
   </section>
 
   <section class="ejercicio-formulario__seccion">
-    <h3>Categorías (obligatorio)</h3>
+    <h3>Categorías <span class="ejercicio-formulario__requerido" aria-hidden="true">*</span></h3>
     <mat-chip-listbox>
       @for (categoria of categorias(); track categoria.id) {
         <mat-chip-option
@@ -39,22 +39,107 @@
 
   <section class="ejercicio-formulario__seccion">
     <h3>Enlaces (web y YouTube)</h3>
-    @for (enlace of enlaces(); track $index) {
-      <p>{{ enlace.tipo }}: {{ enlace.url }} <button mat-icon-button type="button" (click)="quitarEnlace($index)"><mat-icon>close</mat-icon></button></p>
+
+    @if (enlaces().length > 0) {
+      <mat-list class="ejercicio-formulario__lista">
+        @for (enlace of enlaces(); track $index) {
+          <mat-list-item>
+            <mat-icon matListItemIcon>{{ enlace.tipo === 'youtube' ? 'smart_display' : 'link' }}</mat-icon>
+            <span matListItemTitle class="ejercicio-formulario__url">{{ enlace.url }}</span>
+            <button mat-icon-button matListItemMeta type="button" aria-label="Quitar enlace" (click)="quitarEnlace($index)">
+              <mat-icon>close</mat-icon>
+            </button>
+          </mat-list-item>
+        }
+      </mat-list>
     }
     @for (error of erroresEnlaces(); track error) {
       <mat-error>{{ error }}</mat-error>
     }
+
+    <div class="ejercicio-formulario__anadir">
+      <mat-button-toggle-group
+        class="ejercicio-formulario__tipo"
+        [value]="nuevoEnlaceTipo()"
+        (change)="nuevoEnlaceTipo.set($event.value)"
+        aria-label="Tipo de enlace"
+      >
+        <mat-button-toggle value="web">Web</mat-button-toggle>
+        <mat-button-toggle value="youtube">YouTube</mat-button-toggle>
+      </mat-button-toggle-group>
+      <mat-form-field appearance="outline" class="ejercicio-formulario__campo-anadir">
+        <mat-label>URL del enlace</mat-label>
+        <input
+          matInput
+          placeholder="https://..."
+          [value]="nuevoEnlaceUrl()"
+          (input)="nuevoEnlaceUrl.set($any($event.target).value)"
+          (keydown.enter)="$event.preventDefault(); agregarEnlaceDesdeFormulario()"
+        />
+      </mat-form-field>
+      <button mat-stroked-button type="button" (click)="agregarEnlaceDesdeFormulario()">
+        <mat-icon>add</mat-icon>
+        Añadir enlace
+      </button>
+    </div>
   </section>
 
   <section class="ejercicio-formulario__seccion">
     <h3>Imágenes (URL o archivo, máximo 5 MB)</h3>
-    @for (imagen of imagenes(); track imagen.id) {
-      <p>{{ imagen.tipo === 'url' ? imagen.valorUrl : imagen.nombreArchivo }} <button mat-icon-button type="button" (click)="quitarImagen($index)"><mat-icon>close</mat-icon></button></p>
+
+    @if (imagenes().length > 0) {
+      <mat-list class="ejercicio-formulario__lista">
+        @for (imagen of imagenes(); track imagen.id) {
+          <mat-list-item>
+            <mat-icon matListItemIcon>image</mat-icon>
+            <span matListItemTitle class="ejercicio-formulario__url">
+              {{ imagen.tipo === 'url' ? imagen.valorUrl : imagen.nombreArchivo }}
+            </span>
+            <button mat-icon-button matListItemMeta type="button" aria-label="Quitar imagen" (click)="quitarImagen($index)">
+              <mat-icon>close</mat-icon>
+            </button>
+          </mat-list-item>
+        }
+      </mat-list>
     }
     @if (errorImagen()) {
       <mat-error>{{ errorImagen() }}</mat-error>
     }
+
+    <div class="ejercicio-formulario__anadir">
+      <mat-button-toggle-group
+        class="ejercicio-formulario__tipo"
+        [value]="nuevaImagenTipo()"
+        (change)="nuevaImagenTipo.set($event.value)"
+        aria-label="Origen de la imagen"
+      >
+        <mat-button-toggle value="url">URL</mat-button-toggle>
+        <mat-button-toggle value="archivo">Archivo</mat-button-toggle>
+      </mat-button-toggle-group>
+
+      @if (nuevaImagenTipo() === 'url') {
+        <mat-form-field appearance="outline" class="ejercicio-formulario__campo-anadir">
+          <mat-label>URL de la imagen</mat-label>
+          <input
+            matInput
+            placeholder="https://..."
+            [value]="nuevaImagenUrl()"
+            (input)="nuevaImagenUrl.set($any($event.target).value)"
+            (keydown.enter)="$event.preventDefault(); agregarImagenUrlDesdeFormulario()"
+          />
+        </mat-form-field>
+        <button mat-stroked-button type="button" (click)="agregarImagenUrlDesdeFormulario()">
+          <mat-icon>add</mat-icon>
+          Añadir imagen
+        </button>
+      } @else {
+        <input #entradaArchivo type="file" accept="image/*" hidden (change)="onArchivoImagenSeleccionado($event)" />
+        <button mat-stroked-button type="button" (click)="entradaArchivo.click()">
+          <mat-icon>upload</mat-icon>
+          Subir imagen
+        </button>
+      }
+    </div>
   </section>
 
   <section class="ejercicio-formulario__seccion">

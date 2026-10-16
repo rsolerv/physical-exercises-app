@@ -1,4 +1,5 @@
 @use '../../../styles/espaciado' as *;
+@use '../../../styles/breakpoints' as *;
 
 .ejercicio-formulario {
   display: flex;
@@ -15,4 +16,43 @@
     margin: 0;
     font: var(--mat-sys-title-medium);
   }
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.ejercicio-formulario__requerido {
+  color: var(--mat-sys-error, #b3261e);
+}
+
+.ejercicio-formulario__lista {
+  padding: 0;
+}
+
+.ejercicio-formulario__url {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ejercicio-formulario__anadir {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: $espaciado-2;
+
+  @include movil {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.ejercicio-formulario__tipo {
+  flex-shrink: 0;
+}
+
+.ejercicio-formulario__campo-anadir {
+  flex: 1 1 220px;
+  min-width: 0;
 }

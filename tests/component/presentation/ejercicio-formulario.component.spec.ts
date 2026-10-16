@@ -89,6 +89,65 @@ describe('EjercicioFormularioComponent', () => {
     expect(componente.enlaces()).toEqual([{ tipo: 'web', url: 'https://example.com' }]);
   });
 
+  it('el botón "Añadir enlace" del formulario añade el enlace introducido en el campo de URL', () => {
+    const fixture = crearComponente();
+    const componente = fixture.componentInstance;
+
+    componente.nuevoEnlaceTipo.set('youtube');
+    componente.nuevoEnlaceUrl.set('https://youtu.be/abc123');
+    fixture.detectChanges();
+    const boton = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('Añadir enlace')
+    ) as HTMLButtonElement;
+    boton.click();
+    fixture.detectChanges();
+
+    expect(componente.enlaces()).toEqual([{ tipo: 'youtube', url: 'https://youtu.be/abc123' }]);
+    expect(componente.nuevoEnlaceUrl()).toBe('');
+  });
+
+  it('el botón "Añadir imagen" del formulario añade la imagen introducida por URL', () => {
+    const fixture = crearComponente();
+    const componente = fixture.componentInstance;
+
+    componente.nuevaImagenUrl.set('https://example.com/foto.jpg');
+    fixture.detectChanges();
+    const boton = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('Añadir imagen')
+    ) as HTMLButtonElement;
+    boton.click();
+    fixture.detectChanges();
+
+    expect(componente.imagenes()).toEqual([{ id: expect.any(String), tipo: 'url', valorUrl: 'https://example.com/foto.jpg' }]);
+    expect(componente.nuevaImagenUrl()).toBe('');
+  });
+
+  it('cambiar el origen de la imagen a "Archivo" muestra el botón "Subir imagen" en vez del campo de URL', () => {
+    const fixture = crearComponente();
+    const componente = fixture.componentInstance;
+
+    componente.nuevaImagenTipo.set('archivo');
+    fixture.detectChanges();
+
+    const textoFormulario = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(textoFormulario).toContain('Subir imagen');
+  });
+
+  it('onArchivoImagenSeleccionado añade la imagen seleccionada y limpia el input de archivo', async () => {
+    const fixture = crearComponente();
+    const componente = fixture.componentInstance;
+    const archivo = new File(['contenido'], 'foto.png', { type: 'image/png' });
+    const input = document.createElement('input');
+    input.type = 'file';
+    Object.defineProperty(input, 'files', { value: [archivo] });
+
+    await componente.onArchivoImagenSeleccionado({ target: input } as unknown as Event);
+
+    expect(componente.imagenes()).toHaveLength(1);
+    expect(componente.imagenes()[0].nombreArchivo).toBe('foto.png');
+    expect(input.value).toBe('');
+  });
+
   it('rechaza una imagen de archivo de más de 5 MB con un mensaje en español (FR-036)', () => {
     const fixture = crearComponente();
     const componente = fixture.componentInstance;
