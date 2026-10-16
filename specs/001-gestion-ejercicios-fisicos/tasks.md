@@ -252,14 +252,17 @@ description: "Task list for feature implementation"
 **Purpose**: Mejoras que afectan a varias historias de usuario
 
 - [X] T109 [P] Revisar el diseño responsive y la accesibilidad de todos los componentes de `src/app/presentation/` en móvil y escritorio (Principio IV, FR-026)
+  - Corrección post-entrega (manual en viewport móvil real, commit `c12825b`): etiqueta redundante "Nombre (obligatorio)" en `planificacion-constructor.component.html` simplificada a "Nombre", ya que Angular Material añade automáticamente el asterisco de obligatoriedad; mismo criterio ya aplicado en `ejercicio-formulario.component.html`.
 - [X] T110 [P] Ejecutar ESLint en todo el proyecto y corregir hasta cero errores (constitución § Calidad de Código y Pruebas)
 - [X] T111 [P] Ejecutar Vitest con cobertura y añadir pruebas hasta cumplir el 80% global y el 100% en `src/app/domain/` (constitución § Calidad de Código y Pruebas)
 - [X] T112 [P] Revisar que todos los textos de interfaz y mensajes de validación y error de `src/app/presentation/` estén en español de España (Principio I)
 - [X] T113 Publicar mediante `.github/workflows/deploy.yml` y comprobar en la URL de GitHub Pages que la aplicación carga, que las rutas funcionan al recargar y que los datos se conservan tras cerrar y reabrir el navegador (VFS `opfs-sahpool`) (depende de T011)
+  - Corrección post-entrega (commit `3e684b2`): el crecimiento de bundle de las historias de usuario 2–5 superó el presupuesto `initial` de `angular.json` (500 kB/1 MB) heredado de `specs/002-mejora-presentacion-ui`, bloqueando el build de producción en CI. Se amplió a 700 kB de aviso / 1.5 MB de error (ver `specs/002-mejora-presentacion-ui/plan.md` § Performance Goals); el despliegue se volvió a verificar correctamente tras el ajuste.
 - [ ] T114 Para validar la Historia de Usuario 5: crear en GitHub el repositorio **privado** de datos `data-physical-exercises` (vacío, distinto del repositorio del código) y un token *fine-grained* limitado solo a ese repositorio con permiso de lectura y escritura de contenidos, según quickstart.md § Requisitos previos (FR-037)
   - Repositorio privado `data-physical-exercises` ya creado (vacío). **Pendiente**: crear manualmente el token fine-grained desde github.com (Settings → Developer settings → Fine-grained tokens), ya que GitHub no permite automatizar su creación por motivos de seguridad.
 - [ ] T115 Ejecutar manualmente la guía completa de `quickstart.md` (las 5 historias de usuario y los casos límite) en la URL publicada en GitHub Pages y corregir cualquier desviación (depende de T113, T114)
   - US1–US4 verificadas automáticamente en la URL publicada (catálogo predefinido visible, rutas con recarga, persistencia). **Pendiente**: validación de US5 (sincronización) con el token real y dos navegadores, a cargo del usuario.
+  - Corrección post-entrega (commit `7cb7840`, previa a los 3 últimos commits): el formulario de ejercicio (`ejercicio-formulario.component.html`) no tenía ningún control para añadir enlaces ni imágenes desde la interfaz (los métodos `anadirEnlace`/`anadirImagenDesdeUrl`/`anadirImagenDesdeArchivo` solo se invocaban desde tests, nunca desde la plantilla). Se añadieron los controles reales (selector de tipo, campo de URL, botón "Añadir", subida de archivo) detectados durante la validación manual en móvil.
 
 
 ---

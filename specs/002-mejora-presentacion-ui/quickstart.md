@@ -40,7 +40,7 @@ Abre `http://localhost:4200/` en el navegador. Para comprobar el comportamiento 
 ### Historia 3 — Navegación general (P3)
 
 1. En ancho de escritorio, comprueba que el menú lateral se ve abierto por defecto y la sección activa se resalta al navegar (FR-012, Acceptance Scenario 4).
-2. En ancho móvil, comprueba que el menú se puede abrir/cerrar con el botón de la barra superior y que el botón tiene un tamaño cómodo para el dedo (FR-011).
+2. En ancho móvil, comprueba que el menú se puede abrir/cerrar con el botón de la barra superior, que cubre todo el ancho de la pantalla como una superposición (no una columna estrecha que deje el contenido comprimido), que se cierra automáticamente al tocar cualquier entrada de navegación, y que el botón tiene un tamaño cómodo para el dedo (FR-009, FR-010, FR-011).
 3. Navega a "Buscar", "Planificación" y "Sincronización": cada una debe mostrar un mensaje de "próximamente" con el mismo estilo visual que el resto de la aplicación (tipografía, color, espaciado), no texto plano (FR-013).
 
 ## Validación de accesibilidad (FR-015, SC-007)

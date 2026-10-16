@@ -1,5 +1,6 @@
 # Feature Specification: Mejora de la presentación (UI/UX) de la aplicación
 
+
 **Feature Branch**: `002-mejora-presentacion-ui`
 
 **Created**: 2026-10-16
@@ -77,6 +78,7 @@ Como usuario de la aplicación en cualquier dispositivo, quiero que la barra sup
 - ¿Qué ocurre en pantallas muy estrechas (anchura menor a 360 px)? Los controles de navegación y los formularios deben seguir siendo utilizables sin solapamientos ni texto cortado.
 - ¿Qué ocurre si una operación de guardado o eliminación falla? El error debe comunicarse con el mismo nivel de cuidado visual que la confirmación de éxito, cerca del contexto donde ocurrió.
 - ¿Qué ocurre si el usuario tiene una lista muy larga de ejercicios? El listado debe seguir siendo navegable (desplazamiento vertical fluido) sin degradar el rendimiento percibido ni la legibilidad.
+- ¿Qué ocurre al abrir el menú lateral en móvil? DEBE presentarse como una superposición (overlay) que ocupa todo el ancho de la pantalla, nunca como una columna fija que comprima el contenido principal en una franja estrecha; al seleccionar cualquier entrada de navegación, el menú DEBE cerrarse automáticamente para mostrar el contenido sin un toque adicional (corrección post-entrega, FR-009, FR-010).
 
 ## Requirements *(mandatory)*
 

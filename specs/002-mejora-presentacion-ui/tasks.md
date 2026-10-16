@@ -138,6 +138,18 @@ Proyecto único (Angular SPA sin backend). Todas las rutas son relativas a la ra
 
 ---
 
+## Correcciones post-entrega
+
+**Contexto**: Durante la implementación posterior de la feature 001 (historias de usuario 2–5), una validación manual en viewport móvil real detectó dos defectos en el trabajo ya marcado como completado de esta feature. Se corrigen aquí sin reabrir las historias de usuario.
+
+- [X] T036 [US3] Fix `src/app/presentation/compartido/shell/shell.component.scss`: el menú lateral en móvil usaba una columna fija de 220 px en modo "side" en vez de un overlay a ancho completo, dejando el contenido principal comprimido en una franja estrecha e ilegible (incumplía FR-010 "diseño de una sola columna" y FR-002). Se cambia a `width: 100%` para que el menú cubra toda la pantalla como overlay modal en móvil
+- [X] T037 [US3] Fix `src/app/presentation/compartido/shell/shell.component.ts`/`.html`: el menú lateral no se cerraba automáticamente al pulsar una entrada de navegación en móvil, obligando a un toque adicional para ver el contenido (incumplía FR-009 "alcanzar cualquier acción principal... en un único clic o toque"). Se añade `cerrarMenuMovil()` (vía `viewChild<MatSidenav>`) enlazado al `(click)` de cada entrada del menú, que solo actúa cuando el viewport es móvil
+- [X] T038 Fix `angular.json`: el presupuesto de bundle inicial (`initial`) se agota (500 kB de aviso / 1 MB de error, fijado en `plan.md` § Performance Goals) al crecer la aplicación con las historias de usuario 2–5 de la feature 001 (más casos de uso, componentes y módulos de Angular Material como `MatButtonToggleModule`/`MatListModule`). Se sube a 700 kB de aviso / 1.5 MB de error; ver `plan.md` § Performance Goals para la cifra actualizada
+
+Commits: `b0637d8` (T036, T037), `3e684b2` (T038).
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
