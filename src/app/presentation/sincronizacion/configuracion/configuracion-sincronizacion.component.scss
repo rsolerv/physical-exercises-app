@@ -1,0 +1,31 @@
+@use '../../../../styles/espaciado' as *;
+
+.configuracion-sincronizacion__guia {
+  margin-bottom: $espaciado-3;
+
+  ol {
+    padding-left: $espaciado-3;
+  }
+}
+
+.configuracion-sincronizacion__formulario {
+  display: flex;
+  flex-direction: column;
+  gap: $espaciado-1;
+  max-width: 420px;
+  margin-bottom: $espaciado-3;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.configuracion-sincronizacion__acciones {
+  display: flex;
+  gap: $espaciado-2;
+}
+
+.configuracion-sincronizacion__aviso {
+  color: var(--mat-sys-on-surface-variant, #5f6368);
+  margin-top: $espaciado-1;
+}

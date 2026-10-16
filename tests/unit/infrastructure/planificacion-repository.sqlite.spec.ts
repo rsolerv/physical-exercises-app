@@ -149,4 +149,12 @@ describe('PlanificacionRepositorySqlite', () => {
     const todas = await repositorio.listarTodas();
     expect(todas).toHaveLength(2);
   });
+
+  it('eliminar() borra la planificación y sus días en cascada', async () => {
+    const plan = await repositorio.crear({ nombre: 'Semana', fechaInicio: '2026-10-12', dias: crearDiasVacios() });
+
+    await repositorio.eliminar(plan.id);
+
+    expect(await repositorio.obtenerPorId(plan.id)).toBeNull();
+  });
 });

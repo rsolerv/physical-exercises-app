@@ -1,0 +1,25 @@
+<section class="dia-actual">
+  <app-cabecera-pagina titulo="Hoy">
+    <div acciones>
+      <a mat-stroked-button routerLink="/planificacion">
+        <mat-icon>calendar_month</mat-icon>
+        Ver planificación semanal
+      </a>
+    </div>
+  </app-cabecera-pagina>
+
+  @if (cargando()) {
+    <div class="contenido--centrado">
+      <mat-spinner diameter="32" />
+    </div>
+  } @else if (ejerciciosDeHoy().length === 0) {
+    <app-estado-vacio icono="event_available" mensaje="No hay ejercicios programados para hoy.">
+      <a accion mat-flat-button color="primary" routerLink="/planificacion/nueva">
+        <mat-icon>add</mat-icon>
+        Crear una planificación
+      </a>
+    </app-estado-vacio>
+  } @else {
+    <app-progreso-diario [fecha]="hoy" [ejercicios]="ejerciciosDeHoy()" />
+  }
+</section>

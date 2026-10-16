@@ -48,3 +48,9 @@ export function compararFechasIso(a: string, b: string): number {
   if (a === b) return 0;
   return a < b ? -1 : 1;
 }
+
+/** Convierte una fecha ISO `YYYY-MM-DD` a un `Date` a medianoche en hora local (usado al importar progreso diario). */
+export function parsearFechaIsoLocal(fechaIso: string): Date {
+  const [anio, mes, dia] = fechaIso.split('-').map(Number);
+  return new Date(anio, mes - 1, dia);
+}

@@ -11,7 +11,6 @@ import { EjercicioRepositoryPort } from '../../../application/ports/ejercicio-re
 import { DIAS_SEMANA_ORDENADOS } from '../../../domain/planificacion/planificacion.entity';
 import type { Planificacion } from '../../../domain/planificacion/planificacion.entity';
 import { esActiva } from '../../../domain/planificacion/es-activa';
-import type { Ejercicio } from '../../../domain/ejercicio/ejercicio.entity';
 import { CabeceraPaginaComponent } from '../../compartido/ui/cabecera-pagina/cabecera-pagina.component';
 import { EstadoVacioComponent } from '../../compartido/ui/estado-vacio/estado-vacio.component';
 

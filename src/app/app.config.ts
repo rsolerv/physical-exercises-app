@@ -11,6 +11,10 @@ import { CategoriaRepositoryPort } from './application/ports/categoria-repositor
 import { CategoriaRepositorySqlite } from './infrastructure/persistencia-sqlite/categoria-repository.sqlite';
 import { PlanificacionRepositoryPort } from './application/ports/planificacion-repository.port';
 import { PlanificacionRepositorySqlite } from './infrastructure/persistencia-sqlite/planificacion-repository.sqlite';
+import { ProgresoDiarioRepositoryPort } from './application/ports/progreso-diario-repository.port';
+import { ProgresoDiarioRepositorySqlite } from './infrastructure/persistencia-sqlite/progreso-diario-repository.sqlite';
+import { GitHubSyncPort } from './application/ports/github-sync.port';
+import { GithubSyncAdapter } from './infrastructure/github-sync/github-sync.adapter';
 import { SembrarCatalogoPredefinidoPort } from './application/ports/sembrar-catalogo-predefinido.port';
 import { SembrarCatalogoPredefinidoUseCase } from './application/casos-uso/sembrar-catalogo-predefinido.use-case';
 import { ArrancarAplicacionUseCase } from './application/casos-uso/arrancar-aplicacion.use-case';
@@ -27,6 +31,8 @@ export const appConfig: ApplicationConfig = {
     { provide: EjercicioRepositoryPort, useExisting: EjercicioRepositorySqlite },
     { provide: CategoriaRepositoryPort, useExisting: CategoriaRepositorySqlite },
     { provide: PlanificacionRepositoryPort, useExisting: PlanificacionRepositorySqlite },
+    { provide: ProgresoDiarioRepositoryPort, useExisting: ProgresoDiarioRepositorySqlite },
+    { provide: GitHubSyncPort, useExisting: GithubSyncAdapter },
     { provide: SembrarCatalogoPredefinidoPort, useExisting: SembrarCatalogoPredefinidoUseCase },
     // Carga toda la información almacenada y siembra el catálogo predefinido al abrir la app (FR-001, FR-034).
     provideAppInitializer(() => inject(ArrancarAplicacionUseCase).ejecutar()),

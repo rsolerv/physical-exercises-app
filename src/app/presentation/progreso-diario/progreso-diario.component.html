@@ -1,0 +1,18 @@
+<div class="progreso-diario">
+  @if (resultado().porcentaje !== null) {
+    <div class="progreso-diario__resumen">
+      <mat-progress-bar mode="determinate" [value]="resultado().porcentaje" />
+      <span class="progreso-diario__porcentaje">{{ resultado().porcentaje }}% completado</span>
+    </div>
+  }
+
+  <ul class="progreso-diario__lista">
+    @for (ejercicio of ejercicios(); track ejercicio.id) {
+      <li>
+        <mat-checkbox [checked]="estaRealizado(ejercicio.id)" (change)="alternar(ejercicio.id)">
+          {{ ejercicio.nombre }}
+        </mat-checkbox>
+      </li>
+    }
+  </ul>
+</div>

@@ -37,4 +37,11 @@ export abstract class PlanificacionRepositoryPort {
 
   /** Todas las planificaciones donde aparece un ejercicio dado (soporte de FR-028 al eliminarlo). */
   abstract listarPorEjercicio(ejercicioId: string): Promise<Planificacion[]>;
+
+  /**
+   * Elimina una planificación o plantilla por completo (sus días y
+   * asignaciones de ejercicios se eliminan en cascada). Usado al reemplazar
+   * los datos locales durante una importación (FR-032).
+   */
+  abstract eliminar(id: string): Promise<void>;
 }

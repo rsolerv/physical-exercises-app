@@ -151,6 +151,11 @@ export class PlanificacionRepositorySqlite implements PlanificacionRepositoryPor
     return Promise.all(filas.map((fila) => this.hidratar(fila)));
   }
 
+  async eliminar(id: string): Promise<void> {
+    // ON DELETE CASCADE en el esquema propaga el borrado a los días y a sus ejercicios asignados.
+    await this.conexion.ejecutarSinResultado('DELETE FROM planificacion WHERE id = ?', [id]);
+  }
+
   private async obtenerIdDia(planificacionId: string, dia: DiaSemana): Promise<string> {
     const filas = await this.conexion.ejecutar<{ id: string }>(
       'SELECT id FROM dia_planificacion WHERE planificacion_id = ? AND dia_semana = ?',

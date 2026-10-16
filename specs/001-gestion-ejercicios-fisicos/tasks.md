@@ -1,4 +1,4 @@
----
+---
 
 description: "Task list for feature implementation"
 ---
@@ -160,30 +160,30 @@ description: "Task list for feature implementation"
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T062 [P] [US3] Test del caso de uso puro `es-activa` (una planificación concreta es activa si y solo si la fecha de referencia cae entre su `fechaInicio` y el domingo siguiente; una plantilla nunca es activa FR-022) en `tests/unit/domain/es-activa.spec.ts`
-- [ ] T063 [P] [US3] Test del caso de uso puro `validar-fecha-inicio` ("DEBE ser un lunes"; no puede repetirse la `fechaInicio` de otra planificación concreta FR-017, FR-022) en `tests/unit/domain/validar-fecha-inicio.spec.ts`
-- [ ] T064 [P] [US3] Test del caso de uso puro `validar-asignacion-dia` ("Un mismo ejercicio no puede repetirse dentro de la lista del mismo día de la misma planificación" FR-021) en `tests/unit/domain/validar-asignacion-dia.spec.ts`
-- [ ] T065 [P] [US3] Test del caso de uso puro `duplicar-planificacion` (copia independiente con los mismos días y ejercicios y sin `fechaInicio` FR-019, CA14) en `tests/unit/domain/duplicar-planificacion.spec.ts`
-- [ ] T066 [P] [US3] Test del adaptador SQLite de planificaciones en memoria (`fechaInicio` repetida → `ErrorPlanificacionActivaDuplicada`; ejercicio repetido en un día → `ErrorEjercicioDuplicadoEnDia`; `obtenerActiva()`; `listarPorEjercicio()`; al borrar un ejercicio desaparece de todos los días de todas las planificaciones FR-028, CA13) en `tests/unit/infrastructure/planificacion-repository.sqlite.spec.ts`
-- [ ] T067 [P] [US3] Test del caso de uso "gestionar planificación" con puertos simulados (crear concreta o plantilla; asignar y quitar ejercicios por día; duplicar; crear una concreta a partir de una plantilla asignándole un lunes; marca cambios locales pendientes) en `tests/unit/application/gestionar-planificacion.use-case.spec.ts`
-- [ ] T068 [P] [US3] Test del caso de uso "consultar planificación" con puertos simulados (planificación de hoy, de un día concreto y de la semana; todos los ejercicios de una planificación FR-023; `null` cuando no hay planificación para hoy CL2) en `tests/unit/application/consultar-planificacion.use-case.spec.ts`
-- [ ] T069 [P] [US3] Test de componente del calendario semanal (marca visualmente los días con ejercicios FR-003) en `tests/component/presentation/calendario-semanal.component.spec.ts`
-- [ ] T070 [P] [US3] Test de componente del constructor de planificación con Signal Forms (el selector de fecha solo permite lunes; impide duplicados en un día; duplicar planificación) en `tests/component/presentation/planificacion-constructor.component.spec.ts`
-- [ ] T071 [P] [US3] Test de componente de la vista "hoy" (muestra la planificación del día FR-008; mensaje "no hay ejercicios programados hoy" FR-030) en `tests/component/presentation/dia-actual.component.spec.ts`
-- [ ] T072 [P] [US3] Test de integración de la pantalla de inicio y de las rutas de planificación (la ruta raíz `/` muestra la vista "hoy" sin navegación adicional FR-008; navegar al calendario y al constructor de planificación funciona desde el menú) en `tests/component/presentation/shell-planificacion.integration.spec.ts`
+- [X] T062 [P] [US3] Test del caso de uso puro `es-activa` (una planificación concreta es activa si y solo si la fecha de referencia cae entre su `fechaInicio` y el domingo siguiente; una plantilla nunca es activa FR-022) en `tests/unit/domain/es-activa.spec.ts`
+- [X] T063 [P] [US3] Test del caso de uso puro `validar-fecha-inicio` ("DEBE ser un lunes"; no puede repetirse la `fechaInicio` de otra planificación concreta FR-017, FR-022) en `tests/unit/domain/validar-fecha-inicio.spec.ts`
+- [X] T064 [P] [US3] Test del caso de uso puro `validar-asignacion-dia` ("Un mismo ejercicio no puede repetirse dentro de la lista del mismo día de la misma planificación" FR-021) en `tests/unit/domain/validar-asignacion-dia.spec.ts`
+- [X] T065 [P] [US3] Test del caso de uso puro `duplicar-planificacion` (copia independiente con los mismos días y ejercicios y sin `fechaInicio` FR-019, CA14) en `tests/unit/domain/duplicar-planificacion.spec.ts`
+- [X] T066 [P] [US3] Test del adaptador SQLite de planificaciones en memoria (`fechaInicio` repetida → `ErrorPlanificacionActivaDuplicada`; ejercicio repetido en un día → `ErrorEjercicioDuplicadoEnDia`; `obtenerActiva()`; `listarPorEjercicio()`; al borrar un ejercicio desaparece de todos los días de todas las planificaciones FR-028, CA13) en `tests/unit/infrastructure/planificacion-repository.sqlite.spec.ts`
+- [X] T067 [P] [US3] Test del caso de uso "gestionar planificación" con puertos simulados (crear concreta o plantilla; asignar y quitar ejercicios por día; duplicar; crear una concreta a partir de una plantilla asignándole un lunes; marca cambios locales pendientes) en `tests/unit/application/gestionar-planificacion.use-case.spec.ts`
+- [X] T068 [P] [US3] Test del caso de uso "consultar planificación" con puertos simulados (planificación de hoy, de un día concreto y de la semana; todos los ejercicios de una planificación FR-023; `null` cuando no hay planificación para hoy CL2) en `tests/unit/application/consultar-planificacion.use-case.spec.ts`
+- [X] T069 [P] [US3] Test de componente del calendario semanal (marca visualmente los días con ejercicios FR-003) en `tests/component/presentation/calendario-semanal.component.spec.ts`
+- [X] T070 [P] [US3] Test de componente del constructor de planificación con Signal Forms (el selector de fecha solo permite lunes; impide duplicados en un día; duplicar planificación) en `tests/component/presentation/planificacion-constructor.component.spec.ts`
+- [X] T071 [P] [US3] Test de componente de la vista "hoy" (muestra la planificación del día FR-008; mensaje "no hay ejercicios programados hoy" FR-030) en `tests/component/presentation/dia-actual.component.spec.ts`
+- [X] T072 [P] [US3] Test de integración de la pantalla de inicio y de las rutas de planificación (la ruta raíz `/` muestra la vista "hoy" sin navegación adicional FR-008; navegar al calendario y al constructor de planificación funciona desde el menú) en `tests/component/presentation/shell-planificacion.integration.spec.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T073 [P] [US3] Crear las entidades Planificación y Día de planificación en `src/app/domain/planificacion/planificacion.entity.ts`, según data-model.md § Planificación y § Día de planificación
-- [ ] T074 [US3] Implementar los casos de uso puros `es-activa.ts`, `validar-fecha-inicio.ts`, `validar-asignacion-dia.ts` y `duplicar-planificacion.ts` en `src/app/domain/planificacion/` (depende de T062, T063, T064, T065, T073)
-- [ ] T075 [US3] Definir la interfaz `PlanificacionRepositoryPort` en `src/app/application/ports/planificacion-repository.port.ts`, según contracts/planificacion-repository.port.md (depende de T073)
-- [ ] T076 [US3] Implementar el adaptador SQLite de `PlanificacionRepositoryPort` en `src/app/infrastructure/persistencia-sqlite/planificacion-repository.sqlite.ts` (depende de T018, T066, T075)
-- [ ] T077 [US3] Implementar el caso de uso "gestionar planificación" en `src/app/application/casos-uso/gestionar-planificacion.use-case.ts` (depende de T020, T067, T074, T076)
-- [ ] T078 [US3] Implementar el caso de uso "consultar planificación" en `src/app/application/casos-uso/consultar-planificacion.use-case.ts` (depende de T068, T074, T076)
-- [ ] T079 [P] [US3] Construir el componente del calendario semanal en `src/app/presentation/planificacion-semanal/calendario/` (depende de T069, T078)
-- [ ] T080 [P] [US3] Construir el constructor de planificación con Signal Forms en `src/app/presentation/planificacion-semanal/constructor/` (depende de T070, T077)
-- [ ] T081 [P] [US3] Construir la vista "hoy" en `src/app/presentation/planificacion-semanal/dia-actual/` (depende de T071, T078)
-- [ ] T082 [US3] Configurar la vista "hoy" como pantalla de inicio de la aplicación (FR-008, SC-003) e integrar las rutas y el menú de planificación en `src/app/presentation/compartido/shell/` (depende de T023, T079, T080, T081, T072)
+- [X] T073 [P] [US3] Crear las entidades Planificación y Día de planificación en `src/app/domain/planificacion/planificacion.entity.ts`, según data-model.md § Planificación y § Día de planificación
+- [X] T074 [US3] Implementar los casos de uso puros `es-activa.ts`, `validar-fecha-inicio.ts`, `validar-asignacion-dia.ts` y `duplicar-planificacion.ts` en `src/app/domain/planificacion/` (depende de T062, T063, T064, T065, T073)
+- [X] T075 [US3] Definir la interfaz `PlanificacionRepositoryPort` en `src/app/application/ports/planificacion-repository.port.ts`, según contracts/planificacion-repository.port.md (depende de T073)
+- [X] T076 [US3] Implementar el adaptador SQLite de `PlanificacionRepositoryPort` en `src/app/infrastructure/persistencia-sqlite/planificacion-repository.sqlite.ts` (depende de T018, T066, T075)
+- [X] T077 [US3] Implementar el caso de uso "gestionar planificación" en `src/app/application/casos-uso/gestionar-planificacion.use-case.ts` (depende de T020, T067, T074, T076)
+- [X] T078 [US3] Implementar el caso de uso "consultar planificación" en `src/app/application/casos-uso/consultar-planificacion.use-case.ts` (depende de T068, T074, T076)
+- [X] T079 [P] [US3] Construir el componente del calendario semanal en `src/app/presentation/planificacion-semanal/calendario/` (depende de T069, T078)
+- [X] T080 [P] [US3] Construir el constructor de planificación con Signal Forms en `src/app/presentation/planificacion-semanal/constructor/` (depende de T070, T077)
+- [X] T081 [P] [US3] Construir la vista "hoy" en `src/app/presentation/planificacion-semanal/dia-actual/` (depende de T071, T078)
+- [X] T082 [US3] Configurar la vista "hoy" como pantalla de inicio de la aplicación (FR-008, SC-003) e integrar las rutas y el menú de planificación en `src/app/presentation/compartido/shell/` (depende de T023, T079, T080, T081, T072)
 
 **Checkpoint**: Las Historias de Usuario 1, 2 y 3 funcionan de forma independiente.
 
@@ -197,20 +197,20 @@ description: "Task list for feature implementation"
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T083 [P] [US4] Test del caso de uso puro `calcular-porcentaje-dia` (0%, parcial y 100% FR-025, CA10; sin ejercicios planificados devuelve un resultado distinguible de "0% completado" CL2) en `tests/unit/domain/calcular-porcentaje-dia.spec.ts`
-- [ ] T084 [P] [US4] Test del adaptador SQLite de progreso diario en memoria (`marcar()` crea o actualiza el registro de `(fecha, ejercicioId)`; `obtenerPorFecha()`) en `tests/unit/infrastructure/progreso-diario-repository.sqlite.spec.ts`
-- [ ] T085 [P] [US4] Test del caso de uso "gestionar progreso diario" con puertos simulados (marcar y desmarcar FR-024; el porcentaje se obtiene del dominio; marca cambios locales pendientes) en `tests/unit/application/gestionar-progreso-diario.use-case.spec.ts`
-- [ ] T086 [P] [US4] Test de componente del progreso diario (casilla por ejercicio y porcentaje del día) en `tests/component/presentation/progreso-diario.component.spec.ts`
-- [ ] T087 [P] [US4] Test de integración del progreso diario dentro de la vista "hoy" (marcar un ejercicio como realizado desde la vista "hoy" actualiza el indicador de progreso sin navegar a otra pantalla) en `tests/component/presentation/dia-actual-progreso.integration.spec.ts`
+- [X] T083 [P] [US4] Test del caso de uso puro `calcular-porcentaje-dia` (0%, parcial y 100% FR-025, CA10; sin ejercicios planificados devuelve un resultado distinguible de "0% completado" CL2) en `tests/unit/domain/calcular-porcentaje-dia.spec.ts`
+- [X] T084 [P] [US4] Test del adaptador SQLite de progreso diario en memoria (`marcar()` crea o actualiza el registro de `(fecha, ejercicioId)`; `obtenerPorFecha()`) en `tests/unit/infrastructure/progreso-diario-repository.sqlite.spec.ts`
+- [X] T085 [P] [US4] Test del caso de uso "gestionar progreso diario" con puertos simulados (marcar y desmarcar FR-024; el porcentaje se obtiene del dominio; marca cambios locales pendientes) en `tests/unit/application/gestionar-progreso-diario.use-case.spec.ts`
+- [X] T086 [P] [US4] Test de componente del progreso diario (casilla por ejercicio y porcentaje del día) en `tests/component/presentation/progreso-diario.component.spec.ts`
+- [X] T087 [P] [US4] Test de integración del progreso diario dentro de la vista "hoy" (marcar un ejercicio como realizado desde la vista "hoy" actualiza el indicador de progreso sin navegar a otra pantalla) en `tests/component/presentation/dia-actual-progreso.integration.spec.ts`
 
 ### Implementation for User Story 4
 
-- [ ] T088 [P] [US4] Crear la entidad Progreso diario y el caso de uso puro `calcular-porcentaje-dia` en `src/app/domain/progreso-diario/`, según data-model.md § Progreso diario (depende de T083)
-- [ ] T089 [US4] Definir la interfaz `ProgresoDiarioRepositoryPort` en `src/app/application/ports/progreso-diario-repository.port.ts`, según contracts/progreso-diario-repository.port.md (depende de T088)
-- [ ] T090 [US4] Implementar el adaptador SQLite de `ProgresoDiarioRepositoryPort` en `src/app/infrastructure/persistencia-sqlite/progreso-diario-repository.sqlite.ts` (depende de T018, T084, T089)
-- [ ] T091 [US4] Implementar el caso de uso "gestionar progreso diario" en `src/app/application/casos-uso/gestionar-progreso-diario.use-case.ts` (depende de T020, T076, T085, T090)
-- [ ] T092 [P] [US4] Construir el componente de progreso diario en `src/app/presentation/progreso-diario/` (depende de T086, T091)
-- [ ] T093 [US4] Integrar el componente de progreso diario en la vista "hoy" de `src/app/presentation/planificacion-semanal/dia-actual/` (depende de T081, T092, T087)
+- [X] T088 [P] [US4] Crear la entidad Progreso diario y el caso de uso puro `calcular-porcentaje-dia` en `src/app/domain/progreso-diario/`, según data-model.md § Progreso diario (depende de T083)
+- [X] T089 [US4] Definir la interfaz `ProgresoDiarioRepositoryPort` en `src/app/application/ports/progreso-diario-repository.port.ts`, según contracts/progreso-diario-repository.port.md (depende de T088)
+- [X] T090 [US4] Implementar el adaptador SQLite de `ProgresoDiarioRepositoryPort` en `src/app/infrastructure/persistencia-sqlite/progreso-diario-repository.sqlite.ts` (depende de T018, T084, T089)
+- [X] T091 [US4] Implementar el caso de uso "gestionar progreso diario" en `src/app/application/casos-uso/gestionar-progreso-diario.use-case.ts` (depende de T020, T076, T085, T090)
+- [X] T092 [P] [US4] Construir el componente de progreso diario en `src/app/presentation/progreso-diario/` (depende de T086, T091)
+- [X] T093 [US4] Integrar el componente de progreso diario en la vista "hoy" de `src/app/presentation/planificacion-semanal/dia-actual/` (depende de T081, T092, T087)
 
 **Checkpoint**: Las Historias de Usuario 1 a 4 funcionan de forma independiente.
 
@@ -224,24 +224,24 @@ description: "Task list for feature implementation"
 
 ### Tests for User Story 5 ⚠️
 
-- [ ] T094 [P] [US5] Test del caso de uso puro `decidir-accion-sincronizacion` cubriendo las 6 filas de la tabla de contracts/github-sync.port.md (incluida la primera sincronización con datos remotos → conflicto con `conservar_remoto` por defecto FR-035) en `tests/unit/domain/decidir-accion-sincronizacion.spec.ts`
-- [ ] T095 [P] [US5] Test del caso de uso "exportar/importar datos" con puertos simulados (el JSON incluye ejercicios, categorías, planificaciones y progreso; las imágenes de archivo aparecen en `datos.json` solo como ruta `imagenes/<id>.json`, nunca con su contenido incrustado; el token y el repositorio NUNCA aparecen en el JSON FR-037; importar reemplaza los datos locales y descarga y guarda localmente, vía `leerImagen()`, cada imagen de archivo referenciada) en `tests/unit/application/exportar-importar-datos.use-case.spec.ts`
-- [ ] T096 [P] [US5] Test del adaptador de GitHub con `HttpTestingController` (`leerRemoto` con y sin datos; `escribirRemoto` sube cada imagen como un documento `imagenes/<id>.json` en base64 y después `datos.json` con el SHA esperado; `leerImagen` descarga y parsea un documento `imagenes/<id>.json` con el formato raw; respuesta de conflicto → `ErrorConflictoRemoto`; sin red → `ErrorRedSincronizacion`; 401/403 → `ErrorAutenticacionGitHub`; el token solo va en la cabecera de autorización) en `tests/unit/infrastructure/github-sync.adapter.spec.ts`
-- [ ] T097 [P] [US5] Test del caso de uso "sincronizar con GitHub" con puertos simulados (subir, descargar, nada y conflicto; resolver conflicto con la versión elegida; tras completar guarda el SHA nuevo y `cambiosLocalesPendientes = false`; ante error de red no modifica ningún dato local FR-032, CL4) en `tests/unit/application/sincronizar-github.use-case.spec.ts`
-- [ ] T098 [P] [US5] Test de componente de configuración de sincronización con Signal Forms (token oculto; guía para crear un repositorio privado solo de datos (p. ej. `data-physical-exercises`) y un token fine-grained limitado a ese repositorio; botón "Olvidar token"; botón de sincronizar; mensajes de éxito y error en español FR-002, FR-037) en `tests/component/presentation/configuracion-sincronizacion.component.spec.ts`
-- [ ] T099 [P] [US5] Test de componente de resolución de conflicto (opciones "conservar mis datos" y "usar los datos de GitHub", con la opción por defecto que indique el caso de uso FR-035) en `tests/component/presentation/resolucion-conflicto.component.spec.ts`
-- [ ] T100 [P] [US5] Test de integración de rutas de sincronización (navegar a la ruta de sincronización muestra la configuración; tras un conflicto se muestra la pantalla de resolución desde el mismo flujo) en `tests/component/presentation/shell-sincronizacion.integration.spec.ts`
+- [X] T094 [P] [US5] Test del caso de uso puro `decidir-accion-sincronizacion` cubriendo las 6 filas de la tabla de contracts/github-sync.port.md (incluida la primera sincronización con datos remotos → conflicto con `conservar_remoto` por defecto FR-035) en `tests/unit/domain/decidir-accion-sincronizacion.spec.ts`
+- [X] T095 [P] [US5] Test del caso de uso "exportar/importar datos" con puertos simulados (el JSON incluye ejercicios, categorías, planificaciones y progreso; las imágenes de archivo aparecen en `datos.json` solo como ruta `imagenes/<id>.json`, nunca con su contenido incrustado; el token y el repositorio NUNCA aparecen en el JSON FR-037; importar reemplaza los datos locales y descarga y guarda localmente, vía `leerImagen()`, cada imagen de archivo referenciada) en `tests/unit/application/exportar-importar-datos.use-case.spec.ts`
+- [X] T096 [P] [US5] Test del adaptador de GitHub con `HttpTestingController` (`leerRemoto` con y sin datos; `escribirRemoto` sube cada imagen como un documento `imagenes/<id>.json` en base64 y después `datos.json` con el SHA esperado; `leerImagen` descarga y parsea un documento `imagenes/<id>.json` con el formato raw; respuesta de conflicto → `ErrorConflictoRemoto`; sin red → `ErrorRedSincronizacion`; 401/403 → `ErrorAutenticacionGitHub`; el token solo va en la cabecera de autorización) en `tests/unit/infrastructure/github-sync.adapter.spec.ts`
+- [X] T097 [P] [US5] Test del caso de uso "sincronizar con GitHub" con puertos simulados (subir, descargar, nada y conflicto; resolver conflicto con la versión elegida; tras completar guarda el SHA nuevo y `cambiosLocalesPendientes = false`; ante error de red no modifica ningún dato local FR-032, CL4) en `tests/unit/application/sincronizar-github.use-case.spec.ts`
+- [X] T098 [P] [US5] Test de componente de configuración de sincronización con Signal Forms (token oculto; guía para crear un repositorio privado solo de datos (p. ej. `data-physical-exercises`) y un token fine-grained limitado a ese repositorio; botón "Olvidar token"; botón de sincronizar; mensajes de éxito y error en español FR-002, FR-037) en `tests/component/presentation/configuracion-sincronizacion.component.spec.ts`
+- [X] T099 [P] [US5] Test de componente de resolución de conflicto (opciones "conservar mis datos" y "usar los datos de GitHub", con la opción por defecto que indique el caso de uso FR-035) en `tests/component/presentation/resolucion-conflicto.component.spec.ts`
+- [X] T100 [P] [US5] Test de integración de rutas de sincronización (navegar a la ruta de sincronización muestra la configuración; tras un conflicto se muestra la pantalla de resolución desde el mismo flujo) en `tests/component/presentation/shell-sincronizacion.integration.spec.ts`
 
 ### Implementation for User Story 5
 
-- [ ] T101 [P] [US5] Implementar el caso de uso puro `decidir-accion-sincronizacion` en `src/app/domain/sincronizacion/decidir-accion-sincronizacion.ts` (depende de T094)
-- [ ] T102 [US5] Definir la interfaz `GitHubSyncPort` y los tipos `LecturaRemota`, `CredencialesGitHub` y `ExportacionJSON` en `src/app/application/ports/github-sync.port.ts`, según contracts/github-sync.port.md
-- [ ] T103 [US5] Implementar el adaptador de `GitHubSyncPort` con `HttpClient` en `src/app/infrastructure/github-sync/github-sync.adapter.ts` (los Observables quedan dentro del adaptador; los métodos devuelven `Promise` como define el contrato) (depende de T096, T102)
-- [ ] T104 [US5] Implementar el caso de uso "exportar/importar datos" en `src/app/application/casos-uso/exportar-importar-datos.use-case.ts` (exportar construye `ExportacionJSON` + la lista de `ImagenArchivoJSON` a subir; importar reemplaza los datos locales y descarga vía `leerImagen()` cada imagen de archivo referenciada, guardándola localmente para uso sin conexión) (depende de T040, T041, T076, T090, T095, T102)
-- [ ] T105 [US5] Implementar el caso de uso "sincronizar con GitHub" en `src/app/application/casos-uso/sincronizar-github.use-case.ts` (depende de T020, T097, T101, T103, T104)
-- [ ] T106 [P] [US5] Construir el componente de configuración de sincronización en `src/app/presentation/sincronizacion/configuracion/` (depende de T098, T105)
-- [ ] T107 [P] [US5] Construir el componente de resolución de conflicto en `src/app/presentation/sincronizacion/conflicto/` (depende de T099, T105)
-- [ ] T108 [US5] Integrar las rutas y el menú de sincronización en `src/app/presentation/compartido/shell/` (depende de T023, T106, T107, T100)
+- [X] T101 [P] [US5] Implementar el caso de uso puro `decidir-accion-sincronizacion` en `src/app/domain/sincronizacion/decidir-accion-sincronizacion.ts` (depende de T094)
+- [X] T102 [US5] Definir la interfaz `GitHubSyncPort` y los tipos `LecturaRemota`, `CredencialesGitHub` y `ExportacionJSON` en `src/app/application/ports/github-sync.port.ts`, según contracts/github-sync.port.md
+- [X] T103 [US5] Implementar el adaptador de `GitHubSyncPort` con `HttpClient` en `src/app/infrastructure/github-sync/github-sync.adapter.ts` (los Observables quedan dentro del adaptador; los métodos devuelven `Promise` como define el contrato) (depende de T096, T102)
+- [X] T104 [US5] Implementar el caso de uso "exportar/importar datos" en `src/app/application/casos-uso/exportar-importar-datos.use-case.ts` (exportar construye `ExportacionJSON` + la lista de `ImagenArchivoJSON` a subir; importar reemplaza los datos locales y descarga vía `leerImagen()` cada imagen de archivo referenciada, guardándola localmente para uso sin conexión) (depende de T040, T041, T076, T090, T095, T102)
+- [X] T105 [US5] Implementar el caso de uso "sincronizar con GitHub" en `src/app/application/casos-uso/sincronizar-github.use-case.ts` (depende de T020, T097, T101, T103, T104)
+- [X] T106 [P] [US5] Construir el componente de configuración de sincronización en `src/app/presentation/sincronizacion/configuracion/` (depende de T098, T105)
+- [X] T107 [P] [US5] Construir el componente de resolución de conflicto en `src/app/presentation/sincronizacion/conflicto/` (depende de T099, T105)
+- [X] T108 [US5] Integrar las rutas y el menú de sincronización en `src/app/presentation/compartido/shell/` (depende de T023, T106, T107, T100)
 
 **Checkpoint**: Las 5 historias de usuario funcionan de forma independiente y conjunta.
 

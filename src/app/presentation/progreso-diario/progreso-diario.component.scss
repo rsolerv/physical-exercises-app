@@ -1,0 +1,26 @@
+@use '../../../styles/espaciado' as *;
+
+.progreso-diario__resumen {
+  display: flex;
+  align-items: center;
+  gap: $espaciado-2;
+  margin-bottom: $espaciado-2;
+
+  mat-progress-bar {
+    flex: 1;
+  }
+}
+
+.progreso-diario__porcentaje {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.progreso-diario__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $espaciado-1;
+}

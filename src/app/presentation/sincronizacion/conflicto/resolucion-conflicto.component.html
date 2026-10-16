@@ -1,0 +1,18 @@
+<section class="resolucion-conflicto">
+  <app-cabecera-pagina titulo="Conflicto de sincronización" />
+
+  @if (conflicto(); as conflicto) {
+    <p class="resolucion-conflicto__explicacion">
+      Hay cambios tanto en este dispositivo como en GitHub desde la última sincronización. Elige qué versión quieres conservar.
+    </p>
+
+    <mat-radio-group class="resolucion-conflicto__opciones" [value]="opcionSeleccionada()" (change)="opcionSeleccionada.set($event.value)">
+      <mat-radio-button value="conservar_local">Conservar mis datos (de este dispositivo)</mat-radio-button>
+      <mat-radio-button value="conservar_remoto">Usar los datos de GitHub</mat-radio-button>
+    </mat-radio-group>
+
+    <button mat-flat-button color="primary" type="button" [disabled]="confirmando()" (click)="confirmar()">Confirmar</button>
+  } @else {
+    <app-estado-vacio icono="check_circle" mensaje="No hay ningún conflicto pendiente de resolver." />
+  }
+</section>

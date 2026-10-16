@@ -9,6 +9,10 @@ import { routes } from '../../../src/app/app.routes';
 import { MENU_PRINCIPAL } from '../../../src/app/presentation/compartido/shell/menu-principal';
 import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejercicio-repository.port';
 import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
+import { PlanificacionRepositoryPort } from '../../../src/app/application/ports/planificacion-repository.port';
+import { ProgresoDiarioRepositoryPort } from '../../../src/app/application/ports/progreso-diario-repository.port';
+import { AjustesRepositoryPort } from '../../../src/app/application/ports/ajustes-repository.port';
+import { GitHubSyncPort } from '../../../src/app/application/ports/github-sync.port';
 
 function simularMatchMedia(coincide: boolean): void {
   vi.stubGlobal(
@@ -32,6 +36,28 @@ describe('ShellComponent (navegación)', () => {
         // Puertos requeridos por las rutas de historias de usuario ya implementadas (p. ej. US1).
         { provide: EjercicioRepositoryPort, useValue: { listarTodos: vi.fn().mockResolvedValue([]) } },
         { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue([]) } },
+        {
+          provide: PlanificacionRepositoryPort,
+          useValue: {
+            listarTodas: vi.fn().mockResolvedValue([]),
+            obtenerActiva: vi.fn().mockResolvedValue(null),
+            obtenerPorId: vi.fn().mockResolvedValue(null),
+          },
+        },
+        { provide: ProgresoDiarioRepositoryPort, useValue: { obtenerPorFecha: vi.fn().mockResolvedValue([]) } },
+        {
+          provide: AjustesRepositoryPort,
+          useValue: {
+            obtener: vi.fn().mockResolvedValue({
+              tokenGitHub: null,
+              repositorioGitHub: null,
+              ultimoShaSincronizado: null,
+              cambiosLocalesPendientes: false,
+              catalogoPredefinidoCargado: true,
+            }),
+          },
+        },
+        { provide: GitHubSyncPort, useValue: {} },
       ],
     });
   });
@@ -39,6 +65,8 @@ describe('ShellComponent (navegación)', () => {
   it('arranca sin errores de enrutamiento y muestra la vista "Hoy" en la ruta raíz', async () => {
     const harness = await RouterTestingHarness.create('/');
     const fixture = TestBed.createComponent(ShellComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     expect(harness).toBeTruthy();

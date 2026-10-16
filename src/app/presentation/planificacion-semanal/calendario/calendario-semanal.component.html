@@ -25,7 +25,11 @@
         <mat-list-item
           class="calendario-semanal__item"
           [class.calendario-semanal__item--seleccionada]="planificacionMostrada()?.id === planificacion.id"
+          role="button"
+          tabindex="0"
           (click)="seleccionar(planificacion)"
+          (keydown.enter)="seleccionar(planificacion)"
+          (keydown.space)="seleccionar(planificacion); $event.preventDefault()"
         >
           <span matListItemTitle>{{ planificacion.nombre }}</span>
           <span matListItemLine>{{ planificacion.fechaInicio ? ('Semana del ' + planificacion.fechaInicio) : 'Plantilla' }}</span>

@@ -1,0 +1,6 @@
+@use '../../../../styles/espaciado' as *;
+
+.dia-actual__tarjeta {
+  margin-bottom: $espaciado-2;
+  border-radius: 8px;
+}

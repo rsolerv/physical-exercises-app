@@ -1,0 +1,12 @@
+@use '../../../../styles/espaciado' as *;
+
+.resolucion-conflicto__explicacion {
+  margin-bottom: $espaciado-3;
+}
+
+.resolucion-conflicto__opciones {
+  display: flex;
+  flex-direction: column;
+  gap: $espaciado-2;
+  margin-bottom: $espaciado-3;
+}
