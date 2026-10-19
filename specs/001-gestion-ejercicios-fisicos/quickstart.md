@@ -50,6 +50,7 @@ Abrir la URL local indicada por `npm start` en el navegador. En el primer arranq
 6. Intentar añadir el mismo ejercicio dos veces al mismo día de la misma planificación. **Esperado**: la aplicación lo impide (escenario 6).
 7. Con la planificación del paso 1 ya activa para la semana actual, intentar crear otra planificación concreta con fecha de inicio también en la semana actual. **Esperado**: la aplicación lo impide (escenario 7).
 8. Consultar todos los ejercicios de una planificación concreta, sin filtrar por día. **Esperado**: se listan todos, independientemente del día al que estén asociados (escenario 9).
+9. Desde “Hoy”, activar “Consultar” en uno de los ejercicios planificados. **Esperado**: se abre la ficha del ejercicio elegido sin buscarlo en la biblioteca; consultar no cambia su estado de progreso. Comprobar que el enlace se alcanza y activa con teclado, y que es un control separado de la casilla para marcarlo como realizado; repetir la acción mediante tacto (escenario 11, FR-048, SC-015).
 
 ## US4 — Marcar el progreso diario (P4)
 

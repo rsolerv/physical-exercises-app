@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideRouter } from '@angular/router';
 import { ProgresoDiarioComponent } from '../../../src/app/presentation/progreso-diario/progreso-diario.component';
 import { ProgresoDiarioRepositoryPort } from '../../../src/app/application/ports/progreso-diario-repository.port';
 import { GestionarProgresoDiarioUseCase } from '../../../src/app/application/casos-uso/gestionar-progreso-diario.use-case';
@@ -18,6 +19,7 @@ describe('ProgresoDiarioComponent', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideNoopAnimations(),
+        provideRouter([]),
         { provide: ProgresoDiarioRepositoryPort, useValue: { obtenerPorFecha: vi.fn().mockResolvedValue(registros) } },
         { provide: GestionarProgresoDiarioUseCase, useValue: { marcar: marcar ?? vi.fn().mockResolvedValue(undefined) } },
       ],

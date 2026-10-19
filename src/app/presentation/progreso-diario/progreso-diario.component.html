@@ -8,10 +8,18 @@
 
   <ul class="progreso-diario__lista">
     @for (ejercicio of ejercicios(); track ejercicio.id) {
-      <li>
+      <li class="progreso-diario__elemento">
         <mat-checkbox [checked]="estaRealizado(ejercicio.id)" (change)="alternar(ejercicio.id)">
           {{ ejercicio.nombre }}
         </mat-checkbox>
+        <a
+          mat-stroked-button
+          class="progreso-diario__consulta"
+          [routerLink]="['/ejercicios', ejercicio.id]"
+          [attr.aria-label]="'Consultar ejercicio: ' + ejercicio.nombre"
+        >
+          Consultar
+        </a>
       </li>
     }
   </ul>

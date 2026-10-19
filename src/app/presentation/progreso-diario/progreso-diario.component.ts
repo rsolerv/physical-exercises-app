@@ -1,4 +1,6 @@
 import { Component, computed, inject, input, resource } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ProgresoDiarioRepositoryPort } from '../../application/ports/progreso-diario-repository.port';
@@ -15,7 +17,7 @@ import type { Ejercicio } from '../../domain/ejercicio/ejercicio.entity';
 @Component({
   selector: 'app-progreso-diario',
   standalone: true,
-  imports: [MatCheckboxModule, MatProgressBarModule],
+  imports: [RouterLink, MatButtonModule, MatCheckboxModule, MatProgressBarModule],
   templateUrl: './progreso-diario.component.html',
   styleUrl: './progreso-diario.component.scss',
 })

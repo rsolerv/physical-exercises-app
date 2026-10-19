@@ -5,6 +5,11 @@
 
 
 
+
+
+
+
+
 **Feature Branch**: `001-gestion-ejercicios-fisicos`
 
 **Created**: 2026-10-14
@@ -93,6 +98,7 @@ Como usuario quiero crear planificaciones semanales (concretas o como plantillas
 8. **Given** un ejercicio asociado a varias planificaciones distintas, **When** el usuario consulta cada una de esas planificaciones, **Then** el ejercicio aparece correctamente en todas ellas.
 9. **Given** una planificación concreta, **When** el usuario solicita ver todos los ejercicios que contiene, **Then** se muestra el listado completo de ejercicios de esa planificación, independientemente del día al que estén asociados.
 10. **Given** que el usuario abre una vista de planificación, **When** consulta sus contenidos, **Then** identifica el título, la acción principal y el día activo sin desplazamiento horizontal.
+11. **Given** que la planificación de hoy contiene uno o varios ejercicios, **When** el usuario activa el acceso a uno de ellos, **Then** el sistema muestra la ficha del ejercicio seleccionado con toda su información disponible.
 
 ---
 
@@ -229,6 +235,8 @@ Como usuario quiero reconocer rápidamente dónde estoy, encontrar las acciones 
 - **FR-045**: Todas las pantallas DEBEN cumplir los aspectos de accesibilidad acordados de WCAG 2.1 AA: contraste mínimo de 4,5:1 para texto normal y 3:1 para texto grande e iconos funcionales, foco visible en cada control interactivo y posibilidad de completar todos los flujos principales solo con teclado.
 - **FR-046**: La aplicación DEBE conservar el comportamiento funcional de navegación, creación, edición, eliminación, consulta, planificación, seguimiento del progreso y sincronización definido en esta especificación al aplicar las mejoras de presentación.
 - **FR-047**: En móvil, el menú de navegación DEBE abrirse como una superposición de ancho completo que no comprima el contenido principal y DEBE cerrarse automáticamente cuando el usuario elija una sección.
+- **FR-048**: Desde la planificación correspondiente al día actual, el sistema DEBE permitir acceder directamente a la ficha de cada ejercicio planificado mediante una acción claramente identificable asociada al ejercicio. Esta acción DEBE ser independiente del control utilizado para marcar el ejercicio como realizado o no realizado, y DEBE poder activarse mediante teclado y mediante interacción táctil.
+
 
 ### Key Entities *(include if feature involves data)*
 
@@ -256,6 +264,7 @@ Como usuario quiero reconocer rápidamente dónde estoy, encontrar las acciones 
 - **SC-012**: Un usuario puede completar los flujos principales de creación, edición, eliminación y navegación solo con teclado, con el foco siempre visible.
 - **SC-013**: Cada operación de creación, edición o eliminación muestra una confirmación visible cuando termina correctamente y un mensaje visible si falla.
 - **SC-014**: Los flujos funcionales de biblioteca, búsqueda, planificación, progreso y sincronización conservan los resultados descritos en sus escenarios de aceptación tras aplicar las mejoras de presentación.
+- **SC-015**: Desde la planificación de hoy, el usuario puede abrir la ficha de cualquier ejercicio planificado mediante una única acción, sin tener que buscarlo previamente en la biblioteca.
 
 ## Assumptions
 

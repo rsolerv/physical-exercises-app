@@ -6,7 +6,7 @@ description: "Tareas consolidadas para completar y verificar la feature 001"
 
 **Input**: [spec.md](./spec.md) y [plan.md](./plan.md)
 
-**Alcance**: 6 historias de usuario, FR-001…FR-047. Se conservaron como completadas únicamente las partes cuyo código y, cuando corresponde, sus pruebas están presentes en el repositorio. `[X]` no significa que la suite se haya ejecutado durante esta reconstrucción.
+**Alcance**: 6 historias de usuario, FR-001…FR-048. Se conservaron como completadas únicamente las partes cuyo código y, cuando corresponde, sus pruebas están presentes en el repositorio. `[X]` no significa que la suite se haya ejecutado durante esta reconstrucción.
 
 **Tests**: Test-first obligatorio. Las tareas de pruebas pendientes preceden a sus tareas de implementación. Vitest es el runner; los umbrales vigentes son 80% global y 100% en Domain.
 
@@ -67,7 +67,7 @@ description: "Tareas consolidadas para completar y verificar la feature 001"
 
 **Goal**: Crear planificaciones semanales y plantillas, asignar ejercicios y consultar calendarios y días.
 
-**Independent Test**: Crear o duplicar una planificación, asignar ejercicios y consultar el día y la semana. Corresponde a US3.AS1–AS10.
+**Independent Test**: Crear o duplicar una planificación, asignar ejercicios y consultar el día y la semana; desde “Hoy”, abrir directamente la ficha de un ejercicio con una acción independiente de marcarlo como realizado. Corresponde a US3.AS1–AS11, FR-048 y SC-015.
 
 - [X] T018 [P] [US3] Implementar entidades, validaciones y casos de uso de planificación, calendario y persistencia, con pruebas en `src/app/domain/planificacion/`, `src/app/application/casos-uso/gestionar-planificacion.use-case.ts`, `consultar-planificacion.use-case.ts`, `src/app/infrastructure/persistencia-sqlite/planificacion-repository.sqlite.ts` y `tests/unit/` (FR-017, FR-018, FR-019, FR-020, FR-021, FR-022, FR-023, FR-028; US3.AS1, AS4–AS9).
 - [X] T019 [US3] Implementar calendario, constructor de planificación y vista de hoy con navegación y estados vacíos/carga en `src/app/presentation/planificacion-semanal/` y `src/app/app.routes.ts`, con pruebas en `tests/component/presentation/calendario-semanal.component.spec.ts`, `planificacion-constructor.component.spec.ts`, `dia-actual.component.spec.ts` y `shell-planificacion.integration.spec.ts` (FR-003, FR-008, FR-030, FR-038…FR-040; US3.AS1–AS3, AS10).
@@ -125,18 +125,34 @@ description: "Tareas consolidadas para completar y verificar la feature 001"
 - US1, US2 y US3 se apoyan en la biblioteca. US4 depende de US3; US5 integra y conserva los datos de US1, US3 y US4.
 - US6 reutiliza los componentes ya implementados; T025 y T026 pueden desarrollarse en paralelo con T012 y T016 porque trabajan en archivos de prueba distintos.
 - T013 depende de T012; T017 depende de T016; T027 depende de T026. T029–T032 se completan tras los cambios de las historias.
+- El incremento FR-048 reutiliza capacidades ya existentes; T035 debe completarse antes de T036. T037 puede prepararse en paralelo con T035/T036; T038 depende de que T036 y T037 estén completadas.
 
 ## Oportunidades de paralelismo
 
 - T012 (edición/carga de categorías), T016 (fallback de imagen), T025 (cabeceras por ruta) y T026 (menú responsive) pueden prepararse en paralelo.
 - Tras esos tests, T013, T017 y T027 pueden implementarse en paralelo, al trabajar en componentes distintos.
 - T030–T032 son validaciones finales y deben esperar a que terminen los cambios de implementación.
+- T035 (prueba de navegación) y T037 (guía manual) pueden prepararse en paralelo; T036 se implementa tras T035 y T038 valida el incremento al final.
 
 ## Estrategia de entrega
 
-El MVP funcional de biblioteca, planificación, progreso y sincronización ya existe. Para el siguiente incremento, cerrar primero los huecos de US1, US2 y US6; después ejecutar la validación transversal de accesibilidad, responsive, lint, pruebas y build. Las tareas marcadas `[X]` describen estado del código y presencia de pruebas, no una ejecución de la suite en esta reconstrucción.
+El MVP funcional de biblioteca, planificación, progreso y sincronización ya existe. Para el siguiente incremento, completar el acceso directo de US3 a la ficha desde “Hoy” y ejecutar su validación de teclado, tacto, pruebas, lint y build. Las tareas marcadas `[X]` describen estado del código y presencia de pruebas, no una ejecución de la suite en esta reconstrucción.
 
 ## Phase 10: Convergence
 
 - [X] T033 Completar el feedback contextual de eliminación de ejercicios: mostrar confirmación al terminar y un error visible si falla, y cubrir ambos resultados en `tests/component/presentation/ejercicio-ficha.component.spec.ts` y `src/app/presentation/biblioteca-ejercicios/ejercicio-ficha.component.ts`/`.html` (FR-042, SC-013; US1/AS13; partial).
 - [X] T034 Garantizar que las acciones principales de todas las pantallas funcionales ofrecen un área táctil mínima de 48 × 48 px en móvil; añadir o ajustar estilos y verificar dimensiones en controles Material en los anchos móviles de referencia, en `src/styles.scss`, `src/app/presentation/` y `specs/001-gestion-ejercicios-fisicos/quickstart.md` (FR-026, SC-011; US6/AS5; partial).
+
+## Phase 11: User Story 3 - Acceso directo a la ficha desde hoy (P3)
+
+**Goal**: Abrir la ficha existente de cualquier ejercicio planificado para hoy sin pasar por la biblioteca y sin confundir la consulta con el control de progreso.
+
+**Independent Test**: Desde `/inicio`, activar el acceso asociado a un ejercicio y comprobar que se abre la ficha de ese mismo ejercicio; verificar que el control de marcarlo como realizado sigue siendo independiente. Corresponde a US3.AS11, FR-048 y SC-015.
+
+- [X] T035 [P] [US3] Añadir una prueba de integración que desde la planificación de hoy abra la ficha del ejercicio seleccionado mediante `/ejercicios/:id` y compruebe que el acceso es distinto del control de progreso en `tests/component/presentation/dia-actual-progreso.integration.spec.ts` (FR-048, US3.AS11, SC-015).
+- [X] T036 [US3] Añadir en cada ejercicio de “Hoy” un acceso claramente identificable, operable con teclado y tacto, a la ruta existente `/ejercicios/:id`, reutilizando `EjercicioFichaComponent` y conservando separado el control de realizado/no realizado en `src/app/presentation/progreso-diario/progreso-diario.component.html`, `src/app/presentation/progreso-diario/progreso-diario.component.ts` y `src/app/presentation/progreso-diario/progreso-diario.component.scss` (depende de T035; FR-048, US3.AS11, SC-015).
+- [X] T037 [P] [US3] Añadir al recorrido de validación manual el acceso desde `/inicio` a la ficha existente con una acción, y la comprobación de que consultar no marca el ejercicio como realizado, en `specs/001-gestion-ejercicios-fisicos/quickstart.md` (FR-048, US3.AS11, SC-015).
+
+## Phase 12: Validación del incremento
+
+- [ ] T038 Ejecutar la prueba de integración de `tests/component/presentation/dia-actual-progreso.integration.spec.ts`, `npm run lint` y `npm run build` según los scripts de `package.json`; completar el recorrido manual de teclado y tacto descrito en `specs/001-gestion-ejercicios-fisicos/quickstart.md` (FR-048, SC-015).

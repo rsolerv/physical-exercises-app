@@ -24,3 +24,20 @@
   flex-direction: column;
   gap: $espaciado-1;
 }
+
+.progreso-diario__elemento {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $espaciado-2;
+
+  mat-checkbox {
+    min-width: 0;
+    flex: 1;
+  }
+}
+
+.progreso-diario__consulta {
+  flex-shrink: 0;
+  min-height: 48px;
+}
