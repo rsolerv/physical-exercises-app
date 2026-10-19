@@ -8,3 +8,7 @@ El proyecto utiliza el modelo Living Spec.
 - Se utilizará /speckit.specify únicamente para capacidades funcionales con un objetivo, alcance y pruebas independiente.
 - Las especificaciones sustituidas se archivarán y no se consideraran requisitos vigentes.
 - El código no sustituye a la intención funcional expresada en spec.md.
+
+## Instrucciones
+
+Aplica a todas las features las instrucciones que contenga la carpeta `.github/instructions` si es posible.

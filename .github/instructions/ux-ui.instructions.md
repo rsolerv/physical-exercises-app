@@ -1,50 +1,60 @@
-# UI/UX Standards
+# Estándares de UI/UX
 
-The application must look production-ready.
+La aplicación debe tener una apariencia lista para producción.
 
-## Design style:
-- Modern enterprise SaaS.
-- Similar quality level to Microsoft 365, Linear, Stripe Dashboard, GitHub and Notion.
-- Clean, minimal and professional.
-- Follow established UI patterns.
+## Estilo de diseño
 
-## User Experience:
-- Prioritize efficiency over visual effects.
-- Reduce clicks whenever possible.
-- Important information must be visible without scrolling.
-- Provide clear visual feedback.
-- Avoid modal overuse.
+- SaaS empresarial moderno.
+- Nivel de calidad similar a Microsoft 365, Linear, Stripe Dashboard, GitHub y Notion.
+- Limpio, minimalista y profesional.
+- Seguir patrones de interfaz de usuario ampliamente establecidos.
 
-## Visual Design:
-- Use an 8px spacing system.
-- Adequate whitespace.
-- Clear typography hierarchy.
-- Maximum readability.
-- Professional color palette.
-- Use Material Design principles where appropriate.
+## Experiencia de Usuario
 
-## Responsive:
-- Mobile-first design.
-- Touch-friendly controls.
-- Adaptive layouts.
+- Priorizar la eficiencia sobre los efectos visuales.
+- Reducir el número de clics siempre que sea posible.
+- La información importante debe ser visible sin necesidad de hacer scroll.
+- Proporcionar una retroalimentación visual clara.
+- Evitar el uso excesivo de ventanas modales.
 
-### Mobile
-- Single-column layouts preferred.
-- Touch-friendly controls.
+## Diseño Visual
+
+- Utilizar un sistema de espaciado basado en múltiplos de 8 px.
+- Mantener espacios en blanco adecuados.
+- Definir una jerarquía tipográfica clara.
+- Maximizar la legibilidad.
+- Utilizar una paleta de colores profesional.
+- Aplicar los principios de Material Design cuando sea apropiado.
+
+## Diseño Responsive
+
+- Enfoque Mobile First.
+- Controles optimizados para pantallas táctiles.
+- Diseños adaptativos.
+
+### Móvil
+
+- Preferiblemente diseños de una sola columna.
+- Controles optimizados para interacción táctil.
 
 ### Tablet
-- Adaptive layouts.
 
-### Desktop
-- Optimize information density.
+- Diseños adaptativos.
 
-## Forms
-- Show validation errors close to the field.
-- Use inline validation whenever possible.
-- Clearly indicate required fields.
-- Minimize user input effort.
+### Escritorio
 
-## Implementation:
-- Angular Material 3 components preferred.
-- Reusable components.
-- Avoid custom components when a Material equivalent exists.
+- Optimizar la densidad de información mostrada.
+
+## Formularios
+
+- Mostrar los errores de validación cerca del campo correspondiente.
+- Utilizar validación en línea siempre que sea posible.
+- Indicar claramente los campos obligatorios.
+- Minimizar el esfuerzo requerido para introducir datos.
+
+## Implementación
+
+- Priorizar el uso de componentes Angular Material.
+- Utilizar componentes reutilizables.
+- Evitar crear componentes personalizados cuando exista una alternativa equivalente en Angular Material.
+- Tener un espaciado mínimo entre botones.
