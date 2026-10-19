@@ -57,8 +57,14 @@
                 @if (diaPlan.ejercicioIds.length === 0) {
                   <p class="calendario-semanal__sin-ejercicios">Sin ejercicios</p>
                 } @else {
-                  @for (nombre of nombresEjercicios(diaPlan.ejercicioIds); track nombre) {
-                    <mat-chip>{{ nombre }}</mat-chip>
+                  @for (ejercicioId of diaPlan.ejercicioIds; track ejercicioId) {
+                    <a
+                      class="calendario-semanal__ejercicio"
+                      [routerLink]="['/ejercicios', ejercicioId]"
+                      [attr.aria-label]="'Abrir la ficha de ' + nombreEjercicio(ejercicioId)"
+                    >
+                      <mat-chip>{{ nombreEjercicio(ejercicioId) }}</mat-chip>
+                    </a>
                   }
                 }
               </mat-card-content>

@@ -9,6 +9,12 @@ import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejer
 import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
 import { PlanificacionRepositoryPort } from '../../../src/app/application/ports/planificacion-repository.port';
 import { AjustesRepositoryPort } from '../../../src/app/application/ports/ajustes-repository.port';
+import { GestionarEjercicioUseCase } from '../../../src/app/application/casos-uso/gestionar-ejercicio.use-case';
+import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
+import { EjercicioFichaComponent } from '../../../src/app/presentation/biblioteca-ejercicios/ejercicio-ficha.component';
+import { crearDiasVacios } from '../../../src/app/domain/planificacion/planificacion.entity';
+import type { Ejercicio } from '../../../src/app/domain/ejercicio/ejercicio.entity';
+import type { Planificacion } from '../../../src/app/domain/planificacion/planificacion.entity';
 
 describe('Integración de la pantalla de inicio y de las rutas de planificación (US3)', () => {
   function configurar() {
@@ -60,5 +66,56 @@ describe('Integración de la pantalla de inicio y de las rutas de planificación
     expect(harness.routeNativeElement?.querySelector('.planificacion-constructor')).toBeTruthy();
     expect(harness.routeNativeElement?.querySelector('app-cabecera-pagina h1')).toBeTruthy();
     expect(harness.routeNativeElement?.textContent).toContain('Volver');
+  });
+
+  it('abre la ficha correspondiente a cada ejercicio de días distintos desde la planificación semanal', async () => {
+    const dias = crearDiasVacios();
+    dias[0].ejercicioIds = ['ej-1'];
+    dias[2].ejercicioIds = ['ej-2'];
+    const planificacion: Planificacion = { id: 'plan-1', nombre: 'Semana', dias };
+    const ejercicios: Ejercicio[] = [
+      { id: 'ej-1', nombre: 'Sentadilla', descripcion: 'Flexionar las rodillas.', categoriaIds: ['cat-1'], enlaces: [], imagenes: [] },
+      { id: 'ej-2', nombre: 'Plancha', descripcion: 'Mantener el tronco alineado.', categoriaIds: ['cat-1'], enlaces: [], imagenes: [] },
+    ];
+    const ejercicioPorId = new Map(ejercicios.map((ejercicio) => [ejercicio.id, ejercicio]));
+    const obtenerPorId = vi.fn((id: string) => Promise.resolve(ejercicioPorId.get(id) ?? null));
+
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter(routes),
+        provideNoopAnimations(),
+        { provide: EjercicioRepositoryPort, useValue: { listarTodos: vi.fn().mockResolvedValue(ejercicios), obtenerPorId } },
+        { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue([]) } },
+        { provide: AjustesRepositoryPort, useValue: { marcarCambiosLocalesPendientes: vi.fn().mockResolvedValue(undefined) } },
+        { provide: GestionarEjercicioUseCase, useValue: { eliminar: vi.fn().mockResolvedValue(undefined) } },
+        { provide: MensajeFeedbackService, useValue: { mostrarExito: vi.fn(), mostrarError: vi.fn() } },
+        { provide: PlanificacionRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue([planificacion]) } },
+      ],
+    });
+
+    const harness = await RouterTestingHarness.create('/planificacion');
+    await harness.fixture.whenStable();
+    harness.fixture.detectChanges();
+
+    for (const ejercicio of ejercicios) {
+      const enlace = harness.routeNativeElement?.querySelector<HTMLAnchorElement>(`a[href="/ejercicios/${ejercicio.id}"]`);
+      expect(enlace).not.toBeNull();
+      expect(enlace?.querySelector('mat-chip'), `Exercise ${ejercicio.id} link: ${enlace?.outerHTML}`).not.toBeNull();
+      expect(enlace?.getAttribute('aria-label')).toBe(`Abrir la ficha de ${ejercicio.nombre}`);
+
+      enlace?.click();
+      await harness.fixture.whenStable();
+      harness.fixture.detectChanges();
+
+      expect(harness.routeDebugElement?.componentInstance).toBeInstanceOf(EjercicioFichaComponent);
+      expect(harness.routeNativeElement?.textContent).toContain(ejercicio.nombre);
+      expect(harness.routeNativeElement?.textContent).toContain(ejercicio.descripcion);
+      expect(obtenerPorId).toHaveBeenLastCalledWith(ejercicio.id);
+
+      await harness.navigateByUrl('/planificacion');
+      await harness.fixture.whenStable();
+      harness.fixture.detectChanges();
+    }
   });
 });

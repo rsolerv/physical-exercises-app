@@ -10,6 +10,8 @@
 
 
 
+
+
 **Feature Branch**: `001-gestion-ejercicios-fisicos`
 
 **Created**: 2026-10-14
@@ -236,6 +238,7 @@ Como usuario quiero reconocer rápidamente dónde estoy, encontrar las acciones 
 - **FR-046**: La aplicación DEBE conservar el comportamiento funcional de navegación, creación, edición, eliminación, consulta, planificación, seguimiento del progreso y sincronización definido en esta especificación al aplicar las mejoras de presentación.
 - **FR-047**: En móvil, el menú de navegación DEBE abrirse como una superposición de ancho completo que no comprima el contenido principal y DEBE cerrarse automáticamente cuando el usuario elija una sección.
 - **FR-048**: Desde la planificación correspondiente al día actual, el sistema DEBE permitir acceder directamente a la ficha de cada ejercicio planificado mediante una acción claramente identificable asociada al ejercicio. Esta acción DEBE ser independiente del control utilizado para marcar el ejercicio como realizado o no realizado, y DEBE poder activarse mediante teclado y mediante interacción táctil.
+- **FR-049**: Desde la planificación semanal, el sistema DEBE permitir acceder directamente a la ficha de cada ejercicio planificado.
 
 
 ### Key Entities *(include if feature involves data)*
@@ -265,6 +268,7 @@ Como usuario quiero reconocer rápidamente dónde estoy, encontrar las acciones 
 - **SC-013**: Cada operación de creación, edición o eliminación muestra una confirmación visible cuando termina correctamente y un mensaje visible si falla.
 - **SC-014**: Los flujos funcionales de biblioteca, búsqueda, planificación, progreso y sincronización conservan los resultados descritos en sus escenarios de aceptación tras aplicar las mejoras de presentación.
 - **SC-015**: Desde la planificación de hoy, el usuario puede abrir la ficha de cualquier ejercicio planificado mediante una única acción, sin tener que buscarlo previamente en la biblioteca.
+- **SC-016**: Desde visualización de la planificación semanal, el usuario puede abrir la ficha de cualquier ejercicio planificado, sin tener que buscarlo previamente en la biblioteca.
 
 ## Assumptions
 

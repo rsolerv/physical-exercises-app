@@ -6,7 +6,7 @@ description: "Tareas consolidadas para completar y verificar la feature 001"
 
 **Input**: [spec.md](./spec.md) y [plan.md](./plan.md)
 
-**Alcance**: 6 historias de usuario, FR-001…FR-048. Se conservaron como completadas únicamente las partes cuyo código y, cuando corresponde, sus pruebas están presentes en el repositorio. `[X]` no significa que la suite se haya ejecutado durante esta reconstrucción.
+**Alcance**: 6 historias de usuario, FR-001…FR-049. Se conservaron como completadas únicamente las partes cuyo código y, cuando corresponde, sus pruebas están presentes en el repositorio. `[X]` no significa que la suite se haya ejecutado durante esta reconstrucción.
 
 **Tests**: Test-first obligatorio. Las tareas de pruebas pendientes preceden a sus tareas de implementación. Vitest es el runner; los umbrales vigentes son 80% global y 100% en Domain.
 
@@ -65,9 +65,9 @@ description: "Tareas consolidadas para completar y verificar la feature 001"
 
 ## Phase 5: User Story 3 - Planificar la semana de ejercicios (P3)
 
-**Goal**: Crear planificaciones semanales y plantillas, asignar ejercicios y consultar calendarios y días.
+**Goal**: Crear planificaciones semanales y plantillas, asignar ejercicios y consultar calendarios, días y fichas de ejercicios planificados.
 
-**Independent Test**: Crear o duplicar una planificación, asignar ejercicios y consultar el día y la semana; desde “Hoy”, abrir directamente la ficha de un ejercicio con una acción independiente de marcarlo como realizado. Corresponde a US3.AS1–AS11, FR-048 y SC-015.
+**Independent Test**: Crear o duplicar una planificación, asignar ejercicios y consultar el día y la semana; desde “Hoy”, abrir directamente la ficha de un ejercicio con una acción independiente de marcarlo como realizado, y desde la planificación semanal abrir la ficha de cualquiera de sus ejercicios sin buscarlo en la biblioteca. Corresponde a US3.AS1–AS11, FR-048, FR-049, SC-015 y SC-016.
 
 - [X] T018 [P] [US3] Implementar entidades, validaciones y casos de uso de planificación, calendario y persistencia, con pruebas en `src/app/domain/planificacion/`, `src/app/application/casos-uso/gestionar-planificacion.use-case.ts`, `consultar-planificacion.use-case.ts`, `src/app/infrastructure/persistencia-sqlite/planificacion-repository.sqlite.ts` y `tests/unit/` (FR-017, FR-018, FR-019, FR-020, FR-021, FR-022, FR-023, FR-028; US3.AS1, AS4–AS9).
 - [X] T019 [US3] Implementar calendario, constructor de planificación y vista de hoy con navegación y estados vacíos/carga en `src/app/presentation/planificacion-semanal/` y `src/app/app.routes.ts`, con pruebas en `tests/component/presentation/calendario-semanal.component.spec.ts`, `planificacion-constructor.component.spec.ts`, `dia-actual.component.spec.ts` y `shell-planificacion.integration.spec.ts` (FR-003, FR-008, FR-030, FR-038…FR-040; US3.AS1–AS3, AS10).
@@ -125,7 +125,8 @@ description: "Tareas consolidadas para completar y verificar la feature 001"
 - US1, US2 y US3 se apoyan en la biblioteca. US4 depende de US3; US5 integra y conserva los datos de US1, US3 y US4.
 - US6 reutiliza los componentes ya implementados; T025 y T026 pueden desarrollarse en paralelo con T012 y T016 porque trabajan en archivos de prueba distintos.
 - T013 depende de T012; T017 depende de T016; T027 depende de T026. T029–T032 se completan tras los cambios de las historias.
-- El incremento FR-048 reutiliza capacidades ya existentes; T035 debe completarse antes de T036. T037 puede prepararse en paralelo con T035/T036; T038 depende de que T036 y T037 estén completadas.
+- El incremento FR-048 reutiliza capacidades ya existentes; T035 debe completarse antes de T036. T037 puede prepararse en paralelo con T035/T036; T038 valida ese incremento después de T036 y T037.
+- El incremento FR-049 reutiliza la ruta `/ejercicios/:id` y `EjercicioFichaComponent`; T039 debe completarse antes de T040. T041 puede prepararse en paralelo con T039/T040; T042 valida el incremento después de T040 y T041.
 
 ## Oportunidades de paralelismo
 
@@ -133,10 +134,11 @@ description: "Tareas consolidadas para completar y verificar la feature 001"
 - Tras esos tests, T013, T017 y T027 pueden implementarse en paralelo, al trabajar en componentes distintos.
 - T030–T032 son validaciones finales y deben esperar a que terminen los cambios de implementación.
 - T035 (prueba de navegación) y T037 (guía manual) pueden prepararse en paralelo; T036 se implementa tras T035 y T038 valida el incremento al final.
+- T039 (prueba de navegación semanal) y T041 (guía manual) pueden prepararse en paralelo; T040 se implementa tras T039 y T042 valida el incremento al final.
 
 ## Estrategia de entrega
 
-El MVP funcional de biblioteca, planificación, progreso y sincronización ya existe. Para el siguiente incremento, completar el acceso directo de US3 a la ficha desde “Hoy” y ejecutar su validación de teclado, tacto, pruebas, lint y build. Las tareas marcadas `[X]` describen estado del código y presencia de pruebas, no una ejecución de la suite en esta reconstrucción.
+El MVP funcional de biblioteca, planificación, progreso y sincronización ya existe. Completar los accesos directos de US3 a la ficha existente desde “Hoy” y desde la planificación semanal, y validar teclado, tacto, pruebas, lint y build. Las tareas marcadas `[X]` describen estado del código y presencia de pruebas, no una ejecución de la suite en esta reconstrucción.
 
 ## Phase 10: Convergence
 
@@ -156,3 +158,14 @@ El MVP funcional de biblioteca, planificación, progreso y sincronización ya ex
 ## Phase 12: Validación del incremento
 
 - [ ] T038 Ejecutar la prueba de integración de `tests/component/presentation/dia-actual-progreso.integration.spec.ts`, `npm run lint` y `npm run build` según los scripts de `package.json`; completar el recorrido manual de teclado y tacto descrito en `specs/001-gestion-ejercicios-fisicos/quickstart.md` (FR-048, SC-015).
+
+## Phase 13: User Story 3 - Acceso directo a la ficha desde la planificación semanal (P3)
+
+**Goal**: Abrir la ficha existente de cualquier ejercicio presentado en la planificación semanal sin pasar por la biblioteca ni crear una ruta o pantalla nueva.
+
+**Independent Test**: Desde `/planificacion`, seleccionar una planificación con ejercicios asignados y activar el acceso de uno de ellos; comprobar que se abre la ficha del ejercicio seleccionado en `/ejercicios/:id` sin buscarlo previamente en la biblioteca. Corresponde a FR-049 y SC-016.
+
+- [X] T039 [P] [US3] Añadir una prueba de integración que prepare una planificación con varios ejercicios asignados a días distintos y compruebe que cada acceso desde `/planificacion` navega a `/ejercicios/:id` con la ficha correspondiente al identificador seleccionado en `tests/component/presentation/shell-planificacion.integration.spec.ts` (FR-049, SC-016).
+- [X] T040 [US3] Mostrar cada ejercicio de los días de la planificación semanal como un acceso claramente identificable a `/ejercicios/:id`, pasando el identificador del ejercicio y reutilizando `EjercicioFichaComponent`; conservar la selección de planificación y no añadir rutas ni pantallas en `src/app/presentation/planificacion-semanal/calendario/calendario-semanal.component.html`, `calendario-semanal.component.ts` y `calendario-semanal.component.scss` (depende de T039; FR-049, SC-016).
+- [X] T041 [P] [US3] Añadir a la guía manual un recorrido desde `/planificacion` que abra la ficha de un ejercicio planificado sin buscarlo en la biblioteca y compruebe que corresponde al ejercicio elegido en `specs/001-gestion-ejercicios-fisicos/quickstart.md` (FR-049, SC-016).
+- [X] T042 [US3] Ejecutar la prueba de integración de `tests/component/presentation/shell-planificacion.integration.spec.ts`, lint y build según los scripts de `package.json`; completar el recorrido manual de teclado y tacto de `/planificacion` a `/ejercicios/:id` descrito en `specs/001-gestion-ejercicios-fisicos/quickstart.md` (FR-049, SC-016).

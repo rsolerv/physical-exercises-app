@@ -1,5 +1,6 @@
 # Quickstart: Validación de Gestión de Ejercicios Físicos y Planificación Semanal
 
+
 **Feature**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md) | **Modelo de datos**: [data-model.md](./data-model.md)
 
 Esta guía permite validar manualmente, navegando por la interfaz de la aplicación (sin leer código, logs ni la base SQLite), que cada historia de usuario del spec funciona de extremo a extremo. Está pensada para que la siga una persona sin conocimientos de programación, tal como exige el Principio III de la constitución.
@@ -51,6 +52,7 @@ Abrir la URL local indicada por `npm start` en el navegador. En el primer arranq
 7. Con la planificación del paso 1 ya activa para la semana actual, intentar crear otra planificación concreta con fecha de inicio también en la semana actual. **Esperado**: la aplicación lo impide (escenario 7).
 8. Consultar todos los ejercicios de una planificación concreta, sin filtrar por día. **Esperado**: se listan todos, independientemente del día al que estén asociados (escenario 9).
 9. Desde “Hoy”, activar “Consultar” en uno de los ejercicios planificados. **Esperado**: se abre la ficha del ejercicio elegido sin buscarlo en la biblioteca; consultar no cambia su estado de progreso. Comprobar que el enlace se alcanza y activa con teclado, y que es un control separado de la casilla para marcarlo como realizado; repetir la acción mediante tacto (escenario 11, FR-048, SC-015).
+10. Abrir `/planificacion` y seleccionar una planificación con ejercicios en días distintos. Activar “Ver ficha” para cada ejercicio. **Esperado**: cada acceso abre la ficha del ejercicio correspondiente en `/ejercicios/:id` sin tener que buscarlo en la biblioteca; comprobar los accesos con teclado y mediante tacto (FR-049, SC-016).
 
 ## US4 — Marcar el progreso diario (P4)
 

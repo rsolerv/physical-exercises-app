@@ -77,9 +77,8 @@ export class CalendarioSemanalComponent {
     this.seleccionada.set(planificacion);
   }
 
-  protected nombresEjercicios(ejercicioIds: string[]): string[] {
-    const mapa = this.nombresPorId();
-    return ejercicioIds.map((id) => mapa.get(id) ?? id);
+  protected nombreEjercicio(ejercicioId: string): string {
+    return this.nombresPorId().get(ejercicioId) ?? ejercicioId;
   }
 
   protected obtenerDia(planificacion: Planificacion, dia: (typeof DIAS_SEMANA_ORDENADOS)[number]) {

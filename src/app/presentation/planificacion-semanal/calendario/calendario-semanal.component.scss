@@ -36,3 +36,23 @@
   color: var(--mat-sys-on-surface-variant, #5f6368);
   font-style: italic;
 }
+
+.calendario-semanal__ejercicio {
+  display: inline-flex;
+  max-width: 100%;
+  min-height: 48px;
+  margin: 0 8px 8px 0;
+  border-radius: 999px;
+  text-decoration: none;
+}
+
+.calendario-semanal__ejercicio mat-chip {
+  max-width: 100%;
+  min-height: 48px;
+  height: auto;
+}
+
+.calendario-semanal__ejercicio:focus-visible {
+  outline: 2px solid var(--mat-sys-primary);
+  outline-offset: 2px;
+}
