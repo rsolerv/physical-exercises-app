@@ -1,5 +1,11 @@
 @use '../../../styles/espaciado' as *;
 
+.ejercicio-ficha__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $espaciado-2;
+}
+
 .ejercicio-ficha__descripcion {
   margin-bottom: $espaciado-2;
 }

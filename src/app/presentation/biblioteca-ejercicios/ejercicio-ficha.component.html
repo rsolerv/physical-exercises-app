@@ -5,7 +5,7 @@
     </div>
   } @else if (recursoEjercicio.value(); as ejercicio) {
     <app-cabecera-pagina [titulo]="ejercicio.nombre">
-      <div acciones>
+      <div acciones class="ejercicio-ficha__acciones">
         <a mat-stroked-button routerLink="editar">
           <mat-icon>edit</mat-icon>
           Editar
