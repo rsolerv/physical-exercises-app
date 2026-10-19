@@ -1,171 +1,119 @@
 ---
-description: "Tareas consolidadas para completar y verificar la feature 001"
+
+description: "Tareas acotadas para retirar Mis ejercicios y centralizar el catálogo en Buscar"
 ---
 
-# Tareas: Gestión integral de ejercicios y planificación semanal
+# Tareas: Retirada de “Mis ejercicios” y navegación del catálogo
 
-**Input**: [spec.md](./spec.md) y [plan.md](./plan.md)
+**Input**: [spec.md](./spec.md), [plan.md](./plan.md), [research.md](./research.md), [quickstart.md](./quickstart.md)
 
-**Alcance**: 6 historias de usuario, FR-001…FR-049. Se conservaron como completadas únicamente las partes cuyo código y, cuando corresponde, sus pruebas están presentes en el repositorio. `[X]` no significa que la suite se haya ejecutado durante esta reconstrucción.
+**Alcance**: Solo FR-050…FR-054 y regresiones de FR-039 y FR-047. FR-055 no está definido en la especificación activa. Se incluyen las historias afectadas US1, US2 y US6; US3, US4 y US5 no se modifican.
 
-**Tests**: Test-first obligatorio. Las tareas de pruebas pendientes preceden a sus tareas de implementación. Vitest es el runner; los umbrales vigentes son 80% global y 100% en Domain.
+**Tests**: Solicitados para este cambio y obligatorios antes de implementar. Usar Vitest y Angular `TestBed`. No modificar archivos de implementación de `src/app/presentation/busqueda-ejercicios/`.
 
-**Formato**: `[ID] [P?] [US?] Descripción`; todas las rutas son relativas a la raíz del repositorio.
-
----
+**Datos y dominio**: No cambiar entidades, reglas, casos de uso, repositorios, catálogo de fábrica ni esquema SQLite. La ruta exacta antigua `/ejercicios` se conserva únicamente como redirección a `/buscar`; las rutas anidadas de alta, categorías, ficha y edición permanecen.
 
 ## Phase 1: Setup
 
-**Purpose**: Establecer las herramientas y convenciones ya usadas por la aplicación.
-
-- [X] T001 Confirmar el workspace Angular standalone y zoneless y las dependencias existentes en `package.json`, `angular.json`, `src/main.ts` y `src/app/app.config.ts`.
-- [X] T002 Configurar ESLint y Vitest para `tests/**/*.spec.ts`, con los umbrales de cobertura de la constitución, en `eslint.config.js`, `angular.json`, `vitest-base.config.mts` y `tsconfig.spec.json`.
-- [X] T003 Configurar Angular Material 3, tema claro, estilos globales y tokens de diseño en `src/styles.scss` y `src/styles/`.
-- [X] T004 Configurar la compilación y publicación estática en GitHub Pages, incluidos los presupuestos actuales, en `.github/workflows/deploy.yml` y `angular.json`.
-
----
+**Purpose**: El proyecto Angular, Vitest, Angular `TestBed` y ESLint ya están configurados. No se requieren tareas de setup.
 
 ## Phase 2: Foundational
 
-**Purpose**: Conservar persistencia, arranque y componentes comunes requeridos por las historias funcionales.
+**Purpose**: Verificar primero el comportamiento compartido del menú móvil antes de ampliar las entradas de navegación.
 
-- [X] T005 Implementar la conexión SQLite WASM, el esquema y los adaptadores de persistencia, con pruebas en `src/app/infrastructure/persistencia-sqlite/` y `tests/unit/infrastructure/` (FR-027).
-- [X] T006 Implementar el arranque, la carga de datos y la siembra del catálogo predefinido con pruebas en `src/app/application/casos-uso/arrancar-aplicacion.use-case.ts`, `src/app/application/casos-uso/sembrar-catalogo-predefinido.use-case.ts` y `tests/unit/application/` (FR-001, FR-034).
-- [X] T007 Implementar los componentes compartidos de cabecera, estado vacío y feedback, con sus pruebas, en `src/app/presentation/compartido/ui/` y `tests/component/presentation/compartido/ui/` (FR-029…FR-031, FR-038, FR-042, FR-044).
+- [ ] T001 [P] Ampliar las pruebas de `tests/component/presentation/shell.component.spec.ts` para comprobar overlay hasta 599 px, cierre al seleccionar una sección, adaptación de modo al cambiar de ancho y menú utilizable sin comprimir el contenido; conservar la verificación del modo lateral en escritorio (FR-047).
 
----
+## Phase 3: User Story 1 - Gestionar ejercicios y categorías desde el menú (Priority: P1)
 
-## Phase 3: User Story 1 - Gestionar la biblioteca personal (P1)
+**Goal**: Acceder directamente a la creación de ejercicios y a la gestión de categorías; retirar el listado “Mis ejercicios” sin perder las operaciones de ejercicios ni los enlaces guardados.
 
-**Goal**: Gestionar ejercicios y categorías, incluido el feedback y la presentación de biblioteca/formulario.
+**Independent Test**: Desde el menú, abrir directamente “Nuevo ejercicio” y “Gestionar categorías”; crear un ejercicio, localizarlo en “Buscar”, abrir su ficha y verificar que se puede editar y eliminar. Abrir `/ejercicios` directamente y comprobar que redirige a “Buscar”, mientras las rutas anidadas de ejercicio y categorías siguen disponibles.
 
-**Independent Test**: Crear, editar y eliminar ejercicios; crear y eliminar categorías; verificar validaciones, estados de la biblioteca, formulario y persistencia de los cambios. Corresponde a US1.AS1–AS14.
+### Tests for User Story 1
 
-- [X] T008 [P] [US1] Implementar entidades y reglas de validación para ejercicios y categorías, con cobertura unitaria, en `src/app/domain/ejercicio/`, `src/app/domain/categoria/` y `tests/unit/domain/validar-ejercicio.spec.ts`, `tests/unit/domain/validar-categoria.spec.ts`, `tests/unit/domain/retirar-categoria-de-ejercicios.spec.ts` (FR-004, FR-005, FR-006, FR-007, FR-009, FR-010, FR-011, FR-014; US1.AS2–AS6).
-- [X] T009 [US1] Implementar los casos de uso y repositorios de ejercicios y categorías —incluida la actualización de categoría en la capa de aplicación— con pruebas en `src/app/application/casos-uso/gestionar-ejercicio.use-case.ts`, `src/app/application/casos-uso/gestionar-categoria.use-case.ts`, `src/app/infrastructure/persistencia-sqlite/ejercicio-repository.sqlite.ts`, `src/app/infrastructure/persistencia-sqlite/categoria-repository.sqlite.ts` y sus pruebas en `tests/unit/` (FR-004, FR-009…FR-011).
-- [X] T010 [US1] Implementar la presentación de biblioteca, ficha y formulario de ejercicio, con creación, edición, eliminación, enlaces e imágenes por URL o archivo, en `src/app/presentation/biblioteca-ejercicios/` y cubrirla en `tests/component/presentation/biblioteca-listado.component.spec.ts`, `tests/component/presentation/ejercicio-ficha.component.spec.ts` y `tests/component/presentation/ejercicio-formulario.component.spec.ts` (FR-004, FR-005, FR-006, FR-007, FR-014, FR-036; US1.AS1–AS7, AS11–AS14).
-- [X] T011 [US1] Aplicar la presentación de lista y formulario —cabeceras, tarjetas, estado vacío, carga, secciones, obligatoriedad y feedback— y la creación/eliminación de categorías en `src/app/presentation/biblioteca-ejercicios/`, con pruebas en `tests/component/presentation/` (FR-029, FR-038, FR-039, FR-040, FR-041, FR-042, FR-044; US1.AS8–AS9, AS11–AS14).
-- [X] T012 [US1] Añadir pruebas de componente para editar una categoría, presentar el estado de carga y mostrar feedback de creación/edición/eliminación junto al contexto afectado en `tests/component/presentation/categoria-gestion.component.spec.ts` (FR-009, FR-040, FR-042; US1.AS10, AS13).
-- [X] T013 [US1] Completar la interfaz de edición de categorías usando `GestionarCategoriaUseCase.actualizar`, mostrar el estado de carga y asociar el feedback al formulario o elemento afectado en `src/app/presentation/biblioteca-ejercicios/categorias/categoria-gestion.component.ts`, `categoria-gestion.component.html` y `categoria-gestion.component.scss` (depende de T012; FR-009, FR-040, FR-042; US1.AS10, AS13).
+> Escribir y ejecutar estas pruebas primero; comprobar que las nuevas expectativas fallan antes de aplicar los cambios de implementación.
 
----
+- [ ] T002 [P] [US1] Actualizar las pruebas de integración para comprobar las seis entradas exactas del menú, el acceso directo a alta y categorías, la ausencia de “Mis ejercicios” y la redirección de `/ejercicios` a `/buscar`, conservando las rutas anidadas, en `tests/component/presentation/shell-biblioteca.integration.spec.ts`.
+- [ ] T003 [P] [US1] Cambiar la prueba de eliminación de la ficha para esperar que la navegación finalice en `/buscar`, conservando la comprobación de feedback de éxito y la de que un error no navega, en `tests/component/presentation/ejercicio-ficha.component.spec.ts`.
 
-## Phase 4: User Story 2 - Buscar y consultar ejercicios (P2)
+### Implementation for User Story 1
 
-**Goal**: Buscar por texto y categoría y consultar ejercicios, vídeos, enlaces e imágenes.
+- [ ] T004 [P] [US1] Retirar la entrada “Mis ejercicios” y añadir “Nuevo ejercicio” (`/ejercicios/nuevo`) y “Gestionar categorías” (`/ejercicios/categorias`) a `MENU_PRINCIPAL` en `src/app/presentation/compartido/shell/menu-principal.ts` (depende de T001 y T002).
+- [ ] T005 [P] [US1] Eliminar el import y la ruta de componente del listado; sustituir la ruta exacta `/ejercicios` por una redirección a `/buscar` y conservar las rutas anidadas existentes en `src/app/app.routes.ts` (depende de T002).
+- [ ] T006 [P] [US1] Navegar a `/buscar` tras una eliminación correcta, en lugar de volver a la ruta antigua de biblioteca, en `src/app/presentation/biblioteca-ejercicios/ejercicio-ficha.component.ts` (depende de T003).
+- [ ] T007 [P] [US1] Eliminar el componente y los estilos exclusivos del listado retirado junto con su prueba dedicada en `src/app/presentation/biblioteca-ejercicios/biblioteca-listado.component.ts`, `src/app/presentation/biblioteca-ejercicios/biblioteca-listado.component.html`, `src/app/presentation/biblioteca-ejercicios/biblioteca-listado.component.scss` y `tests/component/presentation/biblioteca-listado.component.spec.ts`; conservar las pruebas de formularios, ficha y categorías (depende de T005).
 
-**Independent Test**: Buscar por texto y categorías, consultar resultados vacíos y abrir fichas con contenido multimedia. Corresponde a US2.AS1–AS7.
+**Checkpoint**: Las entradas nuevas llegan a sus pantallas; `/ejercicios` redirige a “Buscar”; el detalle, la edición, la creación, las categorías y el borrado siguen disponibles; no queda una pantalla de listado ni una entrada “Mis ejercicios”.
 
-- [X] T014 [US2] Implementar la búsqueda por nombre, descripción y una o varias categorías, sus estados vacíos y su presentación responsive en `src/app/application/casos-uso/buscar-ejercicios.use-case.ts` y `src/app/presentation/busqueda-ejercicios/`, con pruebas en `tests/unit/application/buscar-ejercicios.use-case.spec.ts` y `tests/component/presentation/busqueda-ejercicios.component.spec.ts` (FR-012, FR-013, FR-031, FR-039; US2.AS1–AS2, AS4–AS7).
-- [X] T015 [US2] Implementar la ficha y las previsualizaciones de YouTube y enlaces externos, incluido el fallback cuando un destino no se puede embeber, en `src/app/presentation/biblioteca-ejercicios/ejercicio-ficha.component.ts` y `src/app/presentation/compartido/embebidos/`, con pruebas en `tests/component/presentation/ejercicio-ficha.component.spec.ts`, `youtube-embed.component.spec.ts` y `enlace-embed.component.spec.ts` (FR-015, FR-016, FR-033; US2.AS3).
-- [X] T016 [P] [US2] Añadir una prueba de componente que simule el fallo de carga de una imagen y compruebe que se indica el error sin ocultar el resto de la ficha en `tests/component/presentation/ejercicio-ficha.component.spec.ts` (FR-014, FR-036; caso límite de imagen no disponible).
-- [X] T017 [US2] Añadir un fallback visual al fallo de carga de imágenes y mantener visibles los demás datos del ejercicio en `src/app/presentation/biblioteca-ejercicios/ejercicio-ficha.component.html`, `ejercicio-ficha.component.ts` y `ejercicio-ficha.component.scss` (depende de T016; FR-014, FR-036).
+## Phase 4: User Story 6 - Navegar con un menú móvil utilizable (Priority: P1)
 
----
+**Goal**: Confirmar que la nueva navegación conserva el comportamiento responsive y cierra el menú tras seleccionar una sección o una de las dos acciones.
 
-## Phase 5: User Story 3 - Planificar la semana de ejercicios (P3)
+**Independent Test**: En móvil hasta 599 px, comprobar el menú superpuesto de ancho completo y el cierre tras seleccionar una sección, “Nuevo ejercicio” o “Gestionar categorías”. En tablet y escritorio, comprobar que las mismas seis opciones siguen disponibles y que el contenido no se comprime ni solapa.
 
-**Goal**: Crear planificaciones semanales y plantillas, asignar ejercicios y consultar calendarios, días y fichas de ejercicios planificados.
+- [ ] T008 [US6] Completar la comprobación manual de FR-047 y SC-021 descrita en `specs/001-gestion-ejercicios-fisicos/quickstart.md` a 599 px o menos, 768 px, 1024 px y 1280 px o más; confirmar el cierre del menú tras elegir las dos acciones nuevas (depende de T004, T005 y T007).
 
-**Independent Test**: Crear o duplicar una planificación, asignar ejercicios y consultar el día y la semana; desde “Hoy”, abrir directamente la ficha de un ejercicio con una acción independiente de marcarlo como realizado, y desde la planificación semanal abrir la ficha de cualquiera de sus ejercicios sin buscarlo en la biblioteca. Corresponde a US3.AS1–AS11, FR-048, FR-049, SC-015 y SC-016.
+**Checkpoint**: El menú móvil ocupa todo el ancho sin comprimir el contenido y se cierra al elegir secciones y acciones; “Mis ejercicios” no aparece en móvil, tablet ni escritorio.
 
-- [X] T018 [P] [US3] Implementar entidades, validaciones y casos de uso de planificación, calendario y persistencia, con pruebas en `src/app/domain/planificacion/`, `src/app/application/casos-uso/gestionar-planificacion.use-case.ts`, `consultar-planificacion.use-case.ts`, `src/app/infrastructure/persistencia-sqlite/planificacion-repository.sqlite.ts` y `tests/unit/` (FR-017, FR-018, FR-019, FR-020, FR-021, FR-022, FR-023, FR-028; US3.AS1, AS4–AS9).
-- [X] T019 [US3] Implementar calendario, constructor de planificación y vista de hoy con navegación y estados vacíos/carga en `src/app/presentation/planificacion-semanal/` y `src/app/app.routes.ts`, con pruebas en `tests/component/presentation/calendario-semanal.component.spec.ts`, `planificacion-constructor.component.spec.ts`, `dia-actual.component.spec.ts` y `shell-planificacion.integration.spec.ts` (FR-003, FR-008, FR-030, FR-038…FR-040; US3.AS1–AS3, AS10).
+## Phase 5: User Story 2 - Consultar y operar sobre el catálogo completo (Priority: P2)
 
----
+**Goal**: Usar “Buscar” para ver el catálogo completo sin filtros y llegar desde un resultado a la ficha con sus acciones existentes de edición y eliminación, sin modificar la implementación de la pantalla Buscar.
 
-## Phase 6: User Story 4 - Marcar el progreso diario (P4)
+**Independent Test**: Abrir “Buscar” sin texto ni categorías seleccionadas y comprobar que aparecen todos los ejercicios. Abrir uno desde los resultados y verificar en su ficha las acciones de edición y eliminación. Revisar que los filtros siguen funcionando y que la lista se lee y desplaza correctamente en móvil y escritorio.
 
-**Goal**: Registrar ejercicios realizados y mostrar el porcentaje diario.
+### Tests for User Story 2
 
-**Independent Test**: Marcar ejercicios y comprobar que los estados y el porcentaje del día se conservan. Corresponde a US4.AS1–AS4.
+> Añadir cobertura de regresión. Los cambios de esta historia se limitan a pruebas y validación manual; no se editará el código de la pantalla Buscar.
 
-- [X] T020 [US4] Implementar el cálculo del progreso y su persistencia por fecha, con pruebas en `src/app/domain/progreso-diario/`, `src/app/application/casos-uso/gestionar-progreso-diario.use-case.ts`, `src/app/infrastructure/persistencia-sqlite/progreso-diario-repository.sqlite.ts` y `tests/unit/` (FR-024, FR-025).
-- [X] T021 [US4] Implementar los controles de progreso y su integración en la vista de hoy en `src/app/presentation/progreso-diario/` y `src/app/presentation/planificacion-semanal/dia-actual/`, con pruebas en `tests/component/presentation/progreso-diario.component.spec.ts`, `dia-actual.component.spec.ts` y `dia-actual-progreso.integration.spec.ts` (FR-024, FR-025, FR-038…FR-040; US4.AS1–AS4).
+- [ ] T009 [P] [US2] Añadir una prueba que confirme que, sin filtros, la búsqueda muestra todos los ejercicios disponibles, incluidos los predefinidos y los creados por el usuario, en `tests/component/presentation/busqueda-ejercicios.component.spec.ts`.
+- [ ] T010 [P] [US2] Ampliar la prueba de integración para navegar desde un resultado de “Buscar” a su ficha y comprobar que allí siguen disponibles las acciones “Editar” y “Eliminar”, en `tests/component/presentation/shell-busqueda.integration.spec.ts`.
+- [ ] T011 [US2] Completar la comprobación visual de FR-039 descrita en `specs/001-gestion-ejercicios-fisicos/quickstart.md`: resultados diferenciados, texto legible y ajustado, scroll vertical y ausencia de scroll horizontal en móvil y escritorio; no modificar `src/app/presentation/busqueda-ejercicios/`.
 
----
+**Checkpoint**: La búsqueda sin filtros presenta todo el catálogo; los filtros conservan su comportamiento; cada resultado permite llegar a las acciones existentes de la ficha y la lista cumple la comprobación visual FR-039.
 
-## Phase 7: User Story 5 - Conservar y sincronizar la información (P5)
+## Phase 6: Polish y validación transversal
 
-**Goal**: Conservar datos localmente y sincronizarlos de forma explícita con GitHub.
+**Purpose**: Confirmar que el cambio no afecta otras rutas ni funciones y ejecutar las comprobaciones existentes.
 
-**Independent Test**: Comprobar persistencia entre sesiones, configurar la sincronización, resolver conflictos y verificar los datos en otro navegador. Corresponde a US5.AS1–AS8.
+- [ ] T012 Ejecutar las pruebas Vitest de `tests/component/presentation/shell-biblioteca.integration.spec.ts`, `tests/component/presentation/ejercicio-ficha.component.spec.ts`, `tests/component/presentation/shell.component.spec.ts`, `tests/component/presentation/busqueda-ejercicios.component.spec.ts`, `tests/component/presentation/shell-busqueda.integration.spec.ts`, `tests/component/presentation/ejercicio-formulario.component.spec.ts` y `tests/component/presentation/categoria-gestion.component.spec.ts`; ejecutar también `npm run lint` y `npm run build` según `package.json`, y completar los recorridos pertinentes de `specs/001-gestion-ejercicios-fisicos/quickstart.md`.
 
-- [X] T022 [US5] Implementar exportación/importación de datos, gestión de ajustes y sincronización GitHub —incluidas imágenes, token y resolución de cambios concurrentes— en `src/app/application/casos-uso/`, `src/app/application/ports/` y `src/app/infrastructure/github-sync/`, con pruebas en `tests/unit/application/` y `tests/unit/infrastructure/` (FR-001, FR-002, FR-027, FR-028, FR-032, FR-035…FR-037; US5.AS1–AS7).
-- [X] T023 [US5] Implementar configuración de sincronización, feedback, resolución de conflictos y rutas en `src/app/presentation/sincronizacion/` y `src/app/app.routes.ts`, con pruebas en `tests/component/presentation/configuracion-sincronizacion.component.spec.ts`, `resolucion-conflicto.component.spec.ts` y `shell-sincronizacion.integration.spec.ts` (FR-002, FR-032, FR-035, FR-037, FR-042; US5.AS2–AS8).
+## Dependencies & Execution Order
 
----
+### Phase Dependencies
 
-## Phase 8: User Story 6 - Usar una aplicación clara, coherente y accesible (P1)
+- **Setup (Phase 1)**: No requiere cambios.
+- **Foundational (Phase 2)**: T001 verifica el comportamiento responsive existente y debe completarse antes de modificar el menú.
+- **User Stories (Phase 3+)**: T002/T003 preceden a sus cambios de rutas y ficha. T004–T006 pueden ejecutarse en paralelo una vez satisfechas sus pruebas. T007 espera a T005. US2 no modifica código de producción de Buscar.
+- **Polish (Phase 6)**: Depende de que terminen las tareas de las historias y sus pruebas.
 
-**Goal**: Mantener cabeceras, acciones, feedback, accesibilidad y adaptación responsive coherentes en todas las pantallas funcionales.
+### User Story Dependencies
 
-**Independent Test**: Recorrer las rutas reales en varios tamaños de pantalla, comprobar navegación y operaciones con teclado, foco visible y contraste. Corresponde a US6.AS1–AS6.
+- **US1 (P1)**: T004 depende de T001 y T002; T005 depende de T002; T006 depende de T003; T007 depende de T005.
+- **US6 (P1)**: T008 depende de T004, T005 y T007 para validar la navegación final en todos los anchos definidos.
+- **US2 (P2)**: T009 y T010 son independientes; T011 valida manualmente el requisito visual sin modificar la pantalla Buscar.
 
-- [X] T024 [US6] Integrar cabeceras, estados vacíos, feedback y estilos compartidos en las pantallas funcionales de `src/app/presentation/`, reutilizando `src/app/presentation/compartido/ui/` y `src/styles/`; las rutas de `src/app/app.routes.ts` apuntan a vistas funcionales (FR-029…FR-031, FR-038…FR-044).
-- [X] T025 [P] [US6] Añadir pruebas de integración que verifiquen cabecera con título y acciones en las rutas funcionales en `tests/component/presentation/shell-biblioteca.integration.spec.ts`, `shell-busqueda.integration.spec.ts`, `shell-planificacion.integration.spec.ts` y `shell-sincronizacion.integration.spec.ts` (FR-038; US6.AS1).
-- [X] T026 [P] [US6] Añadir pruebas de componente para el menú superpuesto hasta 599 px, el cierre al navegar, el modo lateral desde 600 px, la adaptación al redimensionar y el estado activo en `tests/component/presentation/shell.component.spec.ts` (FR-026, FR-043, FR-047; US6.AS2, AS3, AS5).
-- [X] T027 [US6] Configurar el menú como overlay hasta 599 px y como panel lateral desde 600 px, manteniendo cierre en navegación y controles táctiles de tamaño suficiente en `src/app/presentation/compartido/shell/shell.component.html`, `shell.component.ts` y `shell.component.scss` (depende de T026; FR-026, FR-043, FR-047; US6.AS2–AS5).
-- [X] T028 [US6] Eliminar el componente de placeholder que no se usa en ninguna ruta y retirar referencias/comentarios obsoletos en `src/app/presentation/compartido/shell/pagina-en-construccion.component.ts`, `src/app/presentation/compartido/shell/menu-principal.ts`, `src/app/presentation/compartido/ui/estado-vacio/estado-vacio.component.ts` y `tests/component/presentation/compartido/pagina-en-construccion.component.spec.ts` (FR-044).
+### Parallel Opportunities
 
----
+- T001, T002 y T003 trabajan en archivos de prueba distintos y pueden prepararse en paralelo.
+- Tras esas pruebas, T004, T005 y T006 modifican archivos distintos y pueden trabajarse en paralelo; T007 también puede ejecutarse en paralelo con T004 y T006 una vez que T005 haya eliminado la referencia de ruta.
+- T009 y T010 son pruebas independientes y pueden prepararse en paralelo. T011 puede realizarse cuando esté disponible la versión a validar.
 
-## Phase 9: Polish y validación transversal
+## Implementation Strategy
 
-- [X] T029 Actualizar `specs/001-gestion-ejercicios-fisicos/quickstart.md` con recorridos verificables de las seis historias, los estados vacíos/carga, el feedback y las comprobaciones responsive/accesibles de US6.AS1–AS6 (FR-038…FR-047).
-- [X] T030 Completar la comprobación manual desde la interfaz: contraste ≥4,5:1 para texto normal y ≥3:1 para texto grande/iconos, navegación con teclado y foco visible, controles táctiles, menú móvil y ausencia de solapamientos o desplazamiento horizontal en <360 px, rangos de referencia y anchos intermedios, siguiendo `specs/001-gestion-ejercicios-fisicos/quickstart.md` (FR-026, FR-045, FR-047; US6.AS2–AS6). Verificado en navegador a 320, 359, 375, 599, 600, 768, 1024 y 1280 px; las rutas muestreadas no presentan desbordamiento y los controles principales alcanzan 48 × 48 px.
-- [X] T031 Ejecutar `npm run lint` y la suite Vitest con los umbrales configurados; corregir fallos y confirmar que los flujos funcionales conservan los resultados esperados (constitución; FR-046) en `eslint.config.js`, `angular.json`, `src/` y `tests/`. Validación ejecutada con `npx ng lint` y `npx ng test --watch=false`: 51 archivos, 322 pruebas aprobadas; cobertura global de líneas 94,92%.
-- [X] T032 Ejecutar el build de producción y confirmar que respeta los presupuestos de `angular.json` (700 kB/1.5 MB inicial y 4/8 kB por estilo) en `.github/workflows/deploy.yml` y `angular.json`. Build correcto, sin superar los límites de error (1,5 MB inicial y 8 kB por estilo); el bundle inicial de 1,02 MB supera el umbral preventivo de 700 kB y genera una advertencia.
+### MVP recomendado
 
----
+Completar US1: publicar las dos acciones directas, retirar la pantalla de listado, conservar `/ejercicios` como redirección compatible y mantener las capacidades de ejercicio en la ficha accesible desde “Buscar”.
 
-## Dependencias y orden
+### Entrega incremental
 
-- Setup y Foundational están implementados; se conservan para reproducir el estado real sin recrear el proyecto.
-- US1, US2 y US3 se apoyan en la biblioteca. US4 depende de US3; US5 integra y conserva los datos de US1, US3 y US4.
-- US6 reutiliza los componentes ya implementados; T025 y T026 pueden desarrollarse en paralelo con T012 y T016 porque trabajan en archivos de prueba distintos.
-- T013 depende de T012; T017 depende de T016; T027 depende de T026. T029–T032 se completan tras los cambios de las historias.
-- El incremento FR-048 reutiliza capacidades ya existentes; T035 debe completarse antes de T036. T037 puede prepararse en paralelo con T035/T036; T038 valida ese incremento después de T036 y T037.
-- El incremento FR-049 reutiliza la ruta `/ejercicios/:id` y `EjercicioFichaComponent`; T039 debe completarse antes de T040. T041 puede prepararse en paralelo con T039/T040; T042 valida el incremento después de T040 y T041.
+1. Completar T001 y las pruebas de US1; implementar y validar US1.
+2. Validar en US6 el overlay, el cierre y la ausencia de “Mis ejercicios” en móvil, tablet y escritorio.
+3. Completar las pruebas de regresión de catálogo y navegación de US2; validar FR-039 manualmente sin tocar el código de Buscar.
+4. Ejecutar T012 y confirmar que dominio, datos, rutas restantes, planificación, progreso y sincronización no han cambiado.
 
-## Oportunidades de paralelismo
+## Notes
 
-- T012 (edición/carga de categorías), T016 (fallback de imagen), T025 (cabeceras por ruta) y T026 (menú responsive) pueden prepararse en paralelo.
-- Tras esos tests, T013, T017 y T027 pueden implementarse en paralelo, al trabajar en componentes distintos.
-- T030–T032 son validaciones finales y deben esperar a que terminen los cambios de implementación.
-- T035 (prueba de navegación) y T037 (guía manual) pueden prepararse en paralelo; T036 se implementa tras T035 y T038 valida el incremento al final.
-- T039 (prueba de navegación semanal) y T041 (guía manual) pueden prepararse en paralelo; T040 se implementa tras T039 y T042 valida el incremento al final.
-
-## Estrategia de entrega
-
-El MVP funcional de biblioteca, planificación, progreso y sincronización ya existe. Completar los accesos directos de US3 a la ficha existente desde “Hoy” y desde la planificación semanal, y validar teclado, tacto, pruebas, lint y build. Las tareas marcadas `[X]` describen estado del código y presencia de pruebas, no una ejecución de la suite en esta reconstrucción.
-
-## Phase 10: Convergence
-
-- [X] T033 Completar el feedback contextual de eliminación de ejercicios: mostrar confirmación al terminar y un error visible si falla, y cubrir ambos resultados en `tests/component/presentation/ejercicio-ficha.component.spec.ts` y `src/app/presentation/biblioteca-ejercicios/ejercicio-ficha.component.ts`/`.html` (FR-042, SC-013; US1/AS13; partial).
-- [X] T034 Garantizar que las acciones principales de todas las pantallas funcionales ofrecen un área táctil mínima de 48 × 48 px en móvil; añadir o ajustar estilos y verificar dimensiones en controles Material en los anchos móviles de referencia, en `src/styles.scss`, `src/app/presentation/` y `specs/001-gestion-ejercicios-fisicos/quickstart.md` (FR-026, SC-011; US6/AS5; partial).
-
-## Phase 11: User Story 3 - Acceso directo a la ficha desde hoy (P3)
-
-**Goal**: Abrir la ficha existente de cualquier ejercicio planificado para hoy sin pasar por la biblioteca y sin confundir la consulta con el control de progreso.
-
-**Independent Test**: Desde `/inicio`, activar el acceso asociado a un ejercicio y comprobar que se abre la ficha de ese mismo ejercicio; verificar que el control de marcarlo como realizado sigue siendo independiente. Corresponde a US3.AS11, FR-048 y SC-015.
-
-- [X] T035 [P] [US3] Añadir una prueba de integración que desde la planificación de hoy abra la ficha del ejercicio seleccionado mediante `/ejercicios/:id` y compruebe que el acceso es distinto del control de progreso en `tests/component/presentation/dia-actual-progreso.integration.spec.ts` (FR-048, US3.AS11, SC-015).
-- [X] T036 [US3] Añadir en cada ejercicio de “Hoy” un acceso claramente identificable, operable con teclado y tacto, a la ruta existente `/ejercicios/:id`, reutilizando `EjercicioFichaComponent` y conservando separado el control de realizado/no realizado en `src/app/presentation/progreso-diario/progreso-diario.component.html`, `src/app/presentation/progreso-diario/progreso-diario.component.ts` y `src/app/presentation/progreso-diario/progreso-diario.component.scss` (depende de T035; FR-048, US3.AS11, SC-015).
-- [X] T037 [P] [US3] Añadir al recorrido de validación manual el acceso desde `/inicio` a la ficha existente con una acción, y la comprobación de que consultar no marca el ejercicio como realizado, en `specs/001-gestion-ejercicios-fisicos/quickstart.md` (FR-048, US3.AS11, SC-015).
-
-## Phase 12: Validación del incremento
-
-- [ ] T038 Ejecutar la prueba de integración de `tests/component/presentation/dia-actual-progreso.integration.spec.ts`, `npm run lint` y `npm run build` según los scripts de `package.json`; completar el recorrido manual de teclado y tacto descrito en `specs/001-gestion-ejercicios-fisicos/quickstart.md` (FR-048, SC-015).
-
-## Phase 13: User Story 3 - Acceso directo a la ficha desde la planificación semanal (P3)
-
-**Goal**: Abrir la ficha existente de cualquier ejercicio presentado en la planificación semanal sin pasar por la biblioteca ni crear una ruta o pantalla nueva.
-
-**Independent Test**: Desde `/planificacion`, seleccionar una planificación con ejercicios asignados y activar el acceso de uno de ellos; comprobar que se abre la ficha del ejercicio seleccionado en `/ejercicios/:id` sin buscarlo previamente en la biblioteca. Corresponde a FR-049 y SC-016.
-
-- [X] T039 [P] [US3] Añadir una prueba de integración que prepare una planificación con varios ejercicios asignados a días distintos y compruebe que cada acceso desde `/planificacion` navega a `/ejercicios/:id` con la ficha correspondiente al identificador seleccionado en `tests/component/presentation/shell-planificacion.integration.spec.ts` (FR-049, SC-016).
-- [X] T040 [US3] Mostrar cada ejercicio de los días de la planificación semanal como un acceso claramente identificable a `/ejercicios/:id`, pasando el identificador del ejercicio y reutilizando `EjercicioFichaComponent`; conservar la selección de planificación y no añadir rutas ni pantallas en `src/app/presentation/planificacion-semanal/calendario/calendario-semanal.component.html`, `calendario-semanal.component.ts` y `calendario-semanal.component.scss` (depende de T039; FR-049, SC-016).
-- [X] T041 [P] [US3] Añadir a la guía manual un recorrido desde `/planificacion` que abra la ficha de un ejercicio planificado sin buscarlo en la biblioteca y compruebe que corresponde al ejercicio elegido en `specs/001-gestion-ejercicios-fisicos/quickstart.md` (FR-049, SC-016).
-- [X] T042 [US3] Ejecutar la prueba de integración de `tests/component/presentation/shell-planificacion.integration.spec.ts`, lint y build según los scripts de `package.json`; completar el recorrido manual de teclado y tacto de `/planificacion` a `/ejercicios/:id` descrito en `specs/001-gestion-ejercicios-fisicos/quickstart.md` (FR-049, SC-016).
+- **Total**: 12 tareas: Foundational = 1, US1 = 6, US6 = 1, US2 = 3, Polish = 1.
+- Los marcadores `[P]` indican archivos independientes que pueden trabajarse en paralelo, una vez completadas las dependencias indicadas.
+- Los tests deben preceder a la implementación; las pruebas de regresión de Buscar no autorizan cambios en `src/app/presentation/busqueda-ejercicios/`.
+- La ruta `/ejercicios` es solo una redirección de compatibilidad; no se conserva como pantalla ni como opción de navegación.

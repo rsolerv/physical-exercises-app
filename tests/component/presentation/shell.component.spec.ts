@@ -79,14 +79,22 @@ describe('ShellComponent (navegación)', () => {
     expect(fixture.nativeElement.querySelector('app-estado-vacio')).toBeTruthy();
   });
 
-  it('muestra una entrada de menú por cada historia de usuario, en español', () => {
+  it('muestra exactamente las seis opciones de navegación y acción requeridas', () => {
     const fixture = TestBed.createComponent(ShellComponent);
     fixture.detectChanges();
 
-    const textoMenu = (fixture.nativeElement as HTMLElement).textContent ?? '';
-    for (const entrada of MENU_PRINCIPAL) {
-      expect(textoMenu).toContain(entrada.etiqueta);
-    }
+    expect(MENU_PRINCIPAL.map((entrada) => entrada.etiqueta)).toEqual([
+      'Hoy',
+      'Buscar',
+      'Planificación',
+      'Sincronización',
+      'Nuevo ejercicio',
+      'Gestionar categorías',
+    ]);
+    const textoMenu = (fixture.nativeElement as HTMLElement).querySelector('mat-sidenav')?.textContent ?? '';
+    expect(textoMenu).not.toContain('Mis ejercicios');
+    expect(textoMenu).toContain('Nuevo ejercicio');
+    expect(textoMenu).toContain('Gestionar categorías');
   });
 
   it('cada entrada de menú navega a una ruta funcional registrada', async () => {
@@ -170,7 +178,6 @@ describe('ShellComponent (navegación)', () => {
     fixture.detectChanges();
     const sidenav = fixture.componentInstance.menuLateral();
     await sidenav?.open();
-    fixture.nativeElement.querySelector('a[mat-list-item]')?.dispatchEvent(new Event('click'));
     fixture.nativeElement.querySelector('a[mat-list-item]')?.dispatchEvent(new Event('click'));
     await fixture.whenStable();
 

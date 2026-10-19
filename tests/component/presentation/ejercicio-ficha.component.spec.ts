@@ -117,7 +117,7 @@ describe('EjercicioFichaComponent', () => {
     expect(texto).toContain('Flexionar las rodillas.');
   });
 
-  it('elimina el ejercicio y navega al listado', async () => {
+  it('elimina el ejercicio y vuelve a Buscar', async () => {
     const eliminar = vi.fn().mockResolvedValue(undefined);
     const mostrarExito = vi.fn();
     configurar({ ejercicio: ejercicio(), eliminar, mostrarExito });
@@ -129,7 +129,7 @@ describe('EjercicioFichaComponent', () => {
 
     expect(eliminar).toHaveBeenCalledWith('ej-1');
     expect(mostrarExito).toHaveBeenCalledWith('Ejercicio eliminado.');
-    expect(navigateSpy).toHaveBeenCalledWith(['/ejercicios']);
+    expect(navigateSpy).toHaveBeenCalledWith(['/buscar']);
   });
 
   it('muestra un error contextual y no navega si falla la eliminación', async () => {

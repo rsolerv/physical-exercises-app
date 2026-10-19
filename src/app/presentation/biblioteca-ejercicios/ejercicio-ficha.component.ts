@@ -91,6 +91,6 @@ export class EjercicioFichaComponent {
       return;
     }
     this.mensajeFeedback.mostrarExito('Ejercicio eliminado.');
-    await this.router.navigate(['/ejercicios']);
+    await this.router.navigate(['/buscar']);
   }
 }

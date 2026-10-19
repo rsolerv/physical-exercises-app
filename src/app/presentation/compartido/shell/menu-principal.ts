@@ -10,8 +10,9 @@ export interface EntradaMenuPrincipal {
  */
 export const MENU_PRINCIPAL: EntradaMenuPrincipal[] = [
   { etiqueta: 'Hoy', ruta: '/inicio', icono: 'today' },
-  { etiqueta: 'Mis ejercicios', ruta: '/ejercicios', icono: 'fitness_center' },
   { etiqueta: 'Buscar', ruta: '/buscar', icono: 'search' },
   { etiqueta: 'Planificación', ruta: '/planificacion', icono: 'calendar_month' },
   { etiqueta: 'Sincronización', ruta: '/sincronizacion', icono: 'sync' },
+  { etiqueta: 'Nuevo ejercicio', ruta: '/ejercicios/nuevo', icono: 'add' },
+  { etiqueta: 'Gestionar categorías', ruta: '/ejercicios/categorias', icono: 'category' },
 ];

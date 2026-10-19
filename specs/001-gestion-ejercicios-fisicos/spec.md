@@ -12,6 +12,28 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 **Feature Branch**: `001-gestion-ejercicios-fisicos`
 
 **Created**: 2026-10-14
@@ -30,6 +52,14 @@
 - Las imágenes locales se sincronizan como archivos independientes y no pueden superar los 5 MB cada una.
 - El catálogo de fábrica definido en [catalogo-predefinido.json](./catalogo-predefinido.json) contiene 7 categorías y 23 ejercicios. Sus ejercicios y categorías se pueden modificar o eliminar como los creados por el usuario. Las series y repeticiones recomendadas se guardan en las observaciones.
 - La accesibilidad de las pantallas debe cumplir WCAG 2.1 AA en contraste, foco visible y uso mediante teclado. Los anchos de referencia son móvil hasta 599 px, tablet de 768 a 1024 px y escritorio desde 1280 px; los anchos intermedios también deben seguir siendo utilizables.
+- El menú principal contiene las opciones "Hoy", "Buscar", "Planificación", "Nuevo ejercicio", "Gestionar categorías" y "Sincronización". "Nuevo ejercicio" permite acceder directamente a la creación de ejercicios y "Gestionar categorías" a la gestión de categorías.
+- No existe una pantalla ni una opción de navegación denominada "Mis ejercicios". La consulta del catálogo completo, así como la búsqueda y selección de ejercicios, se realiza desde la pantalla "Buscar".
+
+## Clarifications
+
+### Session 2026-10-19
+
+- Q: Al seleccionar un ejercicio en “Buscar”, ¿se considera satisfecho FR-053 si la ficha abierta desde ese resultado ofrece “Editar” y “Eliminar”, o deben estar esas acciones directamente en la lista? → A: Se accede a “Editar” y “Eliminar” desde la ficha abierta al seleccionar un resultado; no se añaden acciones directas en la lista.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -39,7 +69,7 @@ Como usuario quiero crear, modificar y organizar por categorías mis ejercicios 
 
 **Why this priority**: Es la base de todo el sistema: sin una biblioteca de ejercicios organizada por categorías no es posible planificar nada. Por sí sola ya aporta valor, porque sustituye el actual "cajón desastre" de enlaces y notas sueltas por un único lugar centralizado y consultable. Además, al incluir un catálogo de ejercicios predefinidos desde el primer uso, aporta valor inmediato también al usuario principiante, que puede empezar a consultar y planificar sin tener que crear ningún ejercicio manualmente.
 
-**Independent Test**: Puede probarse completamente creando una categoría, dando de alta varios ejercicios asociados a ella con sus datos (nombre, descripción, enlaces, imágenes), editando uno de ellos y comprobando que los cambios se conservan, sin necesidad de que exista todavía ninguna planificación.
+**Independent Test**: Puede probarse completamente accediendo desde el menú principal en "Gestionar categorías" para crear una categoría, accediendo desde el mismo menú a "Nuevo ejercicio" para dar de alta varios ejercicios asociados a ella y utilizando posteriormente la pantalla "Buscar" para consultarlos, editarlos, eliminarlos y comprobar que los cambios se conservan, sin necesidad de que exista todavía ninguna planificación.
 
 **Acceptance Scenarios**:
 
@@ -49,24 +79,28 @@ Como usuario quiero crear, modificar y organizar por categorías mis ejercicios 
 4. **Given** que el usuario intenta crear una categoría con un nombre ya existente, **When** confirma la creación, **Then** el sistema rechaza la operación e informa de que el nombre ya está en uso.
 5. **Given** una categoría con ejercicios asociados, **When** el usuario la elimina, **Then** la categoría desaparece y se retira de todos los ejercicios que la tenían asignada, los cuales conservan sus demás categorías o pasan a la categoría genérica "Sin categoría" si no les queda ninguna.
 6. **Given** un ejercicio al que se le añade un enlace con formato no válido, **When** el usuario intenta guardarlo, **Then** el sistema rechaza el enlace e indica que el formato no es correcto.
-7. **Given** una instalación nueva de la aplicación sin ejercicios creados todavía por el usuario, **When** el usuario principiante abre la biblioteca de ejercicios, **Then** encuentra disponible un catálogo de ejercicios predefinidos, listos para consultar y planificar sin necesidad de crearlos manualmente.
-8. **Given** que el usuario abre la biblioteca con muchos ejercicios, **When** recorre el listado, **Then** cada ejercicio se distingue visualmente, su nombre y descripción se leen sin desplazamiento horizontal y la lista admite desplazamiento vertical.
+7. **Given** una instalación nueva de la aplicación sin ejercicios creados todavía por el usuario, **When** el usuario principiante abre la pantalla “Buscar”, **Then** encuentra disponible un catálogo de ejercicios predefinidos, listos para consultar y planificar sin necesidad de crearlos manualmente.
+8. **Given** que el usuario abre la pantalla “Buscar” con muchos ejercicios disponibles, **When** recorre el listado, **Then** cada ejercicio se distingue visualmente, su nombre y descripción se leen sin desplazamiento horizontal y la lista admite desplazamiento vertical.
 9. **Given** que los ejercicios o categorías se están cargando, **When** el usuario abre la pantalla correspondiente, **Then** ve un indicador de carga y no una pantalla vacía sin explicación.
 10. **Given** que el usuario modifica una categoría, **When** guarda los cambios, **Then** ve la categoría actualizada y una confirmación visible; si la operación falla, ve un mensaje de error asociado al contexto de la operación.
 11. **Given** que el usuario crea o edita un ejercicio, **When** abre el formulario, **Then** distingue los bloques de datos básicos, categorías, enlaces, imágenes y observaciones.
 12. **Given** que el usuario consulta el formulario de ejercicio, **When** todavía no ha intentado guardarlo, **Then** identifica los campos obligatorios; si un valor no es válido, el mensaje aparece junto al campo afectado y este queda resaltado.
 13. **Given** que el usuario guarda o elimina un ejercicio o una categoría, **When** la operación termina correctamente o falla, **Then** recibe una confirmación o un error visible cerca del contexto de la operación.
 14. **Given** que el usuario añade enlaces o imágenes a un ejercicio, **When** revisa los elementos añadidos, **Then** cada uno aparece ordenado y dispone de una acción claramente identificable para quitarlo.
+15. **Given** que el usuario visualiza el menú principal, **When** activa la opción "Nuevo ejercicio", **Then** el sistema muestra directamente el formulario de creación de un ejercicio, sin requerir que pase previamente por otra pantalla.
+16. **Given** que el usuario visualiza el menú principal, **When** activa la opción "Gestionar categorías", **Then** el sistema muestra directamente la pantalla de gestión de categorías.
+17. **Given** que el usuario consulta el menú principal, **When** revisa las opciones disponibles, **Then** encuentra las opciones "Hoy", "Buscar", "Planificación", "Sincronización", "Nuevo ejercicio" y "Gestionar categorías" y no encuentra una opción denominada "Mis ejercicios".
+18. **Given** que el usuario quiere consultar, editar o eliminar un ejercicio, **When** accede a la opción "Buscar" del menú principal, **Then** puede localizar el ejercicio y acceder a las acciones disponibles sobre él sin necesitar una pantalla independiente denominada "Mis ejercicios".
 
 ---
 
 ### User Story 2 - Buscar y consultar ejercicios (Priority: P2)
 
-Como usuario quiero buscar ejercicios por categoría o por texto, y visualizar sus vídeos e información sin salir de la aplicación, para localizar rápidamente lo que necesito sin recordar de memoria cada ejercicio ni abrir enlaces externos por separado.
+Como usuario quiero consultar el catálogo completo, buscar ejercicios por categoría o por texto y visualizar sus vídeos e información sin salir de la aplicación, para localizar rápidamente lo que necesito sin recordar de memoria cada ejercicio ni abrir enlaces externos por separado.
 
 **Why this priority**: Una vez existe la biblioteca de ejercicios (User Story 1), la capacidad de encontrarlos y consultarlos cómodamente es el siguiente valor más importante: evita la "consulta manual de múltiples fuentes externas" mencionada como objetivo principal del producto.
 
-**Independent Test**: Puede probarse de forma independiente creando previamente varios ejercicios en distintas categorías y comprobando que las búsquedas por categoría y por texto devuelven los resultados correctos, y que al abrir un ejercicio con vídeo se visualiza el reproductor integrado sin salir de la aplicación.
+**Independent Test**: Puede probarse de forma independiente creando previamente varios ejercicios en distintas categorías, accediendo a la pantalla "Buscar" para consultar el catálogo completo y comprobando que las búsquedas por categoría y por texto devuelven los resultados correctos, y que al abrir un ejercicio con vídeo se visualiza el reproductor integrado sin salir de la aplicación.
 
 **Acceptance Scenarios**:
 
@@ -158,6 +192,8 @@ Como usuario quiero reconocer rápidamente dónde estoy, encontrar las acciones 
 4. **Given** que el usuario navega con teclado, **When** recorre los controles y completa las tareas principales, **Then** puede alcanzarlos en un orden lógico y el foco permanece visible.
 5. **Given** que el usuario consulta una pantalla en móvil, tablet, escritorio o un ancho intermedio, **When** cambia el tamaño de la ventana, **Then** el contenido sigue siendo legible y utilizable sin solapamientos ni desplazamiento horizontal.
 6. **Given** que la interfaz muestra texto o controles, **When** se comprueban el contraste y el foco, **Then** el contraste es de al menos 4,5:1 para texto normal y 3:1 para texto grande e iconos funcionales, y todos los controles tienen un indicador de foco visible.
+7. **Given** que el usuario consulta el menú principal, **When** revisa su estructura, **Then** distingue las secciones "Hoy", "Buscar", "Planificación" y "Sincronización" de las acciones "Nuevo ejercicio" y "Gestionar categorías".
+8. **Given** que el usuario utiliza la aplicación en móvil, **When** selecciona "Nuevo ejercicio" o "Gestionar categorías" en el menú principal, **Then** el menú se cierra y se muestra directamente la pantalla correspondiente.
 
 ---
 
@@ -185,6 +221,10 @@ Como usuario quiero reconocer rápidamente dónde estoy, encontrar las acciones 
 - ¿Qué ocurre en los anchos intermedios no incluidos en los rangos de referencia? El diseño se adapta de forma fluida y permanece utilizable.
 - ¿Qué ocurre al abrir el menú en móvil? Se superpone al contenido a ancho completo, sin comprimirlo, y se cierra después de seleccionar una sección.
 - ¿Qué ocurre si el usuario completa un flujo solo con teclado? Todos los controles son alcanzables con foco visible y sin depender únicamente de acciones con ratón o pantalla táctil.
+- ¿Qué ocurre si el usuario quiere consultar todos los ejercicios sin aplicar filtros? La pantalla "Buscar" muestra el catálogo completo cuando no existe texto de búsqueda ni categorías seleccionadas.
+- ¿Qué ocurre con la funcionalidad que anteriormente estaba disponible en "Mis ejercicios"? La creación se abre desde "Nuevo ejercicio", la gestión de categorías desde "Gestionar categorías" y la consulta, edición y eliminación de ejercicios desde "Buscar"; ninguna capacidad funcional se pierde.
+- ¿Qué ocurre al seleccionar "Nuevo ejercicio" o "Gestionar categorías" desde el menú móvil? El menú se cierra antes de mostrar la pantalla correspondiente y no permanece superpuesto sobre su contenido.
+- ¿Qué ocurre si se intenta acceder mediante una URL antigua correspondiente a la pantalla "Mis ejercicios"? La aplicación redirige a "Buscar" y no muestra una pantalla vacía ni un error técnico.
 
 ## Requirements *(mandatory)*
 
@@ -228,7 +268,7 @@ Como usuario quiero reconocer rápidamente dónde estoy, encontrar las acciones 
 - **FR-036**: El sistema DEBE permitir añadir imágenes a un ejercicio tanto mediante una URL externa como mediante la subida de un archivo de imagen local, soportando ambos mecanismos de forma indistinta. Cada imagen subida como archivo NO DEBE superar los 5 MB; si los supera, se rechaza con un mensaje que indica el tamaño máximo. Las imágenes subidas como archivo DEBEN sincronizarse con GitHub junto con el resto de datos.
 - **FR-037**: El token de acceso de GitHub DEBE mostrarse oculto en pantalla, NUNCA DEBE incluirse en los datos sincronizados con GitHub, y el usuario DEBE poder borrarlo de la aplicación mediante una acción "Olvidar token". La pantalla de configuración DEBE indicar al usuario que cree un token de tipo *fine-grained* limitado a un único repositorio y con permiso de lectura y escritura de contenidos. Los datos DEBEN sincronizarse con un repositorio **privado** dedicado solo a datos (por ejemplo, `data-physical-exercises`), distinto del repositorio público donde se publica la aplicación, y el token DEBE limitarse a ese repositorio de datos; la pantalla de configuración DEBE indicarlo así.
 - **FR-038**: Cada pantalla funcional DEBE mostrar una cabecera con el título de la sección y, cuando existan, sus acciones principales, visibles sin tener que desplazarse para encontrarlas.
-- **FR-039**: El listado de ejercicios DEBE presentar cada ejercicio como un elemento visualmente diferenciado, con nombre y descripción legibles de un vistazo y sin desplazamiento horizontal. Los nombres o descripciones largos DEBEN ajustarse o truncarse sin romper el diseño; los listados largos DEBEN poder recorrerse verticalmente.
+- **FR-039**: En la pantalla "Buscar", el listado de ejercicios DEBE presentar cada ejercicio como un elemento visualmente diferenciado, con nombre y descripción legibles de un vistazo y sin desplazamiento horizontal. Los nombres o descripciones largos DEBEN ajustarse o truncarse sin romper el diseño; los listados largos DEBEN poder recorrerse verticalmente.
 - **FR-040**: Mientras se cargan ejercicios o categorías, el sistema DEBE mostrar un indicador visual de carga coherente con el resto de la aplicación.
 - **FR-041**: El formulario de ejercicio DEBE distinguir visualmente los bloques de datos básicos, categorías, enlaces, imágenes y observaciones; DEBE indicar los campos obligatorios antes del envío y mostrar los errores junto al campo afectado, resaltándolo.
 - **FR-042**: Al crear, editar o eliminar ejercicios o categorías, el sistema DEBE comunicar el éxito o el error de forma visible y comprensible, cerca del contexto de la operación.
@@ -236,9 +276,14 @@ Como usuario quiero reconocer rápidamente dónde estoy, encontrar las acciones 
 - **FR-044**: Todas las pantallas DEBEN mantener un estilo visual coherente y profesional en espaciado, tipografía y color, basado en una escala de espaciado de 8 px y principios de diseño Material.
 - **FR-045**: Todas las pantallas DEBEN cumplir los aspectos de accesibilidad acordados de WCAG 2.1 AA: contraste mínimo de 4,5:1 para texto normal y 3:1 para texto grande e iconos funcionales, foco visible en cada control interactivo y posibilidad de completar todos los flujos principales solo con teclado.
 - **FR-046**: La aplicación DEBE conservar el comportamiento funcional de navegación, creación, edición, eliminación, consulta, planificación, seguimiento del progreso y sincronización definido en esta especificación al aplicar las mejoras de presentación.
-- **FR-047**: En móvil, el menú de navegación DEBE abrirse como una superposición de ancho completo que no comprima el contenido principal y DEBE cerrarse automáticamente cuando el usuario elija una sección.
+- **FR-047**: En móvil, el menú de navegación DEBE abrirse como una superposición de ancho completo que no comprima el contenido principal y DEBE cerrarse automáticamente cuando el usuario elija una sección o acción.
 - **FR-048**: Desde la planificación correspondiente al día actual, el sistema DEBE permitir acceder directamente a la ficha de cada ejercicio planificado mediante una acción claramente identificable asociada al ejercicio. Esta acción DEBE ser independiente del control utilizado para marcar el ejercicio como realizado o no realizado, y DEBE poder activarse mediante teclado y mediante interacción táctil.
 - **FR-049**: Desde la planificación semanal, el sistema DEBE permitir acceder directamente a la ficha de cada ejercicio planificado.
+- **FR-050**: El menú principal DEBE contener las opciones "Hoy", "Buscar", "Planificación", "Sincronización", "Nuevo ejercicio" y "Gestionar categorías".
+- **FR-051**: La opción "Nuevo ejercicio" del menú principal DEBE permitir acceder directamente al formulario de creación de un ejercicio, sin pasar previamente por una pantalla de listado.
+- **FR-052**: La opción "Gestionar categorías" del menú principal DEBE permitir acceder directamente a la pantalla desde la que se crean, modifican y eliminan las categorías.
+- **FR-053**: La aplicación NO DEBE incluir una pantalla ni una opción de navegación denominada "Mis ejercicios". La consulta del catálogo completo y la búsqueda DEBEN realizarse desde la pantalla "Buscar". Al seleccionar un resultado, la aplicación DEBE abrir la ficha del ejercicio, desde la que se ofrecen las acciones de edición y eliminación; no se requieren acciones directas en la lista de resultados.
+- **FR-054**: La eliminación de la pantalla "Mis ejercicios" NO DEBE eliminar ni limitar las capacidades de creación, consulta, modificación y eliminación de ejercicios definidas en esta especificación.
 
 
 ### Key Entities *(include if feature involves data)*
@@ -269,6 +314,12 @@ Como usuario quiero reconocer rápidamente dónde estoy, encontrar las acciones 
 - **SC-014**: Los flujos funcionales de biblioteca, búsqueda, planificación, progreso y sincronización conservan los resultados descritos en sus escenarios de aceptación tras aplicar las mejoras de presentación.
 - **SC-015**: Desde la planificación de hoy, el usuario puede abrir la ficha de cualquier ejercicio planificado mediante una única acción, sin tener que buscarlo previamente en la biblioteca.
 - **SC-016**: Desde visualización de la planificación semanal, el usuario puede abrir la ficha de cualquier ejercicio planificado, sin tener que buscarlo previamente en la biblioteca.
+- **SC-017**: En móviles, los botones deben tener un espaciado entre ellos tanto en horizontal como en vertical.
+- **SC-018**: El usuario puede iniciar la creación de un ejercicio desde el
+  menú principal mediante una única acción, sin acceder previamente a un listado de ejercicios.
+- **SC-019**: El usuario puede acceder a la gestión de categorías desde el menú principal mediante una única acción.
+- **SC-020**: El 100 % de las capacidades de consulta, creación, edición y eliminación de ejercicios y categorías permanece disponible después de eliminar la pantalla "Mis ejercicios".
+- **SC-021**: El menú principal no muestra la opción "Mis ejercicios" en móvil, tablet ni escritorio.
 
 ## Assumptions
 
@@ -286,6 +337,6 @@ Como usuario quiero reconocer rápidamente dónde estoy, encontrar las acciones 
 - **Semana de referencia**: a efectos de la regla de "una única planificación activa por semana", la semana se considera de lunes a domingo.
 - **Catálogo predefinido editable**: el catálogo de ejercicios predefinidos de fábrica no es de solo lectura; el usuario puede modificarlo o eliminarlo igual que cualquier ejercicio propio.
 - **Experiencia visual**: se mantiene un único tema claro, una presentación coherente basada en una escala de espaciado de 8 px y los principios de Material, y el idioma de interfaz sigue siendo español de España.
-- **Pantallas funcionales**: las vistas de hoy, búsqueda, planificación y sincronización forman parte de las funciones disponibles; sus requisitos de presentación se aplican a esas pantallas funcionales, no a placeholders.
+- **Pantallas funcionales**: las vistas de hoy, búsqueda, planificación y sincronización forman parte de las funciones disponibles. "Nuevo ejercicio" y "Gestionar categorías" son acciones accesibles directamente desde el menú principal. No existe una pantalla independiente denominada "Mis ejercicios"; la consulta del catálogo y el acceso a la edición o eliminación de ejercicios se realizan desde "Buscar".
 - **Objetivo orientativo de validación**: se aspira a reducir los errores de validación en el primer intento de alta de ejercicios, pero no se fija un porcentaje como criterio de aceptación porque no existe telemetría para medirlo.
 - **Fuera de alcance en esta versión** (según el documento de origen): gestión de múltiples usuarios, compartición de ejercicios entre usuarios, autenticación mediante redes sociales, estadísticas avanzadas de entrenamiento, recordatorios por correo electrónico, notificaciones push, recomendación de ejercicios mediante inteligencia artificial, integración con relojes inteligentes, registro de peso/repeticiones/series, modo offline con sincronización automática avanzada, gestión de lesiones o diagnósticos médicos, seguimiento histórico detallado de rendimiento, impresión de fichas de ejercicio o de planificaciones, observaciones diarias dentro de una planificación, marcado de ejercicios como favoritos, y exportación a formatos como PDF o Excel (la exportación/importación de datos se cubre mediante la sincronización en JSON contra GitHub).

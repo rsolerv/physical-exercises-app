@@ -85,12 +85,16 @@ describe('BusquedaEjerciciosComponent', () => {
     expect(texto).toContain('No se han encontrado ejercicios');
   });
 
-  it('muestra los resultados encontrados', async () => {
-    configurar({ ejercicios: [ejercicio('1', 'Sentadilla'), ejercicio('2', 'Plancha')], categorias: [] });
+  it('muestra todos los ejercicios disponibles cuando no hay filtros', async () => {
+    const buscar = configurar({
+      ejercicios: [ejercicio('1', 'Sentadilla'), ejercicio('2', 'Plancha')],
+      categorias: [],
+    });
     const fixture = await crearComponente();
 
     const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(texto).toContain('Sentadilla');
     expect(texto).toContain('Plancha');
+    expect(buscar).toHaveBeenCalledWith('', []);
   });
 });

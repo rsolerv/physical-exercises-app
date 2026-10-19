@@ -41,15 +41,14 @@ describe('Integración de rutas de biblioteca (US1)', () => {
     });
   }
 
-  it('navegar a la ruta de biblioteca muestra el listado de ejercicios', async () => {
+  it('la ruta antigua de biblioteca redirige a Buscar sin mostrar Mis ejercicios', async () => {
     configurar();
     const harness = await RouterTestingHarness.create('/ejercicios');
     await harness.fixture.whenStable();
 
-    expect(harness.routeNativeElement?.querySelector('.biblioteca-listado')).toBeTruthy();
-    expect(harness.routeNativeElement?.querySelector('app-cabecera-pagina h1')?.textContent).toContain('Mis ejercicios');
-    expect(harness.routeNativeElement?.textContent).toContain('Nuevo ejercicio');
-    expect(harness.routeNativeElement?.textContent).toContain('Gestionar categorías');
+    expect(harness.routeNativeElement?.querySelector('.busqueda-ejercicios')).toBeTruthy();
+    expect(harness.routeNativeElement?.querySelector('.biblioteca-listado')).toBeFalsy();
+    expect(harness.routeNativeElement?.textContent).not.toContain('Mis ejercicios');
   });
 
   it('la gestión de categorías muestra título y acción de alta', async () => {
@@ -79,7 +78,7 @@ describe('Integración de rutas de biblioteca (US1)', () => {
     expect(harness.routeNativeElement?.textContent).toContain('Guardar ejercicio');
   });
 
-  it('el menú del shell resalta la entrada activa al navegar a la biblioteca', async () => {
+  it('el menú del shell resalta Buscar al entrar desde la ruta antigua de biblioteca', async () => {
     configurar();
     const harness = await RouterTestingHarness.create();
     const fixtureShell = TestBed.createComponent(ShellComponent);
@@ -90,6 +89,6 @@ describe('Integración de rutas de biblioteca (US1)', () => {
     await fixtureShell.whenStable();
 
     const enlaceActivo = (fixtureShell.nativeElement as HTMLElement).querySelector('.shell__enlace-activo');
-    expect(enlaceActivo?.textContent).toContain('Mis ejercicios');
+    expect(enlaceActivo?.textContent).toContain('Buscar');
   });
 });

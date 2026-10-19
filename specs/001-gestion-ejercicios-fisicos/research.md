@@ -71,3 +71,23 @@ Este documento no parte de ningún `NEEDS CLARIFICATION` pendiente (la fase de e
 - **Decision**: Workflow de GitHub Actions (`.github/workflows/deploy.yml`) en el repositorio **público** del código que, en cada push a `main`, ejecuta lint y pruebas, compila con `ng build --base-href /${{ github.event.repository.name }}/`, copia `index.html` como `404.html` (para que las rutas de la SPA funcionen al recargar) y publica `dist/` en GitHub Pages, configurado con origen "GitHub Actions". Los datos del usuario NO viven en este repositorio, sino en un repositorio privado aparte (`data-physical-exercises`, ver § 7).
 - **Rationale**: La constitución exige publicar exclusivamente en GitHub Pages, que en cuentas gratuitas requiere un repositorio público. GitHub Pages sirve el sitio bajo `/<repo>/` y no tiene reescritura de rutas, de ahí `--base-href` (tomado automáticamente del nombre del repositorio) y el `404.html`. Ejecutar lint y pruebas antes de publicar refuerza los requisitos de cero errores de ESLint y cobertura. Separar los datos evita exponerlos públicamente y que cada sincronización dispare un despliegue.
 - **Alternatives considered**: Enrutado con hash (`#/ruta`) en lugar de `404.html` — rechazado por empeorar las URLs sin necesidad. Publicación manual con `angular-cli-ghpages` — rechazada por no ejecutar lint y pruebas de forma automática.
+
+## 12. Retirada de “Mis ejercicios” y compatibilidad de navegación
+
+- **Decision**: Eliminar la pantalla y el componente exclusivo del listado bajo la ruta exacta `/ejercicios`, quitar su opción de menú y reemplazar esa ruta exacta por una redirección a `/buscar`. Mantener las rutas diferenciadas de creación, categorías, ficha y edición bajo `/ejercicios/...`. Añadir al menú enlaces directos a las rutas existentes `/ejercicios/nuevo` y `/ejercicios/categorias`.
+- **Rationale**: `/ejercicios` es actualmente la ruta canónica expuesta por el menú para la biblioteca, por lo que puede haber marcadores o enlaces guardados. La redirección preserva esos accesos sin conservar una pantalla denominada “Mis ejercicios”. Las rutas anidadas siguen sirviendo funciones vigentes y no deben confundirse con la ruta retirada.
+- **Alternatives considered**: Eliminar también `/ejercicios` — rechazado por romper enlaces guardados sin necesidad. Mantener el listado como alias o conservarlo en el menú — rechazado porque contradice FR-053.
+
+## 13. Reutilización de búsqueda y límites de implementación
+
+- **Decision**: Dejar sin cambios los archivos de implementación de `presentation/busqueda-ejercicios/`. El caso de uso existente ya devuelve el catálogo completo cuando no hay filtros; cada resultado abre una ficha que proporciona edición y eliminación. Tras eliminar desde la ficha, volver a `/buscar`. Probar estas rutas de extremo a extremo sin cambiar el componente, su plantilla ni sus estilos.
+- **Rationale**: La búsqueda ya cubre la consulta del catálogo y la ficha conserva las operaciones CRUD; reutilizarlas preserva las capacidades y respeta la instrucción de no modificar el código de la pantalla Buscar. El dominio, los repositorios, los datos semilla y el esquema de persistencia no requieren cambios.
+- **Alternatives considered**: Incorporar edición/eliminación dentro del listado de Buscar o modificar el componente de búsqueda para presentar el catálogo — descartado porque las capacidades ya existen en la ficha y la pantalla Buscar está expresamente fuera de los cambios de implementación.
+
+## 14. Regresión visual de Buscar y comportamiento del menú móvil
+
+- **Decision**: Mantener y verificar el listado diferenciado, legible, ajustable y desplazable verticalmente de Buscar (FR-039) sin editar su implementación. Conservar el `mat-sidenav` overlay de ancho completo hasta 599 px y el cierre al elegir una entrada; probar que las dos entradas nuevas siguen el mismo comportamiento.
+- **Rationale**: La pantalla ya usa una lista de resultados y el shell actual implementa overlay móvil a 599 px, ancho completo y cierre al seleccionar una ruta. El cambio de menú debe reutilizar ese comportamiento; la prueba de regresión basta si la conducta actual se mantiene.
+- **Alternatives considered**: Rediseñar la pantalla Buscar o reimplementar el menú móvil — rechazado por no ser necesario para conservar los comportamientos descritos y por exceder el alcance.
+
+**Alcance de requisitos**: La especificación activa termina en FR-054; FR-055 no está definido y no se infiere ni se incorpora como requisito.

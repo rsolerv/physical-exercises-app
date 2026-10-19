@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { BibliotecaListadoComponent } from './presentation/biblioteca-ejercicios/biblioteca-listado.component';
 import { EjercicioFormularioComponent } from './presentation/biblioteca-ejercicios/ejercicio-formulario.component';
 import { EjercicioFichaComponent } from './presentation/biblioteca-ejercicios/ejercicio-ficha.component';
 import { CategoriaGestionComponent } from './presentation/biblioteca-ejercicios/categorias/categoria-gestion.component';
@@ -17,7 +16,7 @@ import { ResolucionConflictoComponent } from './presentation/sincronizacion/conf
 export const routes: Routes = [
   { path: '', redirectTo: 'inicio', pathMatch: 'full' },
   { path: 'inicio', component: DiaActualComponent, title: 'Hoy' },
-  { path: 'ejercicios', component: BibliotecaListadoComponent, title: 'Mis ejercicios' },
+  { path: 'ejercicios', redirectTo: 'buscar', pathMatch: 'full' },
   { path: 'ejercicios/categorias', component: CategoriaGestionComponent, title: 'Categorías' },
   { path: 'ejercicios/nuevo', component: EjercicioFormularioComponent, title: 'Nuevo ejercicio' },
   { path: 'ejercicios/:id/editar', component: EjercicioFormularioComponent, title: 'Editar ejercicio' },

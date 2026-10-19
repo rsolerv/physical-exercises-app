@@ -22,9 +22,9 @@ Abrir la URL local indicada por `npm start` en el navegador. En el primer arranq
 
 ## US1 — Gestionar la biblioteca personal de ejercicios (P1)
 
-1. Abrir la aplicación por primera vez. **Esperado**: ya existen ejercicios predefinidos visibles en la biblioteca, sin haber creado ninguno manualmente (escenario 7 / FR-034).
+1. Abrir la aplicación por primera vez y entrar en “Buscar”. **Esperado**: ya existen ejercicios predefinidos visibles sin haber creado ninguno manualmente (escenario 7 / FR-034).
 2. Crear una categoría nueva, p. ej. "Cuello", indicando solo el nombre. **Esperado**: aparece inmediatamente disponible para asignarla a un ejercicio (escenario 1).
-3. Crear un ejercicio nuevo indicando nombre, descripción y la categoría "Cuello". **Esperado**: se guarda y aparece al consultar la biblioteca (escenario 2).
+3. Crear un ejercicio nuevo indicando nombre, descripción y la categoría "Cuello". **Esperado**: se guarda y aparece en “Buscar” sin filtros (escenario 2).
 4. Editar ese ejercicio cambiando su descripción y añadiendo una observación. **Esperado**: los cambios se conservan al volver a abrir la ficha del ejercicio (escenario 3).
 5. Intentar crear otra categoría llamada también "Cuello". **Esperado**: la aplicación rechaza la operación e indica que el nombre ya existe (escenario 4).
 6. Intentar guardar un ejercicio con un enlace con formato incorrecto (p. ej. escribir `ejercicio1` en el campo de enlace). **Esperado**: la aplicación rechaza el enlace e indica que el formato no es válido (escenario 6).
@@ -40,6 +40,17 @@ Abrir la URL local indicada por `npm start` en el navegador. En el primer arranq
 2. Escribir parte del nombre de un ejercicio conocido en el buscador de texto. **Esperado**: el ejercicio aparece entre los resultados (escenario 2).
 3. Abrir un ejercicio que tenga un enlace de YouTube válido. **Esperado**: el vídeo se reproduce embebido dentro de la propia aplicación, sin abrir YouTube en otra pestaña (escenario 3).
 4. Seleccionar una categoría sin ejercicios asociados. **Esperado**: se muestra una lista vacía con un mensaje indicándolo, no un error (escenario 4).
+5. Quitar todos los filtros de texto y categoría. **Esperado**: aparecen todos los ejercicios, incluidos los predefinidos y los creados por el usuario.
+
+## Regresión de menú, catálogo y compatibilidad (FR-039, FR-047, FR-050…FR-054)
+
+1. Abrir el menú principal en escritorio y móvil. **Esperado**: aparecen “Hoy”, “Buscar”, “Planificación”, “Sincronización”, “Nuevo ejercicio” y “Gestionar categorías”; no aparece “Mis ejercicios”.
+2. Elegir “Nuevo ejercicio” y volver al menú; elegir “Gestionar categorías”. **Esperado**: cada opción abre directamente su pantalla y, en móvil (≤599 px), el menú se cierra después de la selección.
+3. Abrir la URL antigua `/ejercicios` directamente. **Esperado**: se abre “Buscar”, no aparece un listado independiente ni el título “Mis ejercicios”. Las URL de detalle y edición `/ejercicios/:id` y `/ejercicios/:id/editar`, además de `/ejercicios/nuevo` y `/ejercicios/categorias`, siguen funcionando.
+4. En “Buscar”, con filtros vacíos, localizar un ejercicio y abrirlo. **Esperado**: la ficha permite editarlo y eliminarlo; tras eliminarlo, se vuelve a “Buscar” y el ejercicio ya no aparece.
+5. Revisar “Buscar” en móvil y escritorio con resultados largos. **Esperado**: cada resultado se distingue, nombre y descripción se leen sin desplazamiento horizontal, el texto largo no rompe el diseño y la lista permite desplazamiento vertical.
+6. En un viewport de 599 px o menos, abrir el menú. **Esperado**: se superpone a ancho completo sin comprimir el contenido y se cierra al seleccionar cualquiera de sus entradas; repetir la comprobación con las dos nuevas opciones.
+7. Repetir la comprobación del menú a 768 px y 1024 px, y en escritorio a 1280 px o más. **Esperado**: la navegación sigue utilizable y muestra las mismas seis opciones, sin “Mis ejercicios”; en tablet y escritorio el menú no comprime ni solapa el contenido.
 
 ## US3 — Planificar la semana de ejercicios (P3)
 
@@ -74,7 +85,7 @@ En esta sección, "navegador A" y "navegador B" son dos navegadores distintos (o
 
 ## US6 — Usar una aplicación clara, coherente y accesible (P1)
 
-1. Abrir las pantallas funcionales de Hoy, Mis ejercicios, Buscar, Planificación, Sincronización y sus formularios/fichas principales. **Esperado**: cada pantalla tiene título visible y las acciones disponibles aparecen en la cabecera cuando corresponda.
+1. Abrir las pantallas funcionales de Hoy, Buscar, Planificación, Sincronización y los formularios/fichas principales; comprobar también las acciones directas de “Nuevo ejercicio” y “Gestionar categorías”. **Esperado**: cada pantalla tiene título visible y las acciones disponibles aparecen en la cabecera cuando corresponda; no existe la pantalla “Mis ejercicios”.
 2. En una ventana de 599 px o menos, abrir el menú desde el botón superior. **Esperado**: el menú se superpone al contenido, lo cubre sin comprimirlo y se cierra al elegir una sección.
 3. Repetir en 600 px, 768 px y 1280 px. **Esperado**: el panel lateral se adapta al ancho, la sección seleccionada se distingue y el contenido permanece legible.
 4. Recorrer con Tab y Mayús+Tab los flujos principales de creación, edición, eliminación y navegación. **Esperado**: todos los controles se alcanzan en orden lógico, se pueden activar con teclado y el foco siempre es visible.
