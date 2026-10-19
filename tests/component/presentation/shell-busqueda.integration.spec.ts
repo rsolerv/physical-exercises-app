@@ -45,6 +45,7 @@ describe('Integración de rutas de búsqueda y componentes embebidos (US2)', () 
     await harness.fixture.whenStable();
 
     expect(harness.routeNativeElement?.querySelector('.busqueda-ejercicios')).toBeTruthy();
+    expect(harness.routeNativeElement?.querySelector('app-cabecera-pagina h1')?.textContent).toContain('Buscar ejercicios');
   });
 
   it('abrir un ejercicio con vídeo de YouTube muestra el reproductor embebido dentro de la ficha', async () => {
@@ -54,5 +55,8 @@ describe('Integración de rutas de búsqueda y componentes embebidos (US2)', () 
     harness.detectChanges();
 
     expect(harness.routeNativeElement?.querySelector('app-youtube-embed')).toBeTruthy();
+    expect(harness.routeNativeElement?.querySelector('app-cabecera-pagina h1')?.textContent).toContain('Sentadilla');
+    expect(harness.routeNativeElement?.textContent).toContain('Editar');
+    expect(harness.routeNativeElement?.textContent).toContain('Eliminar');
   });
 });

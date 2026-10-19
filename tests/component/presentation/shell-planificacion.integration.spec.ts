@@ -38,6 +38,8 @@ describe('Integración de la pantalla de inicio y de las rutas de planificación
     await harness.fixture.whenStable();
 
     expect(harness.routeNativeElement?.querySelector('.dia-actual')).toBeTruthy();
+    expect(harness.routeNativeElement?.querySelector('app-cabecera-pagina h1')?.textContent).toContain('Hoy');
+    expect(harness.routeNativeElement?.textContent).toContain('Ver planificación semanal');
   });
 
   it('navegar al calendario de planificación funciona desde el menú', async () => {
@@ -46,6 +48,8 @@ describe('Integración de la pantalla de inicio y de las rutas de planificación
     await harness.fixture.whenStable();
 
     expect(harness.routeNativeElement?.querySelector('.calendario-semanal')).toBeTruthy();
+    expect(harness.routeNativeElement?.querySelector('app-cabecera-pagina h1')?.textContent).toContain('Planificación semanal');
+    expect(harness.routeNativeElement?.textContent).toContain('Nueva planificación');
   });
 
   it('navegar al constructor de planificación funciona desde el calendario', async () => {
@@ -54,5 +58,7 @@ describe('Integración de la pantalla de inicio y de las rutas de planificación
     await harness.fixture.whenStable();
 
     expect(harness.routeNativeElement?.querySelector('.planificacion-constructor')).toBeTruthy();
+    expect(harness.routeNativeElement?.querySelector('app-cabecera-pagina h1')).toBeTruthy();
+    expect(harness.routeNativeElement?.textContent).toContain('Volver');
   });
 });

@@ -7,6 +7,13 @@
   gap: $espaciado-3;
 }
 
+.categoria-gestion__carga {
+  display: flex;
+  align-items: center;
+  gap: $espaciado-2;
+  min-height: 48px;
+}
+
 .categoria-gestion__item {
   @include tablet {
     max-width: 480px;
@@ -15,6 +22,41 @@
   @include escritorio {
     max-width: 480px;
   }
+}
+
+.categoria-gestion__acciones {
+  display: flex;
+  gap: $espaciado-1;
+}
+
+.categoria-gestion__acciones button[mat-icon-button] {
+  width: 48px;
+  height: 48px;
+}
+
+.categoria-gestion button {
+  min-height: 48px;
+  height: 48px;
+}
+
+.categoria-gestion__edicion,
+.categoria-gestion__acciones-edicion {
+  display: flex;
+  flex-direction: column;
+  gap: $espaciado-2;
+}
+
+.categoria-gestion__edicion {
+  padding: $espaciado-2 $espaciado-3;
+}
+
+.categoria-gestion__mensaje {
+  margin: 0;
+  color: var(--mat-sys-primary);
+}
+
+.categoria-gestion__mensaje--error {
+  color: var(--mat-sys-error);
 }
 
 .categoria-gestion__alta {
@@ -30,5 +72,15 @@
   @include escritorio {
     flex-direction: row;
     align-items: flex-start;
+  }
+}
+
+.categoria-gestion__acciones-edicion {
+  @include tablet {
+    flex-direction: row;
+  }
+
+  @include escritorio {
+    flex-direction: row;
   }
 }

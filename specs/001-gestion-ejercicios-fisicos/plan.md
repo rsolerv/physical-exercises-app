@@ -1,53 +1,82 @@
-# Implementation Plan: Gestión de Ejercicios Físicos y Planificación Semanal
+# Implementation Plan: Gestión integral de ejercicios y planificación semanal
 
-**Branch**: `001-gestion-ejercicios-fisicos` | **Date**: 2026-10-15 | **Spec**: [spec.md](./spec.md)
-
-**Input**: Feature specification from `/specs/001-gestion-ejercicios-fisicos/spec.md`
-
-**Note**: This template is filled in by the `/speckit-plan` command; its definition describes the execution workflow.
+**Branch**: `001-gestion-ejercicios-fisicos` | **Date**: 2026-10-19 | **Spec**: [spec.md](./spec.md)
 
 ## Summary
 
-Aplicación web (SPA) de un único usuario para centralizar la biblioteca de ejercicios físicos (con categorías, enlaces, vídeos e imágenes), planificarlos semanalmente (planificaciones concretas y plantillas reutilizables) y marcar el progreso diario, con persistencia local en el navegador y sincronización manual contra un repositorio de GitHub. Enfoque técnico: Angular 22 (última versión estable) con componentes standalone, Signals como primitiva de estado en Dominio/Aplicación/Presentación, Signal Forms (developer preview) como mecanismo principal de formularios en la capa de Presentación, RxJS/Observables confinados a la capa de Infraestructura (SQLite WASM, cliente HTTP de GitHub), change detection zoneless, y arquitectura en capas (Domain/Application/Infrastructure/Presentation) tal como exige la constitución del proyecto.
+Aplicación web de un único usuario para gestionar una biblioteca de ejercicios, buscar y consultar su contenido, organizar planificaciones semanales, registrar el progreso diario y conservar/sincronizar los datos. La solución combina persistencia local y sincronización manual con GitHub con una experiencia responsive, coherente y accesible en todas las pantallas funcionales. El código existente ya implementa la mayor parte de la funcionalidad; el trabajo restante se concentra en cerrar los huecos visuales y de interacción identificados en la revisión del código, sin alterar el dominio ni la persistencia salvo que una prueba demuestre que es imprescindible.
 
 ## Technical Context
 
-**Language/Version**: TypeScript (versión empaquetada con Angular 22) sobre Angular 22.x (última versión estable disponible; cumple el mínimo "Angular 21 o superior" de la constitución)
+**Language/Version**: TypeScript 6 con Angular 22.2.x, ya instalado y en uso.
 
-**Primary Dependencies**: Angular 22 (standalone components, Signals, `@angular/forms/signals` — Signal Forms en developer preview), Angular Material (única librería de componentes visuales permitida), RxJS (solo en la capa de Infraestructura), Angular `HttpClient` (API REST de GitHub), un paquete oficial de SQLite WASM (ejecución íntegra en el navegador)
+**Primary Dependencies**: Angular standalone, Signals y Signal Forms; Angular Material 3 como única librería de componentes visuales; Angular CDK ya instalado; RxJS y `HttpClient` confinados a los adaptadores de infraestructura; `@sqlite.org/sqlite-wasm`. No se prevén dependencias nuevas.
 
-**Storage**: SQLite WASM ejecutándose en un Web Worker del navegador con el VFS `opfs-sahpool`, que no requiere cabeceras COOP/COEP y por tanto funciona en GitHub Pages (research.md § 6); sin base de datos gestionada externa. Las imágenes subidas como archivo (máximo 5 MB) se guardan como BLOB en la misma base de datos
+**Storage**: SQLite WASM en un Web Worker del navegador con VFS `opfs-sahpool`; no hay backend ni almacenamiento gestionado externo. Los datos se sincronizan manualmente como JSON y las imágenes locales como documentos separados en el repositorio privado de datos de GitHub.
 
-**Testing**: Vitest (vía la integración experimental de Angular CLI para Vitest) combinado con `TestBed` de Angular para pruebas de componentes de Presentación; cobertura mínima 80% global y 100% en casos de uso de Dominio, por mandato de la constitución
+**Testing**: Vitest y Angular `TestBed`. Se conserva la cobertura mínima del 80% global y del 100% para Domain, ESLint sin errores y desarrollo test-first. La accesibilidad visual y el uso solo con teclado requieren comprobación manual en la interfaz; las reglas de plantillas de ESLint no bastan para demostrar WCAG 2.1 AA.
 
-**Target Platform**: Navegadores web modernos de escritorio y móvil; despliegue exclusivo como sitio estático en GitHub Pages desde un repositorio público de código. Los datos del usuario se sincronizan con un repositorio privado aparte (`data-physical-exercises`)
+**Target Platform**: Navegadores modernos de escritorio, tablet y móvil; sitio estático publicado en GitHub Pages desde el repositorio público de código; repositorio privado separado para los datos.
 
-**Project Type**: Aplicación web de página única (SPA) sin backend — proyecto único estructurado internamente en las cuatro capas obligatorias de la constitución (Domain/Application/Infrastructure/Presentation)
+**Project Type**: SPA sin backend, organizada en las cuatro capas exigidas por la constitución: Domain, Application, Infrastructure y Presentation.
 
-**Performance Goals**: Derivados de los criterios de éxito del spec — localizar un ejercicio en menos de 10s (SC-002), mostrar la planificación del día de forma inmediata al abrir la app (SC-003); no aplican metas de throughput de servidor al no existir backend
+**Performance Goals**: Cumplir los presupuestos existentes en `angular.json`: bundle inicial con aviso en 700 kB y error en 1.5 MB; estilos por componente con aviso en 4 kB y error en 8 kB. No aplican metas de throughput de servidor.
 
-**Constraints**: Funcionamiento sin conexión salvo para la sincronización con GitHub (Assumptions del spec); change detection zoneless (sin `zone.js`); cero errores de ESLint; test-first obligatorio; todo el texto de interfaz en español de España
+**Constraints**: Uso normal disponible sin conexión; sincronización solo bajo acción explícita; detección de cambios zoneless; texto visible en español de España; tema claro; espaciado basado en 8 px; adaptación a todos los anchos, con rangos de referencia móvil ≤599 px, tablet 768–1024 px y escritorio ≥1280 px. Los anchos intermedios también deben funcionar.
 
-**Scale/Scope**: Un único usuario por instalación, volumen de datos personal (decenas de ejercicios, pocas planificaciones simultáneas); 5 historias de usuario priorizadas (P1–P5) que cubren 36 requisitos funcionales
+**Scale/Scope**: Un usuario por instalación, datos personales (decenas de ejercicios y pocas planificaciones simultáneas), 6 historias de usuario y 47 requisitos funcionales.
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+*GATE: mantener conformidad durante los cambios pendientes y revalidar antes de cerrar la implementación.*
 
-| Principio / regla de la constitución | Evaluación | Estado |
+| Principio / regla | Evaluación para este plan | Estado |
 |---|---|---|
-| I. Idioma y Mercado (Español de España) | Toda la interfaz, mensajes de validación/error y documentación de usuario se redactarán en español de España; sin excepciones de alcance | PASS |
-| II. Cero Alcance Fantasma | El plan cubre únicamente FR-001…FR-036 y las 5 historias de usuario del spec; ninguna capacidad adicional (favoritos, estadísticas, multiusuario, etc.) se incluye en el diseño | PASS |
-| III. Verificabilidad por una Persona No Técnica | `quickstart.md` documenta únicamente pasos de uso de la interfaz (sin leer código, logs ni la base SQLite) para validar cada historia de usuario | PASS |
-| IV. UX Multiplataforma y Accesible | Angular Material + diseño responsive obligatorio; flujos cortos (p. ej. reasignación de categoría en el mismo borrado) orientados a usuarios no técnicos | PASS |
-| Arquitectura y Stack Tecnológico | Angular 22 (≥21 ✓), SQLite WASM en navegador ✓, export/import JSON vía API de GitHub ✓, despliegue en GitHub Pages ✓, sin backend propio ✓, Angular Material como única librería visual ✓, arquitectura en 4 capas con dependencias hacia el dominio ✓ | PASS |
-| Calidad de Código y Pruebas | SOLID en el diseño de clases; cero errores de ESLint; Vitest como framework de pruebas; cobertura 80% global / 100% en Domain; test-first en el orden de tareas de implementación | PASS |
+| I. Idioma y Mercado | Mantener todos los textos, validaciones y feedback en español de España. | PASS |
+| II. Cero Alcance Fantasma | Las modificaciones se limitan a FR-001…FR-047; los huecos de presentación identificados corresponden a requisitos ya descritos. No se añaden funciones nuevas. | PASS |
+| III. Verificabilidad por una Persona No Técnica | Las mejoras de presentación, responsive, feedback y teclado se validan recorriendo la aplicación; no se exige inspeccionar código, logs o la base de datos. | PASS |
+| IV. UX Multiplataforma y Accesible | La solución debe cubrir los rangos y flujos accesibles del spec, incluidos el menú superpuesto en móvil, foco visible, contraste y navegación con teclado. La implementación actual tiene diferencias descritas más abajo. | PENDIENTE DE CIERRE |
+| Arquitectura y Stack | Se conserva Angular, Angular Material como única librería visual, SQLite WASM en navegador, GitHub Pages y las cuatro capas; la intervención se concentra en Presentation. | PASS |
+| Calidad de Código y Pruebas | Vitest, test-first, ESLint sin errores, ≥80% de cobertura global y 100% para Domain. Las tareas pendientes deben añadir pruebas de componente para los gaps identificados. | PENDIENTE DE CIERRE |
 
-No se detectan violaciones que requieran justificación; la tabla de Complexity Tracking queda vacía.
+## Revisión del código existente
 
-**Re-evaluación post-Fase 1 (tras research.md, data-model.md, contracts/ y quickstart.md)**: el diseño resultante no introduce ninguna entidad, capa, dependencia externa ni flujo de interfaz no contemplados en la tabla anterior. La única entidad añadida sin estar en el spec ("Ajustes de aplicación") es de soporte técnico puro (credenciales de sincronización y bandera de semilla del catálogo), imprescindible para implementar FR-002 y FR-034 ya aprobados, por lo que no constituye alcance nuevo (Principio II). **Resultado: todas las filas siguen en PASS.**
+La aplicación ya contiene las cinco áreas funcionales descritas en el spec: biblioteca y categorías, búsqueda y ficha, planificación y vista de hoy, progreso y sincronización. No se trata de rediseñar placeholders ni de volver a implementar la aplicación completa.
 
-**Revisión tras `/speckit-analyze` (2026-10-15)**: se corrigieron cuatro conflictos con la constitución detectados en el análisis. Los casos de uso puros pasan a Domain (research.md § 10); los componentes embebidos pasan de Infrastructure a Presentation; la verificación de la sincronización ya no requiere inspeccionar GitHub (Principio III); y se añade el despliegue en GitHub Pages (research.md § 11). Las tareas se regeneran con tests previos para toda la funcionalidad (test-first).
+### Decisiones ya implementadas que se mantienen
+
+- Arquitectura Domain/Application/Infrastructure/Presentation y persistencia SQLite WASM en navegador; se mantienen los casos de uso, repositorios y reglas de dominio.
+- Componentes standalone con Signals, Signal Forms para el formulario, Angular Material 3, tema claro y variables `--mat-sys-*`.
+- Componentes compartidos `CabeceraPaginaComponent`, `EstadoVacioComponent` y `MensajeFeedbackService`.
+- Parciales de estilo `_espaciado.scss`, `_breakpoints.scss`, `_utilidades.scss`, importadas desde `styles.scss`.
+- Cabeceras, estados vacíos, indicadores de carga en la biblioteca y varias vistas, listados diferenciados y errores de validación junto a campos.
+- El feedback usa `MatSnackBar`; las pantallas de día, búsqueda, biblioteca, calendario, constructor y sincronización muestran cabeceras. `ProgresoDiarioComponent` es un componente integrado en la vista “Hoy”, no una ruta independiente.
+- Los presupuestos de bundle configurados son 700 kB/1.5 MB para `initial` y 4 kB/8 kB para `anyComponentStyle`.
+
+### Diferencias y decisiones de intervención
+
+| Área / componente | Situación observada | Decisión del plan |
+|---|---|---|
+| `CategoriaGestionComponent` | Permite crear y eliminar, pero no editar categorías. El caso de uso `GestionarCategoriaUseCase.actualizar` ya existe. Tampoco presenta estado de carga aunque carga las categorías con `resource`. | Mantener el componente y conectarlo al caso de uso existente para editar; añadir estados de carga y feedback contextual; ampliar las pruebas de componente. No modificar el dominio ni el puerto salvo que la integración existente lo requiera. |
+| `EjercicioFormularioComponent` | Los grupos del formulario y el feedback están implementados; la obligatoriedad de categoría es visible, pero nombre y descripción no muestran una marca previa al envío. | Mantener Signal Forms y el flujo actual; hacer visible la obligatoriedad de nombre y descripción y verificar estados de error, éxito y teclado mediante pruebas. |
+| `EjercicioFichaComponent` | Las imágenes se muestran con `<img>`, pero no se observa un tratamiento para el fallo de carga de una imagen. | Mantener la ficha y añadir una indicación de error de imagen que no oculte el resto de los datos; cubrirla con prueba de componente. |
+| `ShellComponent` | El menú se cierra al navegar y tiene tratamiento visual para la ruta activa, pero el `mat-sidenav` usa `mode="side"` también en móvil. El código usa `<768 px` para el estado móvil mientras los estilos consideran móvil hasta 599 px. | Mantener shell, toolbar, navegación y estilo activo; modificar el modo responsive para que el menú sea overlay en móvil, cerrar al navegar y hacer coherentes las condiciones con los rangos del spec. Añadir pruebas del modo, cierre y anchos de referencia. |
+| Feedback de categorías | El éxito se anuncia mediante `MatSnackBar` y los errores aparecen en la página, no junto al elemento afectado. | Mantener `MensajeFeedbackService`; acercar el feedback al contexto de la operación y conservar el anuncio accesible. |
+| `PaginaEnConstruccionComponent` | No está registrada en `app.routes.ts`; las rutas funcionales apuntan a componentes reales. Su mención en comentarios de navegación y del estado vacío describe un uso que ya no es actual. | Retirar el componente sin uso y limpiar las referencias/comentarios obsoletos al implementar. No sustituir ninguna ruta funcional por un placeholder. |
+| Accesibilidad y responsive globales | Material aporta controles y foco base, y ESLint revisa accesibilidad de plantillas; eso no demuestra contraste WCAG AA ni los flujos solo con teclado. | Mantener la lista manual de criterios y comprobar contraste, foco, teclado y tamaños mediante recorrido de interfaz. No añadir una dependencia de accesibilidad sin necesidad aprobada. |
+
+No se identifican motivos para cambiar el modelo de datos, las capas de dominio/aplicación/infraestructura, la sincronización, el catálogo ni las dependencias. Los cambios de comportamiento visibles son los que especifica el spec consolidado.
+
+## Enfoque de implementación
+
+1. Añadir o completar primero pruebas de componente para edición de categorías, estado de carga de categorías, obligatoriedad visible en el formulario, errores de carga de imágenes y modo overlay/cierre del menú móvil.
+2. Extender `CategoriaGestionComponent` usando el caso de uso `actualizar` ya disponible; no duplicar reglas de categoría en Presentación.
+3. Corregir el modo responsive del shell para que el menú lateral se comporte como overlay hasta 599 px y como panel lateral desde 600 px; mantener el cierre tras la navegación y la indicación de sección activa, sin cambiar los rangos de referencia móvil, tablet y escritorio del spec.
+4. Completar las señales visuales requeridas en el formulario, la ficha de ejercicio y las operaciones de categoría, reutilizando los componentes compartidos y los tokens ya existentes.
+5. Retirar `PaginaEnConstruccionComponent` y actualizar los comentarios obsoletos que indiquen que las rutas funcionales son placeholders; conservar el estado vacío reutilizable para los casos funcionales sin datos.
+6. Ejecutar pruebas Vitest y lint; comprobar presupuestos del build. Validar manualmente contraste, foco y flujos con teclado, además de ausencia de solapamientos y desplazamiento horizontal en anchos menores de 360 px, rangos de referencia y anchos intermedios.
+
+La implementación se considera cerrada solo cuando los gaps de la tabla anterior están cubiertos por pruebas y los criterios manuales de accesibilidad y adaptación visual se han verificado desde la interfaz.
 
 ## Project Structure
 
@@ -71,6 +100,7 @@ specs/001-gestion-ejercicios-fisicos/
     └── deploy.yml                  # lint + tests + build con --base-href + 404.html + publicación en GitHub Pages
 
 src/
+├── styles/                         # tokens SCSS compartidos de espaciado, breakpoints y utilidades
 ├── app/
 │   ├── domain/                     # entidades y casos de uso PUROS (sin E/S, 100% de cobertura)
 │   │   ├── errores/                # errores de dominio compartidos
@@ -91,7 +121,9 @@ src/
 │       ├── planificacion-semanal/      # US3 - planificaciones, plantillas, calendario
 │       ├── progreso-diario/            # US4 - marcar realizado y ver progreso
 │       ├── sincronizacion/             # US5 - configuración del token, sincronización y conflictos
-│       └── compartido/                 # shell, navegación, componentes comunes
+│       └── compartido/
+│           ├── shell/                  # barra superior, menú y rutas
+│           ├── ui/                     # cabecera, estado vacío y feedback reutilizables
 │           └── embebidos/              # reproductor de YouTube y previsualización de enlaces externos
 ├── assets/
 │   └── catalogo-predefinido/       # datos semilla del catálogo de ejercicios de fábrica (FR-034)
@@ -103,10 +135,10 @@ tests/
 │   ├── application/
 │   └── infrastructure/             # adaptadores SQLite contra una base de datos en memoria
 └── component/
-    └── presentation/
+    └── presentation/                   # componentes funcionales y pruebas del UI compartido
 ```
 
-**Structure Decision**: Proyecto único de Angular (SPA sin backend), sin la división frontend/backend de la Opción 2 del template porque no existe servidor propio. La estructura interna sigue literalmente las cuatro capas obligatorias de la constitución (`domain/`, `application/`, `infrastructure/`, `presentation/`), y dentro de `presentation/` se organiza además por historia de usuario (US1–US5) para permitir entrega y prueba independientes tal como exige el spec. Domain contiene los casos de uso puros (funciones sin E/S, sujetos al 100% de cobertura), y Application solo orquesta: carga datos mediante los puertos, llama al dominio y guarda el resultado (research.md § 10). Todos los componentes Angular, incluidos los embebidos de YouTube y enlaces, viven en Presentation. Los tests espejan esas mismas capas bajo `tests/`.
+**Structure Decision**: Proyecto único Angular (SPA sin backend) con las cuatro capas obligatorias (`domain/`, `application/`, `infrastructure/`, `presentation/`). Se conserva la organización por áreas funcionales y componentes standalone. Los componentes visuales reutilizables y tokens SCSS permanecen en Presentation y `src/styles/`; no se añade otra capa ni una dependencia. Domain conserva reglas y funciones puras con cobertura del 100%; Application orquesta mediante puertos, e Infrastructure mantiene SQLite WASM y sincronización GitHub. Las pruebas de presentación se mantienen en `tests/component/presentation/`, incluidas las de los componentes compartidos.
 
 ## Complexity Tracking
 

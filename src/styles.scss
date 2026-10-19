@@ -39,4 +39,11 @@ body {
   margin: 0;
   height: 100%;
 }
+
+@include breakpoints.movil {
+  .mat-mdc-button-base {
+    min-width: 48px;
+    min-height: 48px;
+  }
+}
 /* You can add global styles to this file, and also import other style files */

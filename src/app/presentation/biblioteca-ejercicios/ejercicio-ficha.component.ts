@@ -1,4 +1,4 @@
-import { Component, computed, inject, resource } from '@angular/core';
+import { Component, computed, inject, resource, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { from } from 'rxjs';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -14,6 +14,7 @@ import { CabeceraPaginaComponent } from '../compartido/ui/cabecera-pagina/cabece
 import { EstadoVacioComponent } from '../compartido/ui/estado-vacio/estado-vacio.component';
 import { YoutubeEmbedComponent } from '../compartido/embebidos/youtube-embed.component';
 import { EnlaceEmbedComponent } from '../compartido/embebidos/enlace-embed.component';
+import { MensajeFeedbackService } from '../compartido/ui/mensaje-feedback.service';
 
 /**
  * Ficha de un ejercicio (Historias de Usuario 1 y 2): muestra sus datos
@@ -43,6 +44,7 @@ export class EjercicioFichaComponent {
   private readonly ejercicioRepository = inject(EjercicioRepositoryPort);
   private readonly categoriaRepository = inject(CategoriaRepositoryPort);
   private readonly gestionarEjercicio = inject(GestionarEjercicioUseCase);
+  private readonly mensajeFeedback = inject(MensajeFeedbackService);
 
   private readonly ejercicioId = this.ruta.snapshot.paramMap.get('id') ?? '';
 
@@ -51,6 +53,8 @@ export class EjercicioFichaComponent {
   });
 
   readonly categorias = toSignal(from(this.categoriaRepository.listarTodas()), { initialValue: [] as Categoria[] });
+  readonly imagenesConError = signal<ReadonlySet<string>>(new Set());
+  readonly errorAlEliminar = signal<string | null>(null);
 
   protected readonly nombresCategorias = computed(() => {
     const ejercicio = this.recursoEjercicio.value();
@@ -72,8 +76,21 @@ export class EjercicioFichaComponent {
     return `data:${imagen.tipoMime};base64,${imagen.contenidoBase64}`;
   }
 
+  marcarErrorImagen(id: string): void {
+    this.imagenesConError.update((actuales) => new Set(actuales).add(id));
+  }
+
   async eliminar(): Promise<void> {
-    await this.gestionarEjercicio.eliminar(this.ejercicioId);
+    this.errorAlEliminar.set(null);
+    try {
+      await this.gestionarEjercicio.eliminar(this.ejercicioId);
+    } catch (error) {
+      const mensaje = error instanceof Error ? error.message : 'No se ha podido eliminar el ejercicio.';
+      this.errorAlEliminar.set(mensaje);
+      this.mensajeFeedback.mostrarError(mensaje);
+      return;
+    }
+    this.mensajeFeedback.mostrarExito('Ejercicio eliminado.');
     await this.router.navigate(['/ejercicios']);
   }
 }

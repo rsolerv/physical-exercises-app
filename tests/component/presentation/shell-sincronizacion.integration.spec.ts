@@ -50,6 +50,7 @@ describe('Integración de rutas de sincronización (US5)', () => {
     await harness.fixture.whenStable();
 
     expect(harness.routeNativeElement?.querySelector('.configuracion-sincronizacion')).toBeTruthy();
+    expect(harness.routeNativeElement?.querySelector('app-cabecera-pagina h1')?.textContent).toContain('Sincronización');
   });
 
   it('tras un conflicto se muestra la pantalla de resolución desde el mismo flujo', async () => {
@@ -64,6 +65,7 @@ describe('Integración de rutas de sincronización (US5)', () => {
     await harness.fixture.whenStable();
 
     expect(harness.routeNativeElement?.querySelector('.resolucion-conflicto')).toBeTruthy();
+    expect(harness.routeNativeElement?.querySelector('app-cabecera-pagina h1')?.textContent).toContain('Conflicto de sincronización');
     expect(harness.routeNativeElement?.textContent?.toLowerCase()).toContain('mis datos');
   });
 });

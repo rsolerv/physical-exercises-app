@@ -29,6 +29,9 @@ Abrir la URL local indicada por `npm start` en el navegador. En el primer arranq
 6. Intentar guardar un ejercicio con un enlace con formato incorrecto (p. ej. escribir `ejercicio1` en el campo de enlace). **Esperado**: la aplicación rechaza el enlace e indica que el formato no es válido (escenario 6).
 7. Eliminar la categoría "Cuello" (que ya tiene el ejercicio del paso 3 asociado). **Esperado**: la categoría desaparece; el ejercicio conserva sus demás categorías si tenía más de una, o pasa a mostrar la categoría "Sin categoría" si esa era la única que tenía (escenario 5).
 8. Intentar eliminar la categoría "Sin categoría". **Esperado**: la aplicación lo impide.
+9. Abrir "Gestionar categorías", cambiar el nombre de "Cuello" (o de otra categoría no genérica) y guardar. **Esperado**: la lista refleja el nuevo nombre y muestra una confirmación junto a la categoría; si el nombre ya existe, el error aparece junto al formulario de edición.
+10. Mientras se abre la gestión de categorías, comprobar que se indica que están cargando; tras terminar, se muestra el listado.
+11. En la ficha de un ejercicio con imagen, probar una imagen cuyo destino ya no esté disponible. **Esperado**: aparece un aviso junto a la imagen y el nombre, la descripción y el resto de la ficha siguen visibles.
 
 ## US2 — Buscar y consultar ejercicios (P2)
 
@@ -66,13 +69,23 @@ En esta sección, "navegador A" y "navegador B" son dos navegadores distintos (o
 6. Eliminar un ejercicio que esté asociado a varias planificaciones. **Esperado**: desaparece de todas ellas (escenario 4).
 7. En la pantalla de sincronización, comprobar que el token aparece oculto y pulsar "Olvidar token". **Esperado**: el token deja de estar configurado y, al intentar sincronizar, la aplicación pide configurarlo de nuevo (FR-037).
 
+## US6 — Usar una aplicación clara, coherente y accesible (P1)
+
+1. Abrir las pantallas funcionales de Hoy, Mis ejercicios, Buscar, Planificación, Sincronización y sus formularios/fichas principales. **Esperado**: cada pantalla tiene título visible y las acciones disponibles aparecen en la cabecera cuando corresponda.
+2. En una ventana de 599 px o menos, abrir el menú desde el botón superior. **Esperado**: el menú se superpone al contenido, lo cubre sin comprimirlo y se cierra al elegir una sección.
+3. Repetir en 600 px, 768 px y 1280 px. **Esperado**: el panel lateral se adapta al ancho, la sección seleccionada se distingue y el contenido permanece legible.
+4. Recorrer con Tab y Mayús+Tab los flujos principales de creación, edición, eliminación y navegación. **Esperado**: todos los controles se alcanzan en orden lógico, se pueden activar con teclado y el foco siempre es visible.
+5. Redimensionar entre móvil, tablet, escritorio y anchos intermedios, incluyendo 320 px, 359 px, 375 px y 599 px. **Esperado**: no hay solapamientos, texto cortado ni desplazamiento horizontal; los botones principales de Material (rellenos, contorneados y solo icono) en móvil tienen un área táctil mínima de 48 × 48 px.
+6. Comprobar contraste de texto normal (≥4,5:1), texto grande e iconos funcionales (≥3:1) y foco de cada tipo de control interactivo.
+
 ## Casos límite adicionales a comprobar
 
 - Sin ningún ejercicio registrado (instalación recién reseteada, antes de que se cargue el catálogo, o tras borrarlos todos manualmente si la implementación lo permite): se muestra un mensaje indicando que no hay ejercicios, no una pantalla vacía sin explicación.
 - Un vídeo de YouTube asociado a un ejercicio ya no existe: el ejercicio se sigue mostrando con el resto de su información, indicando que el vídeo no está disponible.
+- Una imagen de la ficha no carga: se indica el problema y se conservan visibles los demás datos.
 - Intentar añadir a un ejercicio una imagen de archivo de más de 5 MB: se rechaza con un mensaje que indica el tamaño máximo (FR-036).
 - Intentar crear una planificación concreta para un lunes que ya tiene otra planificación: la aplicación lo impide (FR-017, FR-022).
 
 ## Criterio de aceptación global
 
-La validación se considera superada cuando se han recorrido las 5 historias de usuario anteriores sin desviaciones respecto al resultado "Esperado" de cada paso, y sin haber necesitado en ningún momento consultar código fuente, logs o el contenido de la base SQLite directamente.
+La validación se considera superada cuando se han recorrido las seis historias de usuario anteriores sin desviaciones respecto al resultado "Esperado" de cada paso, y sin haber necesitado en ningún momento consultar código fuente, logs o el contenido de la base SQLite directamente.

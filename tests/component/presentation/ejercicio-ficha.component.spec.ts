@@ -8,6 +8,7 @@ import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejer
 import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
 import { GestionarEjercicioUseCase } from '../../../src/app/application/casos-uso/gestionar-ejercicio.use-case';
 import type { Ejercicio } from '../../../src/app/domain/ejercicio/ejercicio.entity';
+import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
 
 function ejercicio(sobrescribir: Partial<Ejercicio> = {}): Ejercicio {
   return {
@@ -22,7 +23,12 @@ function ejercicio(sobrescribir: Partial<Ejercicio> = {}): Ejercicio {
 }
 
 describe('EjercicioFichaComponent', () => {
-  function configurar(opciones: { ejercicio: Ejercicio | null; eliminar?: ReturnType<typeof vi.fn> }) {
+  function configurar(opciones: {
+    ejercicio: Ejercicio | null;
+    eliminar?: ReturnType<typeof vi.fn>;
+    mostrarExito?: ReturnType<typeof vi.fn>;
+    mostrarError?: ReturnType<typeof vi.fn>;
+  }) {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
@@ -41,6 +47,13 @@ describe('EjercicioFichaComponent', () => {
           useValue: { listarTodas: vi.fn().mockResolvedValue([{ id: 'cat-1', nombre: 'Piernas', esGenerica: false }]) },
         },
         { provide: GestionarEjercicioUseCase, useValue: { eliminar: opciones.eliminar ?? vi.fn().mockResolvedValue(undefined) } },
+        {
+          provide: MensajeFeedbackService,
+          useValue: {
+            mostrarExito: opciones.mostrarExito ?? vi.fn(),
+            mostrarError: opciones.mostrarError ?? vi.fn(),
+          },
+        },
       ],
     });
   }
@@ -85,9 +98,29 @@ describe('EjercicioFichaComponent', () => {
     expect(texto).toContain('no se ha encontrado');
   });
 
+  it('indica que una imagen no se ha podido cargar y conserva el resto de la ficha', async () => {
+    configurar({
+      ejercicio: ejercicio({
+        imagenes: [{ id: 'img-1', tipo: 'url', valorUrl: 'https://example.com/no-disponible.jpg' }],
+      }),
+    });
+    const fixture = await crearComponente();
+
+    const imagen = (fixture.nativeElement as HTMLElement).querySelector<HTMLImageElement>('img');
+    expect(imagen).toBeTruthy();
+    imagen?.dispatchEvent(new Event('error'));
+    fixture.detectChanges();
+
+    const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(texto).toContain('No se ha podido cargar esta imagen.');
+    expect(texto).toContain('Sentadilla');
+    expect(texto).toContain('Flexionar las rodillas.');
+  });
+
   it('elimina el ejercicio y navega al listado', async () => {
     const eliminar = vi.fn().mockResolvedValue(undefined);
-    configurar({ ejercicio: ejercicio(), eliminar });
+    const mostrarExito = vi.fn();
+    configurar({ ejercicio: ejercicio(), eliminar, mostrarExito });
     const fixture = await crearComponente();
     const router = TestBed.inject(Router);
     const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
@@ -95,6 +128,23 @@ describe('EjercicioFichaComponent', () => {
     await fixture.componentInstance.eliminar();
 
     expect(eliminar).toHaveBeenCalledWith('ej-1');
+    expect(mostrarExito).toHaveBeenCalledWith('Ejercicio eliminado.');
     expect(navigateSpy).toHaveBeenCalledWith(['/ejercicios']);
+  });
+
+  it('muestra un error contextual y no navega si falla la eliminación', async () => {
+    const eliminar = vi.fn().mockRejectedValue(new Error('No se ha podido eliminar el ejercicio.'));
+    const mostrarError = vi.fn();
+    configurar({ ejercicio: ejercicio(), eliminar, mostrarError });
+    const fixture = await crearComponente();
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    await fixture.componentInstance.eliminar();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('No se ha podido eliminar el ejercicio.');
+    expect(mostrarError).toHaveBeenCalledWith('No se ha podido eliminar el ejercicio.');
+    expect(navigateSpy).not.toHaveBeenCalled();
   });
 });

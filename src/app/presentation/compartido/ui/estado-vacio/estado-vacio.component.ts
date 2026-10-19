@@ -3,8 +3,8 @@ import { MatIconModule } from '@angular/material/icon';
 
 /**
  * Estado vacío compartido (FR-003): icono decorativo + mensaje orientativo +
- * acción opcional proyectada. Componente de presentación puro, reutilizado
- * también por `PaginaEnConstruccionComponent` (FR-013).
+ * acción opcional proyectada. Componente de presentación puro reutilizado
+ * por las vistas funcionales cuando no hay contenido que mostrar.
  */
 @Component({
   selector: 'app-estado-vacio',

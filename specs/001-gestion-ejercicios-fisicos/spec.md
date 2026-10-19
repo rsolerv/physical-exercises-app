@@ -13,19 +13,16 @@
 
 **Input**: User description: "Especificación: PhysicalExcercises v1 — aplicación para centralizar ejercicios físicos de rehabilitación, prevención o entrenamiento dispersos en vídeos, imágenes y enlaces, organizarlos por categorías y asociarlos a una planificación semanal consultable desde ordenador o móvil."
 
-## Clarifications
+## Decisiones de producto
 
-### Session 2026-10-15
-
-- Q: Cuando el usuario abre la aplicación, ¿la planificación se considera "activa" automáticamente según si la semana actual cae dentro de su rango de fechas, o el usuario debe marcarla manualmente como activa? → A: Automática por fecha: la planificación se considera "activa" si la semana actual (lunes-domingo) cae dentro de su rango de fechas.
-- Q: ¿Cómo debe autenticarse el usuario frente a GitHub para que la aplicación pueda sincronizar sus datos? → A: Token de acceso personal (PAT) de GitHub que el usuario genera en GitHub e introduce manualmente en la aplicación.
-- Q: Cuando el usuario intenta borrar una categoría que tiene ejercicios asociados, ¿cómo debe poder resolverlo? → A: Se permite el borrado y se quita esa categoría de los ejercicios asociados (no se bloquea ni se reasigna a otra categoría elegida por el usuario). Si un ejercicio se queda sin ninguna categoría, se le asigna automáticamente la categoría genérica por defecto "Sin categoría" (no eliminable).
-- Q: Tras /speckit-analyze, ¿cómo se verifica la sincronización sin inspeccionar GitHub (Principio III)? → A: Sincronizando en un navegador y comprobando en pantalla, desde otro navegador o dispositivo con el mismo token, que aparecen los mismos datos.
-- Q: ¿Qué se considera conflicto de sincronización y qué ocurre en la primera sincronización de un dispositivo nuevo? → A: Conflicto a nivel de documento completo solo cuando hay cambios locales y remotos desde la última sincronización; si solo cambia un lado, se sube o se descarga sin preguntar. En la primera sincronización con datos ya existentes en GitHub, se muestra la elección con "Usar los datos de GitHub" por defecto.
-- Q: ¿Cómo se protege el token de GitHub? → A: Token fine-grained de un solo repositorio, oculto en pantalla, excluido de los datos sincronizados y borrable con "Olvidar token"; se acepta guardarlo sin cifrar en el navegador.
-- Q: ¿Cómo se sincronizan las imágenes subidas como archivo? → A: Cada imagen como archivo independiente en el repositorio, con un límite de 5 MB por imagen.
-- Q: ¿Qué contiene el catálogo predefinido? → A: El definido en el anexo `catalogo-predefinido.json`, adaptado del catálogo de ejemplo aportado por el usuario: 7 categorías y 23 ejercicios. Las series y repeticiones pasan a las observaciones; los días de planificación del ejemplo no se incluyen, porque la planificación la crea el usuario.
-- Q: ¿Los datos sincronizados van al mismo repositorio que el código de la aplicación? → A: No. Van a un repositorio privado aparte (por ejemplo, `data-physical-exercises`), y el token de GitHub se limita solo a ese repositorio. El código está en un repositorio público desde el que se publica en GitHub Pages.
+- Una planificación concreta está activa automáticamente cuando la semana actual (de lunes a domingo) cae dentro de su semana; no existe activación manual.
+- La sincronización con GitHub requiere que el usuario introduzca un token fine-grained limitado a un único repositorio privado de datos, con permisos de lectura y escritura de contenidos. El token se muestra oculto, no se incluye en los datos sincronizados y puede eliminarse mediante la acción "Olvidar token". Se acepta guardarlo sin cifrar en el almacenamiento local del navegador.
+- El repositorio privado de datos es distinto del repositorio público que aloja la aplicación.
+- Si solo hay cambios locales, se suben; si solo hay cambios remotos, se descargan. Si ambos lados han cambiado, el usuario elige qué copia completa conservar. En la primera sincronización con datos remotos, se ofrece esa elección con "Usar los datos de GitHub" seleccionado por defecto.
+- Al eliminar una categoría, se retira de los ejercicios asociados; los que se queden sin categoría reciben "Sin categoría". Esta categoría genérica no se puede eliminar.
+- Las imágenes locales se sincronizan como archivos independientes y no pueden superar los 5 MB cada una.
+- El catálogo de fábrica definido en [catalogo-predefinido.json](./catalogo-predefinido.json) contiene 7 categorías y 23 ejercicios. Sus ejercicios y categorías se pueden modificar o eliminar como los creados por el usuario. Las series y repeticiones recomendadas se guardan en las observaciones.
+- La accesibilidad de las pantallas debe cumplir WCAG 2.1 AA en contraste, foco visible y uso mediante teclado. Los anchos de referencia son móvil hasta 599 px, tablet de 768 a 1024 px y escritorio desde 1280 px; los anchos intermedios también deben seguir siendo utilizables.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -46,6 +43,13 @@ Como usuario quiero crear, modificar y organizar por categorías mis ejercicios 
 5. **Given** una categoría con ejercicios asociados, **When** el usuario la elimina, **Then** la categoría desaparece y se retira de todos los ejercicios que la tenían asignada, los cuales conservan sus demás categorías o pasan a la categoría genérica "Sin categoría" si no les queda ninguna.
 6. **Given** un ejercicio al que se le añade un enlace con formato no válido, **When** el usuario intenta guardarlo, **Then** el sistema rechaza el enlace e indica que el formato no es correcto.
 7. **Given** una instalación nueva de la aplicación sin ejercicios creados todavía por el usuario, **When** el usuario principiante abre la biblioteca de ejercicios, **Then** encuentra disponible un catálogo de ejercicios predefinidos, listos para consultar y planificar sin necesidad de crearlos manualmente.
+8. **Given** que el usuario abre la biblioteca con muchos ejercicios, **When** recorre el listado, **Then** cada ejercicio se distingue visualmente, su nombre y descripción se leen sin desplazamiento horizontal y la lista admite desplazamiento vertical.
+9. **Given** que los ejercicios o categorías se están cargando, **When** el usuario abre la pantalla correspondiente, **Then** ve un indicador de carga y no una pantalla vacía sin explicación.
+10. **Given** que el usuario modifica una categoría, **When** guarda los cambios, **Then** ve la categoría actualizada y una confirmación visible; si la operación falla, ve un mensaje de error asociado al contexto de la operación.
+11. **Given** que el usuario crea o edita un ejercicio, **When** abre el formulario, **Then** distingue los bloques de datos básicos, categorías, enlaces, imágenes y observaciones.
+12. **Given** que el usuario consulta el formulario de ejercicio, **When** todavía no ha intentado guardarlo, **Then** identifica los campos obligatorios; si un valor no es válido, el mensaje aparece junto al campo afectado y este queda resaltado.
+13. **Given** que el usuario guarda o elimina un ejercicio o una categoría, **When** la operación termina correctamente o falla, **Then** recibe una confirmación o un error visible cerca del contexto de la operación.
+14. **Given** que el usuario añade enlaces o imágenes a un ejercicio, **When** revisa los elementos añadidos, **Then** cada uno aparece ordenado y dispone de una acción claramente identificable para quitarlo.
 
 ---
 
@@ -64,6 +68,8 @@ Como usuario quiero buscar ejercicios por categoría o por texto, y visualizar s
 3. **Given** un ejercicio con un enlace de vídeo de YouTube válido, **When** el usuario abre la ficha del ejercicio, **Then** el vídeo se visualiza integrado en la propia aplicación.
 4. **Given** una categoría sin ejercicios asociados, **When** el usuario la selecciona, **Then** se muestra una lista vacía con un mensaje indicándolo.
 5. **Given** que no existe ningún ejercicio registrado todavía, **When** el usuario accede a la búsqueda, **Then** se muestra un mensaje indicando que no hay ejercicios.
+6. **Given** que una búsqueda no devuelve resultados, **When** el usuario consulta la lista, **Then** ve un estado vacío claro que indica que puede cambiar los criterios de búsqueda.
+7. **Given** que el usuario abre la búsqueda o la ficha de un ejercicio, **When** se muestra la pantalla, **Then** identifica su título y acción principal sin tener que desplazarse para encontrarlos.
 
 ---
 
@@ -86,6 +92,7 @@ Como usuario quiero crear planificaciones semanales (concretas o como plantillas
 7. **Given** que ya existe una planificación activa (no plantilla) para la semana en curso, **When** el usuario intenta crear otra planificación activa para esa misma semana, **Then** el sistema lo impide.
 8. **Given** un ejercicio asociado a varias planificaciones distintas, **When** el usuario consulta cada una de esas planificaciones, **Then** el ejercicio aparece correctamente en todas ellas.
 9. **Given** una planificación concreta, **When** el usuario solicita ver todos los ejercicios que contiene, **Then** se muestra el listado completo de ejercicios de esa planificación, independientemente del día al que estén asociados.
+10. **Given** que el usuario abre una vista de planificación, **When** consulta sus contenidos, **Then** identifica el título, la acción principal y el día activo sin desplazamiento horizontal.
 
 ---
 
@@ -102,6 +109,7 @@ Como usuario quiero marcar cada ejercicio planificado como realizado para llevar
 1. **Given** un ejercicio planificado para hoy, **When** el usuario lo marca como realizado, **Then** su estado cambia y queda reflejado al volver a consultar el día.
 2. **Given** que el usuario marca todos los ejercicios del día como realizados, **When** consulta el indicador de progreso, **Then** se muestra el 100% de progreso para ese día.
 3. **Given** un día con varios ejercicios planificados y solo algunos marcados como realizados, **When** el usuario consulta el progreso, **Then** se muestra el porcentaje correspondiente a los ejercicios completados sobre el total planificado.
+4. **Given** que el usuario consulta el progreso diario, **When** abre esa vista, **Then** identifica el título y el porcentaje de progreso con una presentación legible en móvil y escritorio.
 
 ---
 
@@ -122,6 +130,26 @@ Como usuario quiero que toda mi información (ejercicios, categorías, planifica
 5. **Given** que desde la última sincronización ha habido cambios tanto en este dispositivo como en GitHub (por ejemplo, el mismo ejercicio editado en dos navegadores distintos sin sincronizar entre medias), **When** el usuario ejecuta una sincronización, **Then** el sistema le informa del conflicto y le permite elegir explícitamente si conserva todos los datos locales o todos los datos remotos antes de completar la sincronización.
 6. **Given** un dispositivo nuevo que nunca se ha sincronizado y un repositorio de GitHub que ya contiene datos, **When** el usuario sincroniza por primera vez, **Then** el sistema no sobrescribe los datos de GitHub, sino que le muestra la elección entre datos locales y remotos con la opción "Usar los datos de GitHub" marcada por defecto.
 7. **Given** que solo ha habido cambios en GitHub desde la última sincronización (ninguno en este dispositivo), **When** el usuario sincroniza, **Then** el sistema descarga y aplica los datos remotos sin mostrar ningún conflicto.
+8. **Given** que el usuario guarda la configuración o resuelve un conflicto, **When** la operación termina o falla, **Then** recibe una confirmación o un error visible y comprensible sin perder los datos locales.
+
+---
+
+### User Story 6 - Usar una aplicación clara, coherente y accesible (Priority: P1)
+
+Como usuario quiero reconocer rápidamente dónde estoy, encontrar las acciones principales y completar los flujos en cualquier dispositivo, para gestionar mis ejercicios con comodidad y sin depender del ratón.
+
+**Why this priority**: La presentación y accesibilidad son transversales a la biblioteca, búsqueda, planificación, progreso y sincronización, y deben mantenerse coherentes en todas las funciones disponibles.
+
+**Independent Test**: Recorrer las pantallas funcionales y completar los flujos principales en móvil, tablet y escritorio, comprobando títulos, acciones, navegación, estados, foco y uso exclusivo del teclado.
+
+**Acceptance Scenarios**:
+
+1. **Given** que el usuario abre cualquier pantalla funcional, **When** se muestra la pantalla, **Then** ve una cabecera con el título y, cuando existan, las acciones principales sin tener que desplazarse para encontrarlas.
+2. **Given** que el usuario usa la aplicación en un móvil de hasta 599 px, **When** abre el menú, **Then** este aparece como una superposición que no comprime el contenido y se cierra al elegir una sección.
+3. **Given** que el usuario cambia de sección, **When** la nueva pantalla se carga, **Then** la sección activa queda identificada visualmente en el menú.
+4. **Given** que el usuario navega con teclado, **When** recorre los controles y completa las tareas principales, **Then** puede alcanzarlos en un orden lógico y el foco permanece visible.
+5. **Given** que el usuario consulta una pantalla en móvil, tablet, escritorio o un ancho intermedio, **When** cambia el tamaño de la ventana, **Then** el contenido sigue siendo legible y utilizable sin solapamientos ni desplazamiento horizontal.
+6. **Given** que la interfaz muestra texto o controles, **When** se comprueban el contraste y el foco, **Then** el contraste es de al menos 4,5:1 para texto normal y 3:1 para texto grande e iconos funcionales, y todos los controles tienen un indicador de foco visible.
 
 ---
 
@@ -140,6 +168,15 @@ Como usuario quiero que toda mi información (ejercicios, categorías, planifica
 - ¿Qué ocurre cuando ha habido cambios tanto locales como en GitHub desde la última sincronización? Se informa al usuario del conflicto y se le pide elegir si conserva la versión local completa o la remota completa antes de completar la sincronización.
 - ¿Qué ocurre en la primera sincronización de un dispositivo nuevo si GitHub ya contiene datos? No se sobrescriben; se muestra la elección entre datos locales y remotos, con "Usar los datos de GitHub" marcada por defecto.
 - ¿Qué ocurre si el usuario intenta añadir una imagen de archivo de más de 5 MB? Se rechaza con un mensaje que indica el tamaño máximo permitido.
+- ¿Qué ocurre si el nombre o la descripción de un ejercicio es muy largo? Se ajusta o trunca sin romper la tarjeta ni provocar desplazamiento horizontal.
+- ¿Qué ocurre si el formulario tiene muchas categorías? Las opciones se reorganizan sin desbordar el contenedor.
+- ¿Qué ocurre si una imagen no carga o su URL no es válida? Se indica el problema sin impedir que se use el resto del formulario.
+- ¿Qué ocurre si falla una operación de guardado o eliminación? Se informa con claridad junto al campo o elemento afectado, además de la confirmación visual cuando la operación tiene éxito.
+- ¿Qué ocurre si el listado contiene muchos ejercicios? Se puede recorrer con desplazamiento vertical sin perder legibilidad; no se exige mostrar todo el listado de una vez.
+- ¿Qué ocurre en pantallas de menos de 360 px? Los controles y formularios siguen siendo utilizables, sin solapamientos ni texto cortado.
+- ¿Qué ocurre en los anchos intermedios no incluidos en los rangos de referencia? El diseño se adapta de forma fluida y permanece utilizable.
+- ¿Qué ocurre al abrir el menú en móvil? Se superpone al contenido a ancho completo, sin comprimirlo, y se cierra después de seleccionar una sección.
+- ¿Qué ocurre si el usuario completa un flujo solo con teclado? Todos los controles son alcanzables con foco visible y sin depender únicamente de acciones con ratón o pantalla táctil.
 
 ## Requirements *(mandatory)*
 
@@ -170,18 +207,28 @@ Como usuario quiero que toda mi información (ejercicios, categorías, planifica
 - **FR-023**: El sistema DEBE permitir visualizar todos los ejercicios pertenecientes a una planificación concreta, con independencia del día al que estén asociados.
 - **FR-024**: El sistema DEBE permitir marcar cada ejercicio planificado para un día como realizado o no realizado.
 - **FR-025**: El sistema DEBE calcular y mostrar el porcentaje de ejercicios marcados como realizados para el día actual.
-- **FR-026**: El sistema DEBE funcionar correctamente tanto en dispositivos móviles como de escritorio.
+- **FR-026**: El sistema DEBE funcionar correctamente en móviles (hasta 599 px), tablets (768–1024 px), escritorio (1280 px o más) y en los anchos intermedios; DEBE adaptar la disposición sin solapamientos ni desplazamiento horizontal. En móvil, las pantallas DEBEN priorizar una sola columna y los controles principales DEBEN tener un tamaño cómodo para la interacción táctil, con un área mínima de 48 × 48 px.
 - **FR-027**: El sistema DEBE conservar toda la información del usuario entre sesiones, incluso sin haberse sincronizado con GitHub.
 - **FR-028**: Cuando se elimine un ejercicio asociado a varias planificaciones, el sistema DEBE eliminarlo de todas ellas.
-- **FR-029**: Si no existe ningún ejercicio registrado, el sistema DEBE mostrar un mensaje indicándolo en lugar de una lista vacía sin explicación.
-- **FR-030**: Si no existe planificación para el día actual, el sistema DEBE mostrar un mensaje indicando que no hay ejercicios programados para hoy.
-- **FR-031**: Si una categoría consultada no contiene ejercicios, el sistema DEBE mostrar una lista vacía junto con un mensaje indicativo.
+- **FR-029**: Si no existe ningún ejercicio registrado, el sistema DEBE mostrar un estado vacío visualmente distinguible, con un mensaje que lo indique y oriente sobre cómo empezar, en lugar de una lista vacía sin explicación.
+- **FR-030**: Si no existe planificación para el día actual, el sistema DEBE mostrar un estado vacío con un mensaje que indique que no hay ejercicios programados para hoy.
+- **FR-031**: Si una categoría consultada o una búsqueda no contiene ejercicios, el sistema DEBE mostrar un estado vacío con un mensaje indicativo y, cuando corresponda, orientación para cambiar los criterios; no DEBE presentarlo como un error.
 - **FR-032**: Si la sincronización con GitHub falla por no disponibilidad del servicio, el sistema DEBE conservar los datos localmente e informar al usuario del error, sin pérdida de información.
 - **FR-033**: Si un vídeo de YouTube asociado a un ejercicio deja de estar disponible, el sistema DEBE seguir mostrando el ejercicio e indicar que el vídeo no está disponible.
 - **FR-034**: El sistema DEBE incluir, desde el primer uso, un catálogo de ejercicios predefinidos (contenido de fábrica) ya cargado en la aplicación, para que el usuario principiante pueda consultarlos y planificarlos sin necesidad de crearlos manualmente. El contenido del catálogo es el definido en el anexo [catalogo-predefinido.json](./catalogo-predefinido.json): 7 categorías (Abdomen, Cadera, Cervicales, Glúteo, Isquiotibiales, Lumbar y Rodilla) y 23 ejercicios de fortalecimiento y rehabilitación. Los ejercicios y las categorías predefinidos se comportan como cualquier otro: el usuario puede modificarlos o eliminarlos igual que los creados por él mismo.
 - **FR-035**: Al sincronizar, el sistema DEBE actuar según dónde haya habido cambios desde la última sincronización: si solo hay cambios locales, los sube a GitHub; si solo hay cambios en GitHub, descarga y aplica los datos remotos; si hay cambios en ambos lados, DEBE detener la sincronización, informar al usuario del conflicto y permitirle elegir explícitamente si conserva todos los datos locales o todos los datos remotos. En la primera sincronización de un dispositivo, si GitHub ya contiene datos, el sistema DEBE tratarlo como conflicto (sin sobrescribir los datos remotos) y proponer por defecto "Usar los datos de GitHub".
 - **FR-036**: El sistema DEBE permitir añadir imágenes a un ejercicio tanto mediante una URL externa como mediante la subida de un archivo de imagen local, soportando ambos mecanismos de forma indistinta. Cada imagen subida como archivo NO DEBE superar los 5 MB; si los supera, se rechaza con un mensaje que indica el tamaño máximo. Las imágenes subidas como archivo DEBEN sincronizarse con GitHub junto con el resto de datos.
 - **FR-037**: El token de acceso de GitHub DEBE mostrarse oculto en pantalla, NUNCA DEBE incluirse en los datos sincronizados con GitHub, y el usuario DEBE poder borrarlo de la aplicación mediante una acción "Olvidar token". La pantalla de configuración DEBE indicar al usuario que cree un token de tipo *fine-grained* limitado a un único repositorio y con permiso de lectura y escritura de contenidos. Los datos DEBEN sincronizarse con un repositorio **privado** dedicado solo a datos (por ejemplo, `data-physical-exercises`), distinto del repositorio público donde se publica la aplicación, y el token DEBE limitarse a ese repositorio de datos; la pantalla de configuración DEBE indicarlo así.
+- **FR-038**: Cada pantalla funcional DEBE mostrar una cabecera con el título de la sección y, cuando existan, sus acciones principales, visibles sin tener que desplazarse para encontrarlas.
+- **FR-039**: El listado de ejercicios DEBE presentar cada ejercicio como un elemento visualmente diferenciado, con nombre y descripción legibles de un vistazo y sin desplazamiento horizontal. Los nombres o descripciones largos DEBEN ajustarse o truncarse sin romper el diseño; los listados largos DEBEN poder recorrerse verticalmente.
+- **FR-040**: Mientras se cargan ejercicios o categorías, el sistema DEBE mostrar un indicador visual de carga coherente con el resto de la aplicación.
+- **FR-041**: El formulario de ejercicio DEBE distinguir visualmente los bloques de datos básicos, categorías, enlaces, imágenes y observaciones; DEBE indicar los campos obligatorios antes del envío y mostrar los errores junto al campo afectado, resaltándolo.
+- **FR-042**: Al crear, editar o eliminar ejercicios o categorías, el sistema DEBE comunicar el éxito o el error de forma visible y comprensible, cerca del contexto de la operación.
+- **FR-043**: Las acciones principales de cada pantalla DEBEN poder alcanzarse en un único clic o toque desde el contexto correspondiente, sin pasos de navegación innecesarios.
+- **FR-044**: Todas las pantallas DEBEN mantener un estilo visual coherente y profesional en espaciado, tipografía y color, basado en una escala de espaciado de 8 px y principios de diseño Material.
+- **FR-045**: Todas las pantallas DEBEN cumplir los aspectos de accesibilidad acordados de WCAG 2.1 AA: contraste mínimo de 4,5:1 para texto normal y 3:1 para texto grande e iconos funcionales, foco visible en cada control interactivo y posibilidad de completar todos los flujos principales solo con teclado.
+- **FR-046**: La aplicación DEBE conservar el comportamiento funcional de navegación, creación, edición, eliminación, consulta, planificación, seguimiento del progreso y sincronización definido en esta especificación al aplicar las mejoras de presentación.
+- **FR-047**: En móvil, el menú de navegación DEBE abrirse como una superposición de ancho completo que no comprima el contenido principal y DEBE cerrarse automáticamente cuando el usuario elija una sección.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -203,6 +250,12 @@ Como usuario quiero que toda mi información (ejercicios, categorías, planifica
 - **SC-006**: Un usuario puede crear una planificación semanal reutilizando una plantilla o duplicando una planificación existente en menos de 2 minutos.
 - **SC-007**: El usuario deja de necesitar consultar fuentes externas dispersas (vídeos, imágenes, notas, enlaces sueltos) para saber qué ejercicios realizar cada día, concentrando el 100% de esa información dentro de la aplicación.
 - **SC-008**: Tras sincronizar en un dispositivo y después en otro con el mismo token y repositorio, el 100% de los datos del primer dispositivo (ejercicios, imágenes, categorías, planificaciones y progreso) se ve en el segundo.
+- **SC-009**: Al abrir cualquier pantalla, un usuario identifica la acción principal disponible en menos de 3 segundos.
+- **SC-010**: En las resoluciones de referencia de escritorio (1366×768), tablet (768–1024 px de ancho) y móvil (375×812), el título y las acciones principales de cada pantalla son visibles sin desplazamiento.
+- **SC-011**: En móviles, tablets, escritorio y anchos intermedios, todas las pantallas se mantienen utilizables, sin solapamientos ni desplazamiento horizontal; esto también se cumple en pantallas de menos de 360 px.
+- **SC-012**: Un usuario puede completar los flujos principales de creación, edición, eliminación y navegación solo con teclado, con el foco siempre visible.
+- **SC-013**: Cada operación de creación, edición o eliminación muestra una confirmación visible cuando termina correctamente y un mensaje visible si falla.
+- **SC-014**: Los flujos funcionales de biblioteca, búsqueda, planificación, progreso y sincronización conservan los resultados descritos en sus escenarios de aceptación tras aplicar las mejoras de presentación.
 
 ## Assumptions
 
@@ -219,4 +272,7 @@ Como usuario quiero que toda mi información (ejercicios, categorías, planifica
 - **Progreso diario conservado indefinidamente**: el registro de qué ejercicios se marcaron como realizados cada día se conserva sin fecha de caducidad, aunque esta versión no incluye informes ni estadísticas históricas avanzadas sobre dicho progreso.
 - **Semana de referencia**: a efectos de la regla de "una única planificación activa por semana", la semana se considera de lunes a domingo.
 - **Catálogo predefinido editable**: el catálogo de ejercicios predefinidos de fábrica no es de solo lectura; el usuario puede modificarlo o eliminarlo igual que cualquier ejercicio propio.
+- **Experiencia visual**: se mantiene un único tema claro, una presentación coherente basada en una escala de espaciado de 8 px y los principios de Material, y el idioma de interfaz sigue siendo español de España.
+- **Pantallas funcionales**: las vistas de hoy, búsqueda, planificación y sincronización forman parte de las funciones disponibles; sus requisitos de presentación se aplican a esas pantallas funcionales, no a placeholders.
+- **Objetivo orientativo de validación**: se aspira a reducir los errores de validación en el primer intento de alta de ejercicios, pero no se fija un porcentaje como criterio de aceptación porque no existe telemetría para medirlo.
 - **Fuera de alcance en esta versión** (según el documento de origen): gestión de múltiples usuarios, compartición de ejercicios entre usuarios, autenticación mediante redes sociales, estadísticas avanzadas de entrenamiento, recordatorios por correo electrónico, notificaciones push, recomendación de ejercicios mediante inteligencia artificial, integración con relojes inteligentes, registro de peso/repeticiones/series, modo offline con sincronización automática avanzada, gestión de lesiones o diagnósticos médicos, seguimiento histórico detallado de rendimiento, impresión de fichas de ejercicio o de planificaciones, observaciones diarias dentro de una planificación, marcado de ejercicios como favoritos, y exportación a formatos como PDF o Excel (la exportación/importación de datos se cubre mediante la sincronización en JSON contra GitHub).

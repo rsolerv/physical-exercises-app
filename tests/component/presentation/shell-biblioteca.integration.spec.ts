@@ -8,6 +8,9 @@ import { ShellComponent } from '../../../src/app/presentation/compartido/shell/s
 import { routes } from '../../../src/app/app.routes';
 import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejercicio-repository.port';
 import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
+import { GestionarEjercicioUseCase } from '../../../src/app/application/casos-uso/gestionar-ejercicio.use-case';
+import { GestionarCategoriaUseCase } from '../../../src/app/application/casos-uso/gestionar-categoria.use-case';
+import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
 
 describe('Integración de rutas de biblioteca (US1)', () => {
   function configurar() {
@@ -16,8 +19,24 @@ describe('Integración de rutas de biblioteca (US1)', () => {
         provideZonelessChangeDetection(),
         provideRouter(routes),
         provideNoopAnimations(),
-        { provide: EjercicioRepositoryPort, useValue: { listarTodos: vi.fn().mockResolvedValue([]) } },
+        {
+          provide: EjercicioRepositoryPort,
+          useValue: {
+            listarTodos: vi.fn().mockResolvedValue([]),
+            obtenerPorId: vi.fn().mockResolvedValue({
+              id: 'ej-1',
+              nombre: 'Sentadilla',
+              descripcion: 'Flexionar rodillas.',
+              categoriaIds: ['cat-1'],
+              enlaces: [],
+              imagenes: [],
+            }),
+          },
+        },
         { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue([]) } },
+        { provide: GestionarEjercicioUseCase, useValue: { crear: vi.fn(), actualizar: vi.fn(), eliminar: vi.fn() } },
+        { provide: GestionarCategoriaUseCase, useValue: { crear: vi.fn(), actualizar: vi.fn(), eliminar: vi.fn() } },
+        { provide: MensajeFeedbackService, useValue: { mostrarExito: vi.fn(), mostrarError: vi.fn() } },
       ],
     });
   }
@@ -28,6 +47,36 @@ describe('Integración de rutas de biblioteca (US1)', () => {
     await harness.fixture.whenStable();
 
     expect(harness.routeNativeElement?.querySelector('.biblioteca-listado')).toBeTruthy();
+    expect(harness.routeNativeElement?.querySelector('app-cabecera-pagina h1')?.textContent).toContain('Mis ejercicios');
+    expect(harness.routeNativeElement?.textContent).toContain('Nuevo ejercicio');
+    expect(harness.routeNativeElement?.textContent).toContain('Gestionar categorías');
+  });
+
+  it('la gestión de categorías muestra título y acción de alta', async () => {
+    configurar();
+    const harness = await RouterTestingHarness.create('/ejercicios/categorias');
+    await harness.fixture.whenStable();
+
+    expect(harness.routeNativeElement?.querySelector('app-cabecera-pagina h1')?.textContent).toContain('Categorías');
+    expect(harness.routeNativeElement?.textContent).toContain('Crear categoría');
+  });
+
+  it('el formulario de alta muestra su título y acción principal', async () => {
+    configurar();
+    const harness = await RouterTestingHarness.create('/ejercicios/nuevo');
+    await harness.fixture.whenStable();
+
+    expect(harness.routeNativeElement?.querySelector('app-cabecera-pagina h1')?.textContent).toContain('Nuevo ejercicio');
+    expect(harness.routeNativeElement?.textContent).toContain('Guardar ejercicio');
+  });
+
+  it('el formulario de edición muestra su título y acción principal', async () => {
+    configurar();
+    const harness = await RouterTestingHarness.create('/ejercicios/ej-1/editar');
+    await harness.fixture.whenStable();
+
+    expect(harness.routeNativeElement?.querySelector('app-cabecera-pagina h1')?.textContent).toContain('Editar ejercicio');
+    expect(harness.routeNativeElement?.textContent).toContain('Guardar ejercicio');
   });
 
   it('el menú del shell resalta la entrada activa al navegar a la biblioteca', async () => {

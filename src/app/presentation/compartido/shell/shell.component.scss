@@ -9,6 +9,10 @@
   width: 260px;
 }
 
+.shell__menu-lateral a[mat-list-item] {
+  min-height: 48px;
+}
+
 .shell__contenido {
   padding: $espaciado-2;
 }
@@ -41,4 +45,3 @@
     width: 100%;
   }
 }
-

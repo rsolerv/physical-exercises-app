@@ -5,9 +5,8 @@ export interface EntradaMenuPrincipal {
 }
 
 /**
- * Configuración del menú principal del shell. Cada historia de usuario
- * registra su propia ruta real en `app.routes.ts`; hasta entonces, la ruta
- * apunta a `PaginaEnConstruccionComponent` (ver app.routes.ts).
+ * Configuración del menú principal del shell. Las rutas apuntan a las vistas
+ * funcionales registradas en `app.routes.ts`.
  */
 export const MENU_PRINCIPAL: EntradaMenuPrincipal[] = [
   { etiqueta: 'Hoy', ruta: '/inicio', icono: 'today' },

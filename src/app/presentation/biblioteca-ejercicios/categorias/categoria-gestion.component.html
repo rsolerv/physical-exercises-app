@@ -1,20 +1,71 @@
 <section class="categoria-gestion">
   <app-cabecera-pagina titulo="Categorías" />
 
-  <mat-nav-list>
-    @for (categoria of categorias(); track categoria.id) {
-      <mat-list-item class="categoria-gestion__item">
-        <span matListItemTitle>{{ categoria.nombre }}</span>
-        @if (!categoria.esGenerica) {
-          <button mat-icon-button matListItemMeta (click)="eliminarCategoria(categoria.id)" aria-label="Eliminar categoría">
-            <mat-icon>delete</mat-icon>
-          </button>
+  @if (recursoCategorias.isLoading()) {
+    <div class="categoria-gestion__carga" role="status" aria-label="Cargando categorías">
+      <mat-spinner diameter="32" />
+      <span>Cargando categorías…</span>
+    </div>
+  } @else {
+    <mat-nav-list>
+      @for (categoria of categorias(); track categoria.id) {
+        <mat-list-item class="categoria-gestion__item">
+          <span matListItemTitle>{{ categoria.nombre }}</span>
+          @if (!categoria.esGenerica && categoriaEnEdicion() !== categoria.id) {
+            <div matListItemMeta class="categoria-gestion__acciones">
+              <button
+                mat-icon-button
+                type="button"
+                (click)="iniciarEdicionCategoria(categoria.id)"
+                [attr.aria-label]="'Editar categoría ' + categoria.nombre"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                type="button"
+                (click)="eliminarCategoria(categoria.id)"
+                [attr.aria-label]="'Eliminar categoría ' + categoria.nombre"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          }
+        </mat-list-item>
+        @if (categoriaEnEdicion() === categoria.id) {
+          <form
+            class="categoria-gestion__edicion"
+            [attr.aria-label]="'Editar categoría ' + categoria.nombre"
+            (submit)="$event.preventDefault(); guardarEdicionCategoria(categoria.id)"
+          >
+            <mat-form-field appearance="outline">
+              <mat-label>Nombre de categoría</mat-label>
+              <input
+                matInput
+                [value]="nombreCategoriaEditada()"
+                (input)="nombreCategoriaEditada.set($any($event.target).value)"
+              />
+            </mat-form-field>
+            @if (errorEdicion()) {
+              <p class="categoria-gestion__mensaje categoria-gestion__mensaje--error" role="alert">{{ errorEdicion() }}</p>
+            }
+            <div class="categoria-gestion__acciones-edicion">
+              <button mat-flat-button color="primary" type="submit">Guardar cambios</button>
+              <button mat-button type="button" (click)="cancelarEdicionCategoria()">Cancelar</button>
+            </div>
+          </form>
         }
-      </mat-list-item>
+        @if (confirmacionCategoria()?.id === categoria.id) {
+          <p class="categoria-gestion__mensaje" role="status">{{ confirmacionCategoria()?.mensaje }}</p>
+        }
+      }
+    </mat-nav-list>
+    @if (errorEliminacion()) {
+      <p class="categoria-gestion__mensaje categoria-gestion__mensaje--error" role="alert">{{ errorEliminacion() }}</p>
     }
-  </mat-nav-list>
-  @if (errorEliminacion()) {
-    <mat-error>{{ errorEliminacion() }}</mat-error>
+    @if (confirmacionEliminacion()) {
+      <p class="categoria-gestion__mensaje" role="status">{{ confirmacionEliminacion() }}</p>
+    }
   }
 
   <form class="categoria-gestion__alta" (submit)="$event.preventDefault(); crearCategoria(nombreNuevaCategoria()); nombreNuevaCategoria.set('')">
@@ -23,7 +74,10 @@
       <input matInput [value]="nombreNuevaCategoria()" (input)="nombreNuevaCategoria.set($any($event.target).value)" />
     </mat-form-field>
     @if (errorCreacion()) {
-      <mat-error>{{ errorCreacion() }}</mat-error>
+      <p class="categoria-gestion__mensaje categoria-gestion__mensaje--error" role="alert">{{ errorCreacion() }}</p>
+    }
+    @if (confirmacionCreacion()) {
+      <p class="categoria-gestion__mensaje" role="status">{{ confirmacionCreacion() }}</p>
     }
     <button mat-flat-button color="primary" type="submit">Crear categoría</button>
   </form>

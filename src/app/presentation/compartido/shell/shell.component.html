@@ -1,5 +1,5 @@
 <mat-sidenav-container class="shell__contenedor">
-  <mat-sidenav #menuLateral mode="side" [(opened)]="menuAbierto" class="shell__menu-lateral">
+  <mat-sidenav #menuLateral [mode]="esMovil() ? 'over' : 'side'" [(opened)]="menuAbierto" class="shell__menu-lateral">
     <mat-nav-list>
       @for (entrada of entradasMenu; track entrada.ruta) {
         <a

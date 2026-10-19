@@ -1,4 +1,4 @@
-import { Component, signal, viewChild } from '@angular/core';
+import { Component, HostListener, signal, viewChild } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
@@ -23,29 +23,35 @@ import { MENU_PRINCIPAL } from './menu-principal';
 export class ShellComponent {
   protected readonly entradasMenu = MENU_PRINCIPAL;
   readonly menuLateral = viewChild<MatSidenav>('menuLateral');
-  /**
-   * Estado de apertura del menú lateral: abierto por defecto en escritorio,
-   * cerrado por defecto en móvil (FR-010). Se calcula una sola vez al
-   * construir el componente a partir del ancho de viewport; los cambios
-   * posteriores (toggle manual) los gestiona el propio `mat-sidenav`.
-   */
-  readonly menuAbierto = signal(this.calcularAberturaInicial());
+  readonly esMovil = signal(this.calcularSiEsMovil());
+  readonly menuAbierto = signal(!this.esMovil());
 
-  private calcularAberturaInicial(): boolean {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
-      return true;
+  private calcularSiEsMovil(): boolean {
+    if (typeof window === 'undefined') return false;
+    if (typeof window.matchMedia === 'function') {
+      return window.matchMedia('(max-width: 599px)').matches;
     }
-    return window.matchMedia('(min-width: 768px)').matches;
+    return window.innerWidth <= 599;
   }
 
-  protected readonly esMovil = signal(
-    typeof window !== 'undefined' && window.innerWidth < 768
-  );
+  @HostListener('window:resize')
+  actualizarModoResponsive(): void {
+    const esMovil = this.calcularSiEsMovil();
+    if (esMovil === this.esMovil()) return;
+    this.esMovil.set(esMovil);
+    const abierto = !esMovil;
+    this.menuAbierto.set(abierto);
+    if (abierto) {
+      void this.menuLateral()?.open();
+    } else {
+      void this.menuLateral()?.close();
+    }
+  }
 
   cerrarMenuMovil(): void {
     if (this.esMovil()) {
-      this.menuLateral()?.close();
+      this.menuAbierto.set(false);
+      void this.menuLateral()?.close();
     }
   }
 }
-

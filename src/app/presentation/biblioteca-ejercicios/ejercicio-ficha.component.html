@@ -17,6 +17,10 @@
       </div>
     </app-cabecera-pagina>
 
+    @if (errorAlEliminar(); as error) {
+      <p class="ejercicio-ficha__error-operacion" role="alert">{{ error }}</p>
+    }
+
     <p class="ejercicio-ficha__descripcion">{{ ejercicio.descripcion }}</p>
 
     <mat-chip-set class="ejercicio-ficha__categorias">
@@ -52,7 +56,16 @@
         <h3>Imágenes</h3>
         <div class="ejercicio-ficha__imagenes">
           @for (imagen of ejercicio.imagenes; track imagen.id) {
-            <img class="ejercicio-ficha__imagen" [src]="imagenSrc(imagen)" alt="Imagen del ejercicio" />
+            @if (imagenesConError().has(imagen.id)) {
+              <p class="ejercicio-ficha__error-imagen" role="alert">No se ha podido cargar esta imagen.</p>
+            } @else {
+              <img
+                class="ejercicio-ficha__imagen"
+                [src]="imagenSrc(imagen)"
+                alt="Imagen del ejercicio"
+                (error)="marcarErrorImagen(imagen.id)"
+              />
+            }
           }
         </div>
       </section>
