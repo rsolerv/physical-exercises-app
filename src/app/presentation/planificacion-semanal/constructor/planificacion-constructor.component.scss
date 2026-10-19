@@ -1,6 +1,12 @@
 @use '../../../../styles/espaciado' as *;
 @use '../../../../styles/breakpoints' as *;
 
+.planificacion-constructor__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $espaciado-2;
+}
+
 .planificacion-constructor__seccion {
   margin-bottom: $espaciado-3;
 

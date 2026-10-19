@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideZonelessChangeDetection } from '@angular/core';
@@ -20,6 +20,8 @@ function simularMatchMedia(esMovil: boolean): void {
     vi.fn().mockImplementation((query: string) => ({
       matches: query === '(max-width: 599px)' ? esMovil : !esMovil,
       media: query,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
     }))
@@ -27,6 +29,10 @@ function simularMatchMedia(esMovil: boolean): void {
 }
 
 describe('ShellComponent (navegación)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
@@ -140,6 +146,8 @@ describe('ShellComponent (navegación)', () => {
       vi.fn().mockImplementation((query: string) => ({
         matches: query === '(max-width: 599px)' ? esMovil : !esMovil,
         media: query,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
         addEventListener: vi.fn(),
         removeEventListener: vi.fn(),
       }))
