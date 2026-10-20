@@ -1,4 +1,4 @@
-import { Component, inject, resource, signal } from '@angular/core';
+import { Component, computed, inject, resource, signal } from '@angular/core';
 import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CategoriaRepositoryPort } from '../../../application/ports/categoria-repository.port';
+import { EjercicioRepositoryPort } from '../../../application/ports/ejercicio-repository.port';
 import { GestionarCategoriaUseCase } from '../../../application/casos-uso/gestionar-categoria.use-case';
 import { ErrorNombreDuplicado, ErrorOperacionNoPermitida } from '../../../domain/errores/errores-dominio';
 import { CabeceraPaginaComponent } from '../../compartido/ui/cabecera-pagina/cabecera-pagina.component';
@@ -33,14 +34,26 @@ import { MensajeFeedbackService } from '../../compartido/ui/mensaje-feedback.ser
 })
 export class CategoriaGestionComponent {
   private readonly categoriaRepository = inject(CategoriaRepositoryPort);
+  private readonly ejercicioRepository = inject(EjercicioRepositoryPort);
   private readonly gestionarCategoria = inject(GestionarCategoriaUseCase);
   private readonly mensajeFeedback = inject(MensajeFeedbackService);
 
   private readonly recursoCategorias = resource({
     loader: () => this.categoriaRepository.listarTodas(),
   });
+  private readonly recursoEjercicios = resource({
+    loader: () => this.ejercicioRepository.listarTodos(),
+  });
 
   readonly categorias = () => [...(this.recursoCategorias.value() ?? [])].sort((a, b) => a.nombre.localeCompare(b.nombre));
+  readonly errorCarga = computed(() => {
+    const error = this.recursoCategorias.error() ?? this.recursoEjercicios.error();
+    if (!error) return null;
+    return error instanceof Error ? error.message : 'No se han podido cargar las categorías y sus ejercicios.';
+  });
+  readonly cargando = computed(
+    () => this.recursoCategorias.value() === undefined || this.recursoEjercicios.value() === undefined
+  );
   readonly nombreNuevaCategoria = signal('');
   readonly errorCreacion = signal<string | null>(null);
   readonly errorEliminacion = signal<string | null>(null);
@@ -50,6 +63,10 @@ export class CategoriaGestionComponent {
   readonly confirmacionCategoria = signal<{ id: string; mensaje: string } | null>(null);
   readonly categoriaEnEdicion = signal<string | null>(null);
   readonly nombreCategoriaEditada = signal('');
+
+  recuentoEjercicios(categoriaId: string): number {
+    return (this.recursoEjercicios.value() ?? []).filter((ejercicio) => ejercicio.categoriaIds.includes(categoriaId)).length;
+  }
 
   async crearCategoria(nombre: string): Promise<void> {
     this.errorCreacion.set(null);
@@ -76,12 +93,29 @@ export class CategoriaGestionComponent {
       return;
     }
     try {
-      await this.gestionarCategoria.eliminar(id);
+      const snapshot = await this.gestionarCategoria.eliminar(id);
       this.recursoCategorias.reload();
+      this.recursoEjercicios.reload();
       this.confirmacionEliminacion.set('Categoría eliminada.');
-      this.mensajeFeedback.mostrarExito('Categoría eliminada.');
+      this.mensajeFeedback.mostrarExitoConAccion('Categoría eliminada.', 'Deshacer', () => {
+        void this.restaurarCategoria(snapshot);
+      });
     } catch (error) {
       const mensaje = error instanceof ErrorOperacionNoPermitida ? error.message : 'No se ha podido eliminar la categoría.';
+      this.errorEliminacion.set(mensaje);
+      this.mensajeFeedback.mostrarError(mensaje);
+    }
+  }
+
+  private async restaurarCategoria(snapshot: Awaited<ReturnType<GestionarCategoriaUseCase['eliminar']>>): Promise<void> {
+    try {
+      await this.gestionarCategoria.restaurarEliminacion(snapshot);
+      this.recursoCategorias.reload();
+      this.recursoEjercicios.reload();
+      this.confirmacionEliminacion.set('Categoría restaurada.');
+      this.mensajeFeedback.mostrarExito('Categoría restaurada.');
+    } catch (error) {
+      const mensaje = error instanceof Error ? error.message : 'No se ha podido restaurar la categoría.';
       this.errorEliminacion.set(mensaje);
       this.mensajeFeedback.mostrarError(mensaje);
     }

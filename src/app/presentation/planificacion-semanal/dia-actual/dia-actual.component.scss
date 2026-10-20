@@ -4,3 +4,45 @@
   margin-bottom: $espaciado-2;
   border-radius: 8px;
 }
+
+.dia-actual__error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $espaciado-2;
+  color: var(--mat-sys-error);
+}
+
+.dia-actual__contexto {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: $espaciado-1 $espaciado-2;
+  margin-bottom: $espaciado-2;
+
+  p {
+    margin: 0;
+  }
+}
+
+.dia-actual__proxima-sesion {
+  margin-top: $espaciado-2;
+  padding: $espaciado-2;
+  border-radius: 16px;
+  background: var(--mat-sys-surface-container);
+
+  h2 {
+    margin: 0 0 $espaciado-1;
+    font: var(--mat-sys-title-medium);
+  }
+
+  p {
+    margin: 0;
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  ul {
+    margin: $espaciado-1 0 0;
+    padding-left: $espaciado-3;
+  }
+}

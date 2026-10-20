@@ -28,6 +28,7 @@ describe('Integración de rutas de sincronización (US5)', () => {
               tokenGitHub: null,
               repositorioGitHub: null,
               ultimoShaSincronizado: null,
+              ultimaSincronizacionCorrecta: null,
               cambiosLocalesPendientes: false,
               catalogoPredefinidoCargado: true,
             }),

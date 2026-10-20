@@ -59,6 +59,34 @@ describe('GestionarProgresoDiarioUseCase', () => {
     expect(marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
   });
 
+  it('captura el valor previo de realizado para ofrecer una restauración exacta', async () => {
+    const obtenerPorFecha = vi.fn().mockResolvedValue([{ fecha: '2026-10-15', ejercicioId: 'ej-1', realizado: true }]);
+    const marcar = vi.fn().mockResolvedValue(undefined);
+    const { caso } = configurar({ obtenerPorFecha, marcar });
+
+    const snapshot = await caso.marcar(new Date('2026-10-15'), 'ej-1', false);
+
+    expect(snapshot).toEqual({
+      fecha: new Date('2026-10-15'),
+      ejercicioId: 'ej-1',
+      realizadoAnterior: true,
+    });
+  });
+
+  it('restaura realizado previo y vuelve a marcar cambios pendientes', async () => {
+    const marcar = vi.fn().mockResolvedValue(undefined);
+    const { caso, marcarCambiosLocalesPendientes } = configurar({ marcar });
+
+    await caso.restaurarCambio({
+      fecha: new Date('2026-10-15'),
+      ejercicioId: 'ej-1',
+      realizadoAnterior: false,
+    });
+
+    expect(marcar).toHaveBeenCalledWith(new Date('2026-10-15'), 'ej-1', false);
+    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
+  });
+
   it('obtiene el porcentaje del día a partir del dominio cuando hay planificación activa', async () => {
     const dias = crearDiasVacios();
     dias.find((d) => d.diaSemana === 'jueves')!.ejercicioIds = ['ej-1', 'ej-2'];

@@ -1,4 +1,4 @@
-import { Component, inject, resource, signal } from '@angular/core';
+import { Component, computed, inject, resource, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
 import { Router } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -56,17 +56,51 @@ export class ConfiguracionSincronizacionComponent {
 
   readonly sincronizando = signal(false);
   readonly guardando = signal(false);
+  readonly errorRepositorio = signal<string | null>(null);
+  readonly errorToken = signal<string | null>(null);
+  private readonly fechaSincronizacionTemporal = signal<Date | null>(null);
+  private readonly resultadoSincronizacion = signal<'inicial' | 'sincronizado' | 'error' | 'conflicto'>('inicial');
 
   protected get tieneCredenciales(): boolean {
     const ajustes = this.recursoAjustes.value();
     return !!(ajustes?.tokenGitHub && ajustes?.repositorioGitHub);
   }
 
+  protected readonly estadoVisible = computed(() => {
+    if (!this.tieneCredenciales) return 'Sin configurar';
+    if (this.sincronizando()) return 'Sincronizando...';
+    switch (this.resultadoSincronizacion()) {
+      case 'sincronizado':
+        return 'Sincronizado';
+      case 'error':
+        return 'Error de sincronización';
+      case 'conflicto':
+        return 'Conflicto pendiente de resolución';
+      default:
+        return 'Configurado';
+    }
+  });
+
+  protected readonly fechaSincronizacionLegible = computed(() => {
+    const fecha = this.fechaSincronizacionTemporal() ?? this.recursoAjustes.value()?.ultimaSincronizacionCorrecta;
+    return fecha ? new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium', timeStyle: 'short' }).format(fecha) : null;
+  });
+
   async guardarCredenciales(): Promise<void> {
-    if (!this.modelo().token.trim() || !this.modelo().repositorio.trim()) return;
+    const { token, repositorio } = this.modelo();
+    this.errorToken.set(token.trim() ? null : 'Introduce el token de GitHub.');
+    this.errorRepositorio.set(
+      !repositorio.trim()
+        ? 'Introduce el repositorio de datos.'
+        : /^[^/\s]+\/[^/\s]+$/.test(repositorio.trim())
+          ? null
+          : 'Usa el formato usuario/repositorio.'
+    );
+    if (this.errorToken() || this.errorRepositorio()) return;
     this.guardando.set(true);
     try {
-      await this.ajustesRepository.guardarCredencialesGitHub(this.modelo().token, this.modelo().repositorio);
+      await this.ajustesRepository.guardarCredencialesGitHub(token.trim(), repositorio.trim());
+      this.modelo.update((modelo) => ({ ...modelo, token: '' }));
       this.recursoAjustes.reload();
       this.mensajeFeedback.mostrarExito('Credenciales de GitHub guardadas.');
     } catch (error) {
@@ -77,17 +111,25 @@ export class ConfiguracionSincronizacionComponent {
   }
 
   async olvidarToken(): Promise<void> {
-    await this.ajustesRepository.olvidarCredencialesGitHub();
-    this.modelo.set({ token: '', repositorio: '' });
-    this.recursoAjustes.reload();
-    this.mensajeFeedback.mostrarExito('Token olvidado.');
+    try {
+      await this.ajustesRepository.olvidarCredencialesGitHub();
+      this.modelo.set({ token: '', repositorio: '' });
+      this.fechaSincronizacionTemporal.set(null);
+      this.resultadoSincronizacion.set('inicial');
+      this.recursoAjustes.reload();
+      this.mensajeFeedback.mostrarExito('Token olvidado.');
+    } catch (error) {
+      this.mensajeFeedback.mostrarError(error instanceof Error ? error.message : 'No se ha podido olvidar el token.');
+    }
   }
 
   async sincronizarAhora(): Promise<void> {
+    this.resultadoSincronizacion.set('inicial');
     this.sincronizando.set(true);
     try {
       const resultado = await this.sincronizarGithub.sincronizar();
       if (resultado.tipo === 'conflicto') {
+        this.resultadoSincronizacion.set('conflicto');
         this.conflictoEstado.conflictoActual.set({
           opcionPorDefecto: resultado.opcionPorDefecto,
           datosRemotos: resultado.datosRemotos,
@@ -96,8 +138,11 @@ export class ConfiguracionSincronizacionComponent {
         await this.router.navigate(['/sincronizacion/conflicto']);
         return;
       }
+      this.resultadoSincronizacion.set('sincronizado');
+      this.fechaSincronizacionTemporal.set(new Date());
       this.mensajeFeedback.mostrarExito(`Sincronización completada. ${ETIQUETAS_ACCION[resultado.accion]}`);
     } catch (error) {
+      this.resultadoSincronizacion.set('error');
       this.mensajeFeedback.mostrarError(error instanceof Error ? error.message : 'No se ha podido sincronizar con GitHub.');
     } finally {
       this.sincronizando.set(false);

@@ -97,4 +97,64 @@ describe('BusquedaEjerciciosComponent', () => {
     expect(texto).toContain('Plancha');
     expect(buscar).toHaveBeenCalledWith('', []);
   });
+
+  it('muestra categorías y miniaturas en los resultados y fija los filtros al recorrer la lista', async () => {
+    const ejercicioConMedios = ejercicio('ej-media', 'Peso muerto');
+    ejercicioConMedios.imagenes = [{ id: 'img-1', tipo: 'url', valorUrl: 'https://example.com/peso.jpg' }];
+    configurar({
+      ejercicios: [ejercicioConMedios],
+      categorias: [categoria('cat-1', 'Fuerza')],
+    });
+    const fixture = await crearComponente();
+
+    const raiz = fixture.nativeElement as HTMLElement;
+    const filtros = raiz.querySelector<HTMLElement>('.busqueda-ejercicios__filtros--fijados');
+    expect(filtros).toBeTruthy();
+    expect(filtros && getComputedStyle(filtros).position).toBe('sticky');
+    expect(raiz.querySelector('.busqueda-ejercicios__tarjeta')?.textContent).toContain('Fuerza');
+    expect(raiz.querySelector<HTMLImageElement>('.busqueda-ejercicios__miniatura')?.src).toContain('peso.jpg');
+  });
+
+  it('incluye la opción Todas y permite abrir una ficha junto a los resultados en escritorio', async () => {
+    const buscar = configurar({
+      ejercicios: [ejercicio('1', 'Sentadilla')],
+      categorias: [categoria('cat-1', 'Piernas')],
+    });
+    const fixture = await crearComponente();
+    const componente = fixture.componentInstance;
+    componente.esEscritorio.set(true);
+    componente.categoriaIdsSeleccionadas.set(['cat-1']);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('[data-todas-categorias]')).toBeTruthy();
+    const evento = new MouseEvent('click', { cancelable: true });
+    componente.seleccionarEjercicio(evento, '1');
+    fixture.detectChanges();
+
+    expect(evento.defaultPrevented).toBe(true);
+    expect((fixture.nativeElement as HTMLElement).querySelector('.busqueda-ejercicios__detalle')?.textContent)
+      .toContain('Sentadilla');
+    expect(componente.categoriaIdsSeleccionadas()).toEqual(['cat-1']);
+    expect(buscar).toHaveBeenCalledWith('', []);
+  });
+
+  it('expone un estado accesible mientras carga resultados', () => {
+    let resolver: (ejercicios: Ejercicio[]) => void = () => undefined;
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([]),
+        provideNoopAnimations(),
+        { provide: EjercicioRepositoryPort, useValue: { listarTodos: () => new Promise<Ejercicio[]>((resolve) => (resolver = resolve)) } },
+        { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue([]) } },
+        { provide: BuscarEjerciciosUseCase, useValue: { buscar: vi.fn().mockResolvedValue([]) } },
+      ],
+    });
+    const fixture = TestBed.createComponent(BusquedaEjerciciosComponent);
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('[role="status"]')).toBeTruthy();
+    resolver([]);
+  });
 });

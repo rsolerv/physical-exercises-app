@@ -7,15 +7,18 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { GestionarPlanificacionUseCase } from '../../../application/casos-uso/gestionar-planificacion.use-case';
 import { PlanificacionRepositoryPort } from '../../../application/ports/planificacion-repository.port';
 import { EjercicioRepositoryPort } from '../../../application/ports/ejercicio-repository.port';
 import type { Ejercicio } from '../../../domain/ejercicio/ejercicio.entity';
 import { DIAS_SEMANA_ORDENADOS } from '../../../domain/planificacion/planificacion.entity';
-import type { DiaSemana } from '../../../domain/planificacion/planificacion.entity';
+import type { DiaSemana, Planificacion } from '../../../domain/planificacion/planificacion.entity';
 import { diaSemanaDeFechaIso } from '../../../domain/planificacion/fecha-semana';
 import { CabeceraPaginaComponent } from '../../compartido/ui/cabecera-pagina/cabecera-pagina.component';
 import { MensajeFeedbackService } from '../../compartido/ui/mensaje-feedback.service';
+import { EstadoCargaComponent } from '../../compartido/ui/estado-carga/estado-carga.component';
+import { esActiva } from '../../../domain/planificacion/es-activa';
 
 const ETIQUETAS_DIA: Record<DiaSemana, string> = {
   lunes: 'Lunes',
@@ -56,7 +59,9 @@ function diasVaciosRegistro(): EjerciciosPorDia {
     MatSelectModule,
     MatIconModule,
     MatChipsModule,
+    MatProgressSpinnerModule,
     CabeceraPaginaComponent,
+    EstadoCargaComponent,
   ],
   templateUrl: './planificacion-constructor.component.html',
   styleUrl: './planificacion-constructor.component.scss',
@@ -86,6 +91,9 @@ export class PlanificacionConstructorComponent {
 
   readonly ejerciciosPorDia = signal<EjerciciosPorDia>(diasVaciosRegistro());
   readonly errorDia = signal<string | null>(null);
+  readonly busquedaEjercicios = signal<Record<DiaSemana, string>>(busquedasVacias());
+  readonly cargandoPlanificacion = signal(false);
+  readonly errorCargaPlanificacion = signal<string | null>(null);
 
   readonly guardando = signal(false);
   readonly errorAlGuardar = signal<string | null>(null);
@@ -102,20 +110,58 @@ export class PlanificacionConstructorComponent {
 
   constructor() {
     if (this.planificacionId) {
+      this.cargandoPlanificacion.set(true);
       void this.cargarParaEdicion(this.planificacionId);
     }
   }
 
   private async cargarParaEdicion(id: string): Promise<void> {
-    const planificacion = await this.planificacionRepository.obtenerPorId(id);
-    if (!planificacion) return;
-    this.modelo.set({ nombre: planificacion.nombre });
-    this.fechaInicio.set(planificacion.fechaInicio);
-    const registro = diasVaciosRegistro();
-    for (const dia of planificacion.dias) {
-      registro[dia.diaSemana] = [...dia.ejercicioIds];
+    this.errorCargaPlanificacion.set(null);
+    try {
+      const planificacion = await this.planificacionRepository.obtenerPorId(id);
+      if (!planificacion) {
+        this.errorCargaPlanificacion.set('No se ha encontrado la planificación que quieres editar.');
+        return;
+      }
+      this.modelo.set({ nombre: planificacion.nombre });
+      this.fechaInicio.set(planificacion.fechaInicio);
+      const registro = diasVaciosRegistro();
+      for (const dia of planificacion.dias) {
+        registro[dia.diaSemana] = [...dia.ejercicioIds];
+      }
+      this.ejerciciosPorDia.set(registro);
+    } catch (error) {
+      this.errorCargaPlanificacion.set(error instanceof Error ? error.message : 'No se ha podido cargar la planificación.');
+    } finally {
+      this.cargandoPlanificacion.set(false);
     }
-    this.ejerciciosPorDia.set(registro);
+  }
+
+  etiquetaTipoPlan(): string {
+    const fechaInicio = this.fechaInicio();
+    if (!fechaInicio) return 'Plantilla';
+    const provisional: Planificacion = {
+      id: this.planificacionId ?? '',
+      nombre: this.modelo().nombre,
+      fechaInicio,
+      dias: [],
+    };
+    return esActiva(provisional, new Date()) ? 'Activa' : 'Planificación';
+  }
+
+  establecerBusquedaEjercicio(dia: DiaSemana, busqueda: string): void {
+    this.busquedaEjercicios.update((actuales) => ({ ...actuales, [dia]: busqueda }));
+  }
+
+  ejerciciosDisponiblesParaDia(dia: DiaSemana): Ejercicio[] {
+    const consulta = this.busquedaEjercicios()[dia].trim().toLocaleLowerCase('es');
+    return this.ejercicios().filter(
+      (ejercicio) =>
+        !this.ejerciciosPorDia()[dia].includes(ejercicio.id) &&
+        (!consulta ||
+          ejercicio.nombre.toLocaleLowerCase('es').includes(consulta) ||
+          ejercicio.descripcion.toLocaleLowerCase('es').includes(consulta))
+    );
   }
 
   establecerFechaInicio(valor: string): void {
@@ -142,18 +188,31 @@ export class PlanificacionConstructorComponent {
     }
     this.ejerciciosPorDia.update((registro) => ({ ...registro, [dia]: [...registro[dia], ejercicioId] }));
     if (this.modoEdicion && this.planificacionId) {
-      await this.gestionarPlanificacion.asignarEjercicioADia(this.planificacionId, dia, ejercicioId);
+      try {
+        await this.gestionarPlanificacion.asignarEjercicioADia(this.planificacionId, dia, ejercicioId);
+      } catch (error) {
+        this.ejerciciosPorDia.update((registro) => ({
+          ...registro,
+          [dia]: registro[dia].filter((id) => id !== ejercicioId),
+        }));
+        this.errorDia.set(error instanceof Error ? error.message : 'No se ha podido asignar el ejercicio.');
+      }
     }
   }
 
   async quitarEjercicioDeDia(dia: DiaSemana, ejercicioId: string): Promise<void> {
+    if (this.modoEdicion && this.planificacionId) {
+      try {
+        await this.gestionarPlanificacion.quitarEjercicioDeDia(this.planificacionId, dia, ejercicioId);
+      } catch (error) {
+        this.errorDia.set(error instanceof Error ? error.message : 'No se ha podido quitar el ejercicio.');
+        return;
+      }
+    }
     this.ejerciciosPorDia.update((registro) => ({
       ...registro,
       [dia]: registro[dia].filter((id) => id !== ejercicioId),
     }));
-    if (this.modoEdicion && this.planificacionId) {
-      await this.gestionarPlanificacion.quitarEjercicioDeDia(this.planificacionId, dia, ejercicioId);
-    }
   }
 
   async guardar(): Promise<void> {
@@ -188,8 +247,18 @@ export class PlanificacionConstructorComponent {
 
   async duplicar(): Promise<void> {
     if (!this.planificacionId) return;
-    const copia = await this.gestionarPlanificacion.duplicar(this.planificacionId, `${this.modelo().nombre} (copia)`);
-    this.mensajeFeedback.mostrarExito('Planificación duplicada.');
-    await this.router.navigate(['/planificacion', copia.id]);
+    try {
+      const copia = await this.gestionarPlanificacion.duplicar(this.planificacionId, `${this.modelo().nombre} (copia)`);
+      this.mensajeFeedback.mostrarExito('Planificación duplicada.');
+      await this.router.navigate(['/planificacion', copia.id]);
+    } catch (error) {
+      const mensaje = error instanceof Error ? error.message : 'No se ha podido duplicar la planificación.';
+      this.errorAlGuardar.set(mensaje);
+      this.mensajeFeedback.mostrarError(mensaje);
+    }
   }
+}
+
+function busquedasVacias(): Record<DiaSemana, string> {
+  return Object.fromEntries(DIAS_SEMANA_ORDENADOS.map((dia) => [dia, ''])) as Record<DiaSemana, string>;
 }

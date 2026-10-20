@@ -122,6 +122,16 @@ describe('EjercicioFormularioComponent', () => {
     expect(componente.nuevaImagenUrl()).toBe('');
   });
 
+  it('identifica YouTube a partir de la URL sin elegir antes el tipo de enlace', () => {
+    const fixture = crearComponente();
+    const componente = fixture.componentInstance;
+
+    componente.nuevoEnlaceUrl.set('https://youtu.be/abc123');
+    componente.agregarEnlaceDesdeFormulario();
+
+    expect(componente.enlaces()).toEqual([{ tipo: 'youtube', url: 'https://youtu.be/abc123' }]);
+  });
+
   it('cambiar el origen de la imagen a "Archivo" muestra el botón "Subir imagen" en vez del campo de URL', () => {
     const fixture = crearComponente();
     const componente = fixture.componentInstance;
@@ -198,6 +208,42 @@ describe('EjercicioFormularioComponent', () => {
     expect(componente.imagenes()).toEqual([
       { id: expect.any(String), tipo: 'url', valorUrl: 'https://example.com/foto.jpg' },
     ]);
+  });
+
+  it('rechaza una imagen URL que no tenga formato válido', () => {
+    const fixture = crearComponente();
+    const componente = fixture.componentInstance;
+
+    componente.anadirImagenDesdeUrl('imagen-invalida');
+
+    expect(componente.imagenes()).toHaveLength(0);
+    expect(componente.errorImagen()).toContain('formato de URL válido');
+  });
+
+  it('muestra un estado de carga de categorías mientras obtiene las opciones', async () => {
+    let resolver: (categorias: Categoria[]) => void = () => undefined;
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([]),
+        provideNoopAnimations(),
+        {
+          provide: CategoriaRepositoryPort,
+          useValue: { listarTodas: () => new Promise<Categoria[]>((resolve) => (resolver = resolve)) },
+        },
+        { provide: EjercicioRepositoryPort, useValue: { obtenerPorId: vi.fn().mockResolvedValue(null) } },
+        { provide: GestionarEjercicioUseCase, useValue: { crear: vi.fn(), actualizar: vi.fn() } },
+        { provide: MensajeFeedbackService, useValue: { mostrarExito, mostrarError } },
+      ],
+    });
+    const fixture = crearComponente();
+    expect((fixture.nativeElement as HTMLElement).querySelector('.ejercicio-formulario__carga')).toBeTruthy();
+
+    resolver(categorias);
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('.ejercicio-formulario__carga')).toBeNull();
   });
 
   it('anadirImagenDesdeUrl no hace nada si la URL está vacía', () => {
@@ -329,6 +375,39 @@ describe('EjercicioFormularioComponent', () => {
     expect(texto).toMatch(/Categorías.*(\*|obligatorio)/is);
   });
 
+  it('distingue los cambios pendientes del estado guardado y del guardado en curso', async () => {
+    let completarGuardado: () => void = () => undefined;
+    const gestionar = TestBed.inject(GestionarEjercicioUseCase);
+    vi.mocked(gestionar.crear).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          completarGuardado = () =>
+            resolve({
+              id: 'ej-1',
+              nombre: 'Sentadilla',
+              descripcion: 'Flexionar rodillas',
+              categoriaIds: ['cat-1'],
+              enlaces: [],
+              imagenes: [],
+            });
+        })
+    );
+    const fixture = crearComponente();
+    const componente = fixture.componentInstance;
+
+    expect(componente.estadoGuardado()).toBe('sin-guardar');
+    componente.formulario.nombre().value.set('Sentadilla');
+    componente.formulario.descripcion().value.set('Flexionar rodillas');
+    componente.alternarCategoria('cat-1');
+    const guardado = componente.guardar();
+    expect(componente.estadoGuardado()).toBe('guardando');
+
+    completarGuardado();
+    await guardado;
+
+    expect(componente.estadoGuardado()).toBe('guardado');
+  });
+
   describe('modo edición', () => {
     function configurarEdicion(ejercicioExistente: {
       id: string;
@@ -375,6 +454,26 @@ describe('EjercicioFormularioComponent', () => {
       expect(componente.modelo().nombre).toBe('Sentadilla');
       expect(componente.modelo().observaciones).toBe('Cuidado con la espalda');
       expect(componente.categoriaIdsSeleccionadas()).toEqual(['cat-1']);
+    });
+
+    it('presenta formulario y ficha previa junto a acciones persistentes al editar', async () => {
+      configurarEdicion({
+        id: 'ej-1',
+        nombre: 'Sentadilla',
+        descripcion: 'Flexionar rodillas',
+        categoriaIds: ['cat-1'],
+        enlaces: [],
+        imagenes: [],
+      });
+      const fixture = crearComponente();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const raiz = fixture.nativeElement as HTMLElement;
+      expect(raiz.querySelector('.ejercicio-formulario__disposicion--edicion')).not.toBeNull();
+      expect(raiz.querySelector('.ejercicio-formulario__previsualizacion')?.textContent).toContain('Sentadilla');
+      expect(raiz.querySelector('.ejercicio-formulario__acciones')?.textContent).toContain('Guardar');
+      expect(raiz.querySelector('.ejercicio-formulario__acciones')?.textContent).toContain('Cancelar');
     });
 
     it('guardar() llama a actualizar() en vez de crear()', async () => {

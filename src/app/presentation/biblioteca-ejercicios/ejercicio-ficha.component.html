@@ -1,19 +1,76 @@
 <section class="ejercicio-ficha">
   @if (recursoEjercicio.isLoading()) {
-    <div class="contenido--centrado">
-      <mat-spinner diameter="32" />
-    </div>
+    <app-estado-carga mensaje="Cargando ejercicio" [cantidad]="2" />
+  } @else if (errorCarga()) {
+    <p class="ejercicio-ficha__error-operacion" role="alert">{{ errorCarga() }}</p>
   } @else if (recursoEjercicio.value(); as ejercicio) {
+    @if (enlacesYoutube().length > 0 || enlacesWeb().length > 0 || ejercicio.imagenes.length > 0) {
+      <section class="ejercicio-ficha__medios" aria-label="Medios del ejercicio">
+        @if (enlacesYoutube().length > 0) {
+          <div class="ejercicio-ficha__videos">
+            @for (enlace of enlacesYoutube(); track enlace.url) {
+              <app-youtube-embed [url]="enlace.url" [titulo]="ejercicio.nombre" />
+            }
+          </div>
+        }
+        @if (ejercicio.imagenes.length > 0) {
+          <div class="ejercicio-ficha__imagenes" aria-label="Imágenes del ejercicio">
+            @for (imagen of ejercicio.imagenes; track imagen.id) {
+              @if (imagenesConError().has(imagen.id)) {
+                <p class="ejercicio-ficha__error-imagen" role="alert">No se ha podido cargar esta imagen.</p>
+              } @else {
+                  <a
+                    class="ejercicio-ficha__imagen-ampliada"
+                    [href]="imagenSrc(imagen)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    [attr.aria-label]="'Abrir imagen ampliada del ejercicio ' + ejercicio.nombre"
+                  >
+                    <img
+                      class="ejercicio-ficha__imagen"
+                      [src]="imagenSrc(imagen)"
+                      [alt]="'Imagen del ejercicio ' + ejercicio.nombre"
+                      (error)="marcarErrorImagen(imagen.id)"
+                    />
+                  </a>
+              }
+            }
+          </div>
+        }
+        @if (enlacesWeb().length > 0) {
+          <div class="ejercicio-ficha__enlaces">
+            @for (enlace of enlacesWeb(); track enlace.url) {
+              <app-enlace-embed [url]="enlace.url" />
+            }
+          </div>
+        }
+      </section>
+    }
+
     <app-cabecera-pagina [titulo]="ejercicio.nombre">
       <div acciones class="ejercicio-ficha__acciones">
+        <a mat-button routerLink="/buscar">
+          <mat-icon>arrow_back</mat-icon>
+          Volver a Buscar
+        </a>
         <a mat-stroked-button routerLink="editar">
           <mat-icon>edit</mat-icon>
           Editar
         </a>
-        <button mat-stroked-button color="warn" type="button" (click)="eliminar()">
-          <mat-icon>delete</mat-icon>
-          Eliminar
+        <button
+          mat-icon-button
+          type="button"
+          aria-label="Más acciones del ejercicio"
+          [matMenuTriggerFor]="menuAcciones"
+        >
+          <mat-icon>more_vert</mat-icon>
         </button>
+        <mat-menu #menuAcciones="matMenu">
+          <button mat-menu-item class="ejercicio-ficha__accion-destructiva" type="button" (click)="eliminar()">
+            <mat-icon>delete</mat-icon>
+            Eliminar
+          </button>
+        </mat-menu>
       </div>
     </app-cabecera-pagina>
 
@@ -21,55 +78,55 @@
       <p class="ejercicio-ficha__error-operacion" role="alert">{{ error }}</p>
     }
 
-    <p class="ejercicio-ficha__descripcion">{{ ejercicio.descripcion }}</p>
+    @if (planificadoHoy()) {
+      <section class="ejercicio-ficha__progreso" aria-label="Progreso de hoy">
+        <div>
+          <h2>Progreso de hoy</h2>
+          @if (recursoPlanificacionHoy.isLoading() || recursoProgresoHoy.isLoading()) {
+            <p role="status">Cargando progreso de hoy...</p>
+          } @else if (errorProgresoHoy()) {
+            <p role="alert">No se pudo cargar el progreso de hoy.</p>
+            <button mat-stroked-button type="button" (click)="reintentarProgresoHoy()">Reintentar</button>
+          } @else {
+            <p>{{ realizadoHoy() ? 'Ejercicio realizado' : 'Ejercicio pendiente' }}</p>
+            <button
+              mat-stroked-button
+              type="button"
+              [attr.aria-pressed]="realizadoHoy()"
+              (click)="alternarProgresoHoy()"
+            >
+              {{ realizadoHoy() ? 'Marcar como pendiente' : 'Marcar como realizado' }}
+            </button>
+          }
+        </div>
+      </section>
+    }
 
-    <mat-chip-set class="ejercicio-ficha__categorias">
+    @if (pautaObservaciones(); as pauta) {
+      <dl class="ejercicio-ficha__pauta" aria-label="Pauta recomendada">
+        <div>
+          <dt>Series</dt>
+          <dd>{{ pauta.series }}</dd>
+        </div>
+        <div>
+          <dt>Repeticiones</dt>
+          <dd>{{ pauta.repeticiones }}</dd>
+        </div>
+      </dl>
+      @if (pauta.detalle) {
+        <p class="ejercicio-ficha__observaciones">{{ pauta.detalle }}</p>
+      }
+    } @else if (ejercicio.observaciones) {
+      <p class="ejercicio-ficha__observaciones">{{ ejercicio.observaciones }}</p>
+    }
+
+    <mat-chip-set class="ejercicio-ficha__categorias" aria-label="Categorías del ejercicio">
       @for (nombre of nombresCategorias(); track nombre) {
         <mat-chip>{{ nombre }}</mat-chip>
       }
     </mat-chip-set>
 
-    @if (ejercicio.observaciones) {
-      <p class="ejercicio-ficha__observaciones">{{ ejercicio.observaciones }}</p>
-    }
-
-    @if (enlacesYoutube().length > 0) {
-      <section class="ejercicio-ficha__seccion">
-        <h3>Vídeos</h3>
-        @for (enlace of enlacesYoutube(); track enlace.url) {
-          <app-youtube-embed [url]="enlace.url" />
-        }
-      </section>
-    }
-
-    @if (enlacesWeb().length > 0) {
-      <section class="ejercicio-ficha__seccion">
-        <h3>Enlaces</h3>
-        @for (enlace of enlacesWeb(); track enlace.url) {
-          <app-enlace-embed [url]="enlace.url" />
-        }
-      </section>
-    }
-
-    @if (ejercicio.imagenes.length > 0) {
-      <section class="ejercicio-ficha__seccion">
-        <h3>Imágenes</h3>
-        <div class="ejercicio-ficha__imagenes">
-          @for (imagen of ejercicio.imagenes; track imagen.id) {
-            @if (imagenesConError().has(imagen.id)) {
-              <p class="ejercicio-ficha__error-imagen" role="alert">No se ha podido cargar esta imagen.</p>
-            } @else {
-              <img
-                class="ejercicio-ficha__imagen"
-                [src]="imagenSrc(imagen)"
-                alt="Imagen del ejercicio"
-                (error)="marcarErrorImagen(imagen.id)"
-              />
-            }
-          }
-        </div>
-      </section>
-    }
+    <p class="ejercicio-ficha__descripcion">{{ ejercicio.descripcion }}</p>
   } @else {
     <app-estado-vacio icono="error_outline" mensaje="El ejercicio solicitado no se ha encontrado." />
   }

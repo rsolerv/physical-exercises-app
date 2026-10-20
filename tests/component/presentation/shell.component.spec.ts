@@ -14,7 +14,10 @@ import { ProgresoDiarioRepositoryPort } from '../../../src/app/application/ports
 import { AjustesRepositoryPort } from '../../../src/app/application/ports/ajustes-repository.port';
 import { GitHubSyncPort } from '../../../src/app/application/ports/github-sync.port';
 
+const anchoViewportOriginal = window.innerWidth;
+
 function simularAnchoViewport(ancho: number): void {
+  Object.defineProperty(window, 'innerWidth', { configurable: true, value: ancho });
   vi.stubGlobal(
     'matchMedia',
     vi.fn().mockImplementation((query: string) => ({
@@ -31,6 +34,7 @@ function simularAnchoViewport(ancho: number): void {
 describe('ShellComponent (navegación)', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: anchoViewportOriginal });
   });
 
   beforeEach(() => {
@@ -58,6 +62,7 @@ describe('ShellComponent (navegación)', () => {
               tokenGitHub: null,
               repositorioGitHub: null,
               ultimoShaSincronizado: null,
+              ultimaSincronizacionCorrecta: null,
               cambiosLocalesPendientes: false,
               catalogoPredefinidoCargado: true,
             }),
@@ -79,22 +84,62 @@ describe('ShellComponent (navegación)', () => {
     expect(fixture.nativeElement.querySelector('app-estado-vacio')).toBeTruthy();
   });
 
-  it('muestra exactamente las seis opciones de navegación y acción requeridas', () => {
+  it('muestra la navegación móvil principal y la acción destacada de alta', () => {
+    simularAnchoViewport(375);
     const fixture = TestBed.createComponent(ShellComponent);
     fixture.detectChanges();
 
-    expect(MENU_PRINCIPAL.map((entrada) => entrada.etiqueta)).toEqual([
-      'Hoy',
-      'Buscar',
-      'Planificación',
-      'Sincronización',
-      'Nuevo ejercicio',
-      'Gestionar categorías',
-    ]);
-    const textoMenu = (fixture.nativeElement as HTMLElement).querySelector('mat-sidenav')?.textContent ?? '';
-    expect(textoMenu).not.toContain('Mis ejercicios');
-    expect(textoMenu).toContain('Nuevo ejercicio');
-    expect(textoMenu).toContain('Gestionar categorías');
+    const raiz = fixture.nativeElement as HTMLElement;
+    const enlaces = Array.from(raiz.querySelectorAll('.shell__barra-inferior a span')).map((enlace) =>
+      enlace.textContent?.trim()
+    );
+    expect(enlaces).toEqual(['Hoy', 'Planificación', 'Buscar']);
+    expect(raiz.querySelector('.shell__mas-toggle')?.textContent).toContain('Más');
+    expect(raiz.querySelector('.shell__nuevo-ejercicio')?.getAttribute('aria-label')).toBe('Nuevo ejercicio');
+    expect(raiz.textContent).not.toContain('Mis ejercicios');
+  });
+
+  it('abre Más como panel inferior y lo cierra al elegir una opción', async () => {
+    simularAnchoViewport(375);
+    const fixture = TestBed.createComponent(ShellComponent);
+    fixture.detectChanges();
+
+    (fixture.nativeElement as HTMLElement).querySelector('.shell__mas-toggle')?.dispatchEvent(new Event('click'));
+    fixture.detectChanges();
+    const panel = document.querySelector('.shell__panel-mas');
+    expect(panel?.textContent).toContain('Gestionar categorías');
+    expect(panel?.textContent).toContain('Sincronización');
+    expect(panel?.textContent).toContain('Versión');
+
+    panel?.querySelector('a[href="/sincronizacion"]')?.dispatchEvent(new Event('click'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await vi.waitFor(() => expect(document.querySelector('.shell__panel-mas')).toBeNull());
+  });
+
+  it('muestra un riel lateral con etiquetas accesibles en tablet', () => {
+    simularAnchoViewport(768);
+    const fixture = TestBed.createComponent(ShellComponent);
+    fixture.detectChanges();
+
+    const riel = (fixture.nativeElement as HTMLElement).querySelector('.shell__riel-lateral');
+    expect(riel).not.toBeNull();
+    expect(riel?.querySelector('a[aria-label="Buscar"]')).not.toBeNull();
+    expect(riel?.querySelector('a[aria-label="Gestionar categorías"]')).not.toBeNull();
+    expect((fixture.nativeElement as HTMLElement).querySelector('.shell__barra-inferior')).toBeNull();
+  });
+
+  it('agrupa la navegación de escritorio y no ofrece Mis ejercicios', () => {
+    simularAnchoViewport(1366);
+    const fixture = TestBed.createComponent(ShellComponent);
+    fixture.detectChanges();
+
+    const raiz = fixture.nativeElement as HTMLElement;
+    expect(raiz.querySelector('.shell__grupo-entrenar')?.textContent).toContain('Hoy');
+    expect(raiz.querySelector('.shell__grupo-biblioteca')?.textContent).toContain('Buscar');
+    expect(raiz.querySelector('.shell__grupo-sistema')?.textContent).toContain('Sincronización');
+    expect(raiz.textContent).not.toContain('Mis ejercicios');
+    expect(raiz.querySelector('.shell__nuevo-ejercicio')?.getAttribute('aria-label')).toBe('Nuevo ejercicio');
   });
 
   it('cada entrada de menú navega a una ruta funcional registrada', async () => {
@@ -105,20 +150,22 @@ describe('ShellComponent (navegación)', () => {
     }
   });
 
-  it('el menú lateral está cerrado por defecto en viewport móvil (FR-010)', () => {
+  it('muestra la barra de navegación inferior en viewport móvil', () => {
     simularAnchoViewport(599);
     const fixture = TestBed.createComponent(ShellComponent);
     fixture.detectChanges();
 
-    expect(fixture.componentInstance.menuAbierto()).toBe(false);
+    expect(fixture.componentInstance.esMovil()).toBe(true);
+    expect(fixture.nativeElement.querySelector('.shell__barra-inferior')).not.toBeNull();
   });
 
-  it('el menú lateral está abierto por defecto en viewport de escritorio (FR-010)', () => {
-    simularAnchoViewport(600);
+  it('usa el menú agrupado en viewport de escritorio', () => {
+    simularAnchoViewport(1366);
     const fixture = TestBed.createComponent(ShellComponent);
     fixture.detectChanges();
 
-    expect(fixture.componentInstance.menuAbierto()).toBe(true);
+    expect(fixture.componentInstance.esMovil()).toBe(false);
+    expect(fixture.nativeElement.querySelector('.shell__menu-escritorio')).not.toBeNull();
   });
 
   it('la entrada de menú de la ruta activa lleva un indicador adicional más allá de font-weight (aria-current)', async () => {
@@ -135,41 +182,35 @@ describe('ShellComponent (navegación)', () => {
     expect(enlaceActivo?.getAttribute('aria-current')).toBe('page');
   });
 
-  it('usa una superposición en móvil hasta 599 px y un panel lateral desde 600 px (FR-047)', () => {
+  it('usa navegación móvil, riel en tablet y menú fijo en escritorio', () => {
     simularAnchoViewport(599);
     const fixtureMovil = TestBed.createComponent(ShellComponent);
     fixtureMovil.detectChanges();
-    expect(fixtureMovil.componentInstance.menuLateral()?.mode).toBe('over');
+    expect(fixtureMovil.nativeElement.querySelector('.shell__barra-inferior')).not.toBeNull();
 
-    simularAnchoViewport(600);
+    simularAnchoViewport(768);
+    const fixtureTablet = TestBed.createComponent(ShellComponent);
+    fixtureTablet.detectChanges();
+    expect(fixtureTablet.nativeElement.querySelector('.shell__riel-lateral')).not.toBeNull();
+
+    simularAnchoViewport(1280);
     const fixtureEscritorio = TestBed.createComponent(ShellComponent);
     fixtureEscritorio.detectChanges();
-    expect(fixtureEscritorio.componentInstance.menuLateral()?.mode).toBe('side');
+    expect(fixtureEscritorio.nativeElement.querySelector('.shell__menu-escritorio')).not.toBeNull();
   });
 
-  it('adapta el modo al cambiar el ancho de ventana entre móvil y escritorio (FR-026)', () => {
-    let ancho = 599;
-    vi.stubGlobal(
-      'matchMedia',
-      vi.fn().mockImplementation((query: string) => ({
-        matches: query === '(max-width: 599.99px)' ? ancho <= 599 : ancho > 599,
-        media: query,
-        addListener: vi.fn(),
-        removeListener: vi.fn(),
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-      }))
-    );
+  it('adapta el modo al cambiar el ancho de ventana (FR-026)', () => {
+    simularAnchoViewport(599);
     const fixture = TestBed.createComponent(ShellComponent);
     fixture.detectChanges();
-    expect(fixture.componentInstance.menuLateral()?.mode).toBe('over');
+    expect(fixture.componentInstance.esMovil()).toBe(true);
 
-    ancho = 600;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 600 });
     window.dispatchEvent(new Event('resize'));
     fixture.detectChanges();
 
-    expect(fixture.componentInstance.menuLateral()?.mode).toBe('side');
-    expect(fixture.componentInstance.menuAbierto()).toBe(true);
+    expect(fixture.componentInstance.esMovil()).toBe(false);
+    expect(fixture.componentInstance.esRiel()).toBe(true);
   });
 
   it.each([320, 359])('permite que el título de la cabecera se ajuste a %i px (SC-011)', (ancho) => {
@@ -193,15 +234,15 @@ describe('ShellComponent (navegación)', () => {
     }
   });
 
-  it('cierra el menú superpuesto después de elegir una sección (FR-047)', async () => {
+  it('cierra el panel Más después de elegir una sección (FR-047)', async () => {
     simularAnchoViewport(599);
     const fixture = TestBed.createComponent(ShellComponent);
     fixture.detectChanges();
-    const sidenav = fixture.componentInstance.menuLateral();
-    await sidenav?.open();
-    fixture.nativeElement.querySelector('a[mat-list-item]')?.dispatchEvent(new Event('click'));
+    fixture.nativeElement.querySelector('.shell__mas-toggle')?.dispatchEvent(new Event('click'));
+    fixture.detectChanges();
+    document.querySelector('.shell__panel-mas a[href="/sincronizacion"]')?.dispatchEvent(new Event('click'));
     await fixture.whenStable();
 
-    expect(sidenav?.opened).toBe(false);
+    await vi.waitFor(() => expect(document.querySelector('.shell__panel-mas')).toBeNull());
   });
 });

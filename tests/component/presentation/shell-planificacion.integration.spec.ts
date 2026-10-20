@@ -8,6 +8,8 @@ import { routes } from '../../../src/app/app.routes';
 import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejercicio-repository.port';
 import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
 import { PlanificacionRepositoryPort } from '../../../src/app/application/ports/planificacion-repository.port';
+import { ProgresoDiarioRepositoryPort } from '../../../src/app/application/ports/progreso-diario-repository.port';
+import { GestionarProgresoDiarioUseCase } from '../../../src/app/application/casos-uso/gestionar-progreso-diario.use-case';
 import { AjustesRepositoryPort } from '../../../src/app/application/ports/ajustes-repository.port';
 import { GestionarEjercicioUseCase } from '../../../src/app/application/casos-uso/gestionar-ejercicio.use-case';
 import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
@@ -34,6 +36,8 @@ describe('Integración de la pantalla de inicio y de las rutas de planificación
             obtenerPorId: vi.fn().mockResolvedValue(null),
           },
         },
+        { provide: ProgresoDiarioRepositoryPort, useValue: { obtenerPorFecha: vi.fn().mockResolvedValue([]) } },
+        { provide: GestionarProgresoDiarioUseCase, useValue: { marcar: vi.fn(), restaurarCambio: vi.fn() } },
       ],
     });
   }
@@ -90,7 +94,12 @@ describe('Integración de la pantalla de inicio y de las rutas de planificación
         { provide: AjustesRepositoryPort, useValue: { marcarCambiosLocalesPendientes: vi.fn().mockResolvedValue(undefined) } },
         { provide: GestionarEjercicioUseCase, useValue: { eliminar: vi.fn().mockResolvedValue(undefined) } },
         { provide: MensajeFeedbackService, useValue: { mostrarExito: vi.fn(), mostrarError: vi.fn() } },
-        { provide: PlanificacionRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue([planificacion]) } },
+        {
+          provide: PlanificacionRepositoryPort,
+          useValue: { listarTodas: vi.fn().mockResolvedValue([planificacion]), obtenerActiva: vi.fn().mockResolvedValue(planificacion) },
+        },
+        { provide: ProgresoDiarioRepositoryPort, useValue: { obtenerPorFecha: vi.fn().mockResolvedValue([]) } },
+        { provide: GestionarProgresoDiarioUseCase, useValue: { marcar: vi.fn(), restaurarCambio: vi.fn() } },
       ],
     });
 
@@ -101,7 +110,8 @@ describe('Integración de la pantalla de inicio y de las rutas de planificación
     for (const ejercicio of ejercicios) {
       const enlace = harness.routeNativeElement?.querySelector<HTMLAnchorElement>(`a[href="/ejercicios/${ejercicio.id}"]`);
       expect(enlace).not.toBeNull();
-      expect(enlace?.querySelector('mat-chip'), `Exercise ${ejercicio.id} link: ${enlace?.outerHTML}`).not.toBeNull();
+      expect(enlace?.textContent).toContain(ejercicio.nombre);
+      expect(enlace?.textContent).not.toContain(ejercicio.id);
       expect(enlace?.getAttribute('aria-label')).toBe(`Abrir la ficha de ${ejercicio.nombre}`);
 
       enlace?.click();

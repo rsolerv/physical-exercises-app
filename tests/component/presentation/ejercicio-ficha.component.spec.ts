@@ -7,6 +7,12 @@ import { EjercicioFichaComponent } from '../../../src/app/presentation/bibliotec
 import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejercicio-repository.port';
 import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
 import { GestionarEjercicioUseCase } from '../../../src/app/application/casos-uso/gestionar-ejercicio.use-case';
+import { ConsultarPlanificacionUseCase } from '../../../src/app/application/casos-uso/consultar-planificacion.use-case';
+import { GestionarProgresoDiarioUseCase } from '../../../src/app/application/casos-uso/gestionar-progreso-diario.use-case';
+import { ProgresoDiarioRepositoryPort } from '../../../src/app/application/ports/progreso-diario-repository.port';
+import { crearDiasVacios } from '../../../src/app/domain/planificacion/planificacion.entity';
+import { diaSemanaDeFecha } from '../../../src/app/domain/planificacion/fecha-semana';
+import type { Planificacion } from '../../../src/app/domain/planificacion/planificacion.entity';
 import type { Ejercicio } from '../../../src/app/domain/ejercicio/ejercicio.entity';
 import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
 
@@ -27,8 +33,19 @@ describe('EjercicioFichaComponent', () => {
     ejercicio: Ejercicio | null;
     eliminar?: ReturnType<typeof vi.fn>;
     mostrarExito?: ReturnType<typeof vi.fn>;
+    mostrarExitoConAccion?: ReturnType<typeof vi.fn>;
     mostrarError?: ReturnType<typeof vi.fn>;
+    planificacion?: Planificacion | null;
+    registrosProgreso?: { fecha: string; ejercicioId: string; realizado: boolean }[];
+    marcarProgreso?: ReturnType<typeof vi.fn>;
+    restaurarProgreso?: ReturnType<typeof vi.fn>;
   }) {
+    const dias = crearDiasVacios();
+    dias.find((dia) => dia.diaSemana === diaSemanaDeFecha(new Date()))!.ejercicioIds = ['ej-1'];
+    const planificacion =
+      opciones.planificacion === undefined
+        ? ({ id: 'plan-1', nombre: 'Semana', fechaInicio: '2020-01-06', dias } satisfies Planificacion)
+        : opciones.planificacion;
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
@@ -46,11 +63,27 @@ describe('EjercicioFichaComponent', () => {
           provide: CategoriaRepositoryPort,
           useValue: { listarTodas: vi.fn().mockResolvedValue([{ id: 'cat-1', nombre: 'Piernas', esGenerica: false }]) },
         },
+        {
+          provide: ConsultarPlanificacionUseCase,
+          useValue: { obtenerDeHoy: vi.fn().mockResolvedValue(planificacion) },
+        },
+        {
+          provide: ProgresoDiarioRepositoryPort,
+          useValue: { obtenerPorFecha: vi.fn().mockResolvedValue(opciones.registrosProgreso ?? []) },
+        },
+        {
+          provide: GestionarProgresoDiarioUseCase,
+          useValue: {
+            marcar: opciones.marcarProgreso ?? vi.fn().mockResolvedValue({ realizadoAnterior: false }),
+            restaurarCambio: opciones.restaurarProgreso ?? vi.fn().mockResolvedValue(undefined),
+          },
+        },
         { provide: GestionarEjercicioUseCase, useValue: { eliminar: opciones.eliminar ?? vi.fn().mockResolvedValue(undefined) } },
         {
           provide: MensajeFeedbackService,
           useValue: {
             mostrarExito: opciones.mostrarExito ?? vi.fn(),
+            mostrarExitoConAccion: opciones.mostrarExitoConAccion ?? vi.fn(),
             mostrarError: opciones.mostrarError ?? vi.fn(),
           },
         },
@@ -76,6 +109,47 @@ describe('EjercicioFichaComponent', () => {
     expect(texto).toContain('Piernas');
   });
 
+  it('permite cambiar el progreso de forma independiente cuando está planificado hoy', async () => {
+    const marcarProgreso = vi.fn().mockResolvedValue({ realizadoAnterior: false });
+    const mostrarExitoConAccion = vi.fn();
+    configurar({ ejercicio: ejercicio(), marcarProgreso, mostrarExitoConAccion });
+    const fixture = await crearComponente();
+
+    const boton = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('.ejercicio-ficha__progreso button');
+    expect(boton?.textContent).toContain('Marcar como realizado');
+    await boton?.click();
+    await fixture.whenStable();
+
+    expect(marcarProgreso).toHaveBeenCalledWith(expect.any(Date), 'ej-1', true);
+    expect(mostrarExitoConAccion).toHaveBeenCalledWith('Progreso actualizado.', 'Deshacer', expect.any(Function));
+    expect((fixture.nativeElement as HTMLElement).querySelector('.ejercicio-ficha__descripcion')?.textContent).toContain('Flexionar');
+  });
+
+  it('no muestra el control de progreso cuando el ejercicio no está planificado hoy', async () => {
+    configurar({ ejercicio: ejercicio(), planificacion: null });
+    const fixture = await crearComponente();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('.ejercicio-ficha__progreso')).toBeNull();
+  });
+
+  it('destaca series y repeticiones que ya figuran en observaciones, sin inventarlas', async () => {
+    configurar({
+      ejercicio: ejercicio({ observaciones: '3 series de 10 repeticiones. Mantén la espalda recta.' }),
+    });
+    const fixture = await crearComponente();
+    const raiz = fixture.nativeElement as HTMLElement;
+
+    expect(raiz.querySelector('.ejercicio-ficha__pauta')?.textContent).toContain('3');
+    expect(raiz.querySelector('.ejercicio-ficha__pauta')?.textContent).toContain('10');
+    expect(raiz.querySelector('.ejercicio-ficha__observaciones')?.textContent).toContain('Mantén la espalda recta.');
+  });
+
+  it('no inventa pauta de series y repeticiones si no aparece en las observaciones', async () => {
+    configurar({ ejercicio: ejercicio({ observaciones: 'Hazlo con control.' }) });
+    const sinPauta = await crearComponente();
+    expect((sinPauta.nativeElement as HTMLElement).querySelector('.ejercicio-ficha__pauta')).toBeNull();
+  });
+
   it('muestra el reproductor embebido para cada enlace de YouTube (FR-015)', async () => {
     configurar({ ejercicio: ejercicio({ enlaces: [{ tipo: 'youtube', url: 'https://youtu.be/abc123' }] }) });
     const fixture = await crearComponente();
@@ -88,6 +162,34 @@ describe('EjercicioFichaComponent', () => {
     const fixture = await crearComponente();
 
     expect((fixture.nativeElement as HTMLElement).querySelector('app-enlace-embed')).toBeTruthy();
+  });
+
+  it('presenta los medios antes del título y conserva la proporción cuadrada completa de imágenes', async () => {
+    configurar({
+      ejercicio: ejercicio({
+        imagenes: [{ id: 'img-1', tipo: 'url', valorUrl: 'https://example.com/imagen.jpg' }],
+        enlaces: [{ tipo: 'youtube', url: 'https://youtu.be/abc123' }],
+      }),
+    });
+    const fixture = await crearComponente();
+    const raiz = fixture.nativeElement as HTMLElement;
+    const medios = raiz.querySelector('.ejercicio-ficha__medios');
+    const cabecera = raiz.querySelector('app-cabecera-pagina');
+
+    expect(medios).toBeTruthy();
+    expect(cabecera).toBeTruthy();
+    expect(
+      medios !== null &&
+        cabecera !== null &&
+        Boolean(medios.compareDocumentPosition(cabecera) & Node.DOCUMENT_POSITION_FOLLOWING)
+    ).toBe(true);
+    expect(raiz.querySelector('.ejercicio-ficha__imagenes')?.classList.contains('ejercicio-ficha__imagenes')).toBe(true);
+    const imagen = raiz.querySelector<HTMLImageElement>('.ejercicio-ficha__imagen');
+    expect(imagen).toBeTruthy();
+    expect(imagen && getComputedStyle(imagen).aspectRatio).toBe('1 / 1');
+    expect(imagen && getComputedStyle(imagen).objectFit).toBe('contain');
+    const enlaceImagen = raiz.querySelector<HTMLAnchorElement>('.ejercicio-ficha__imagen-ampliada');
+    expect(enlaceImagen?.target).toBe('_blank');
   });
 
   it('muestra un mensaje cuando el ejercicio no existe', async () => {
@@ -118,9 +220,9 @@ describe('EjercicioFichaComponent', () => {
   });
 
   it('elimina el ejercicio y vuelve a Buscar', async () => {
-    const eliminar = vi.fn().mockResolvedValue(undefined);
-    const mostrarExito = vi.fn();
-    configurar({ ejercicio: ejercicio(), eliminar, mostrarExito });
+    const eliminar = vi.fn().mockResolvedValue({ ejercicio: ejercicio(), asignaciones: [] });
+    const mostrarExitoConAccion = vi.fn();
+    configurar({ ejercicio: ejercicio(), eliminar, mostrarExitoConAccion });
     const fixture = await crearComponente();
     const router = TestBed.inject(Router);
     const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
@@ -128,10 +230,41 @@ describe('EjercicioFichaComponent', () => {
     await fixture.componentInstance.eliminar();
 
     expect(eliminar).toHaveBeenCalledWith('ej-1');
-    expect(mostrarExito).toHaveBeenCalledWith('Ejercicio eliminado.');
+    expect(mostrarExitoConAccion).toHaveBeenCalledWith('Ejercicio eliminado.', 'Deshacer', expect.any(Function));
     expect(navigateSpy).toHaveBeenCalledWith(['/buscar']);
   });
 
+  it('ofrece Deshacer en la notificación y restaura el ejercicio sin ocultar errores', async () => {
+    const snapshot = { ejercicio: ejercicio(), asignaciones: [] };
+    const eliminar = vi.fn().mockResolvedValue(snapshot);
+    const restaurarEliminacion = vi.fn().mockResolvedValue(undefined);
+    const mostrarExito = vi.fn();
+    const mostrarExitoConAccion = vi.fn();
+    configurar({ ejercicio: ejercicio(), eliminar, mostrarExito, mostrarExitoConAccion });
+    TestBed.overrideProvider(GestionarEjercicioUseCase, {
+      useValue: { eliminar, restaurarEliminacion },
+    });
+    const fixture = await crearComponente();
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    await fixture.componentInstance.eliminar();
+
+    const deshacer = mostrarExitoConAccion.mock.calls[0][2] as () => void;
+    deshacer();
+
+    expect(restaurarEliminacion).toHaveBeenCalledWith(snapshot);
+  });
+
+  it('mantiene la eliminación en el menú secundario', async () => {
+    configurar({ ejercicio: ejercicio() });
+    const fixture = await crearComponente();
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      '[aria-label="Más acciones del ejercicio"]'
+    )?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(document.body.textContent).toContain('Eliminar');
+  });
   it('muestra un error contextual y no navega si falla la eliminación', async () => {
     const eliminar = vi.fn().mockRejectedValue(new Error('No se ha podido eliminar el ejercicio.'));
     const mostrarError = vi.fn();

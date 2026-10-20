@@ -6,7 +6,9 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ProgresoDiarioRepositoryPort } from '../../application/ports/progreso-diario-repository.port';
 import { GestionarProgresoDiarioUseCase } from '../../application/casos-uso/gestionar-progreso-diario.use-case';
 import { calcularPorcentajeDia } from '../../domain/progreso-diario/calcular-porcentaje-dia';
+import { MensajeFeedbackService } from '../compartido/ui/mensaje-feedback.service';
 import type { Ejercicio } from '../../domain/ejercicio/ejercicio.entity';
+import type { CambioProgreso } from '../../application/casos-uso/gestionar-progreso-diario.use-case';
 
 /**
  * Progreso diario (Historia de Usuario 4): una casilla por ejercicio
@@ -24,6 +26,7 @@ import type { Ejercicio } from '../../domain/ejercicio/ejercicio.entity';
 export class ProgresoDiarioComponent {
   private readonly progresoDiarioRepository = inject(ProgresoDiarioRepositoryPort);
   private readonly gestionarProgresoDiario = inject(GestionarProgresoDiarioUseCase);
+  private readonly mensajeFeedback = inject(MensajeFeedbackService);
 
   readonly fecha = input.required<Date>();
   readonly ejercicios = input.required<Ejercicio[]>();
@@ -43,6 +46,13 @@ export class ProgresoDiarioComponent {
       this.recursoRegistros.value() ?? []
     )
   );
+  protected readonly mensajeEstado = computed(() => {
+    const porcentaje = this.resultado().porcentaje;
+    if (porcentaje === null) return '';
+    if (porcentaje === 0) return 'Aún no has marcado ejercicios';
+    if (porcentaje === 100) return 'Día completado';
+    return 'Buen progreso';
+  });
 
   protected estaRealizado(ejercicioId: string): boolean {
     return this.idsRealizados().has(ejercicioId);
@@ -50,7 +60,29 @@ export class ProgresoDiarioComponent {
 
   async alternar(ejercicioId: string): Promise<void> {
     const nuevoEstado = !this.estaRealizado(ejercicioId);
-    await this.gestionarProgresoDiario.marcar(this.fecha(), ejercicioId, nuevoEstado);
-    this.recursoRegistros.reload();
+    try {
+      const cambio = await this.gestionarProgresoDiario.marcar(this.fecha(), ejercicioId, nuevoEstado);
+      this.mensajeFeedback.mostrarExitoConAccion('Progreso actualizado.', 'Deshacer', () => {
+        void this.deshacer(cambio);
+      });
+      this.recursoRegistros.reload();
+    } catch (error) {
+      this.mensajeFeedback.mostrarError(this.mensajeDeError(error));
+    }
+  }
+
+  private async deshacer(cambio: CambioProgreso): Promise<void> {
+    try {
+      await this.gestionarProgresoDiario.restaurarCambio(cambio);
+      this.recursoRegistros.reload();
+    } catch (error) {
+      this.mensajeFeedback.mostrarError(this.mensajeDeError(error));
+    }
+  }
+
+  private mensajeDeError(error: unknown): string {
+    return error instanceof Error && error.message
+      ? `No se pudo actualizar el progreso: ${error.message}`
+      : 'No se pudo actualizar el progreso. Inténtalo de nuevo.';
   }
 }

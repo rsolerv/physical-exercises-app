@@ -1,6 +1,30 @@
 <section class="calendario-semanal">
   <app-cabecera-pagina titulo="Planificación semanal" descripcion="Consulta y organiza tus planificaciones y plantillas.">
-    <div acciones>
+    <div acciones class="calendario-semanal__acciones">
+      @if ((recursoPlanificaciones.value() ?? []).length > 0) {
+        <mat-form-field appearance="outline" class="calendario-semanal__selector-plan">
+          <mat-label>Planificación</mat-label>
+          <mat-select
+            [value]="planificacionMostrada()?.id ?? ''"
+            (selectionChange)="seleccionarPorId($event.value)"
+          >
+            @for (planificacion of recursoPlanificaciones.value(); track planificacion.id) {
+              <mat-option [value]="planificacion.id">
+                <span class="calendario-semanal__opcion-plan">
+                  <span>{{ planificacion.nombre }}</span>
+                  <small>{{ etiquetaTipoPlan(planificacion) }} · {{ formatearSemana(planificacion) }}</small>
+                </span>
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+      @if (planificacionMostrada(); as planificacion) {
+        <a mat-button [routerLink]="[planificacion.id]" aria-label="Editar planificación seleccionada">
+          <mat-icon>edit</mat-icon>
+          Editar
+        </a>
+      }
       <a mat-flat-button color="primary" routerLink="nueva">
         <mat-icon>add</mat-icon>
         Nueva planificación
@@ -8,10 +32,10 @@
     </div>
   </app-cabecera-pagina>
 
-  @if (cargando()) {
-    <div class="contenido--centrado">
-      <mat-spinner diameter="32" />
-    </div>
+  @if (errorCarga()) {
+    <p class="calendario-semanal__error" role="alert">{{ errorCarga() }}</p>
+  } @else if (cargando()) {
+    <app-estado-carga mensaje="Cargando planificación semanal" [cantidad]="7" />
   } @else if ((recursoPlanificaciones.value() ?? []).length === 0) {
     <app-estado-vacio icono="calendar_month" mensaje="No hay ninguna planificación creada todavía.">
       <a accion mat-flat-button color="primary" routerLink="nueva">
@@ -19,59 +43,84 @@
         Crear mi primera planificación
       </a>
     </app-estado-vacio>
-  } @else {
-    <mat-nav-list class="calendario-semanal__lista">
-      @for (planificacion of recursoPlanificaciones.value(); track planificacion.id) {
-        <mat-list-item
-          class="calendario-semanal__item"
-          [class.calendario-semanal__item--seleccionada]="planificacionMostrada()?.id === planificacion.id"
-          role="button"
-          tabindex="0"
-          (click)="seleccionar(planificacion)"
-          (keydown.enter)="seleccionar(planificacion)"
-          (keydown.space)="seleccionar(planificacion); $event.preventDefault()"
-        >
-          <span matListItemTitle>{{ planificacion.nombre }}</span>
-          <span matListItemLine>{{ planificacion.fechaInicio ? ('Semana del ' + planificacion.fechaInicio) : 'Plantilla' }}</span>
-          <a mat-icon-button matListItemMeta [routerLink]="[planificacion.id]" aria-label="Editar planificación">
-            <mat-icon>edit</mat-icon>
-          </a>
-        </mat-list-item>
+  } @else if (planificacionMostrada(); as planificacion) {
+    <div class="calendario-semanal__dias-movil" role="group" aria-label="Seleccionar día de la semana">
+      @for (dia of diasOrdenados; track dia) {
+        @if (obtenerDia(planificacion, dia); as diaPlan) {
+          <button
+            mat-stroked-button
+            type="button"
+            class="calendario-semanal__dia-movil"
+            [class.calendario-semanal__dia-movil--activo]="diaSeleccionado() === dia"
+            [class.calendario-semanal__dia-movil--con-ejercicios]="diaPlan.ejercicioIds.length > 0"
+            [attr.aria-current]="esHoy(dia) ? 'date' : null"
+            [attr.aria-pressed]="diaSeleccionado() === dia"
+            [attr.aria-label]="etiquetasDia[dia] + (diaPlan.ejercicioIds.length > 0 ? ', con ejercicios' : ', descanso')"
+            (click)="seleccionarDia(dia)"
+          >
+            <span>{{ etiquetasDia[dia] }}</span>
+            @if (esHoy(dia)) {
+              <small>Hoy</small>
+            }
+            <mat-icon aria-hidden="true">{{ diaPlan.ejercicioIds.length > 0 ? 'fitness_center' : 'bed' }}</mat-icon>
+          </button>
+        }
       }
-    </mat-nav-list>
+    </div>
 
-    @if (planificacionMostrada(); as planificacion) {
-      <h3 class="calendario-semanal__titulo-semana">{{ planificacion.nombre }}</h3>
-      <div class="calendario-semanal__cuadricula">
-        @for (dia of diasOrdenados; track dia) {
-          @if (obtenerDia(planificacion, dia); as diaPlan) {
-            <mat-card
-              class="calendario-semanal__dia"
-              [class.calendario-semanal__dia--con-ejercicios]="diaPlan.ejercicioIds.length > 0"
-              [class.calendario-semanal__dia--vacio]="diaPlan.ejercicioIds.length === 0"
+    @if (obtenerDia(planificacion, diaSeleccionado()); as diaPlan) {
+      <section class="calendario-semanal__dia-seleccionado" aria-live="polite">
+        <h2>{{ etiquetasDia[diaSeleccionado()] }}</h2>
+        @if (diaPlan.ejercicioIds.length === 0) {
+          <p class="calendario-semanal__descanso">Descanso</p>
+        } @else {
+          @for (ejercicioId of diaPlan.ejercicioIds; track ejercicioId) {
+            <a
+              mat-button
+              class="calendario-semanal__fila-ejercicio"
+              [routerLink]="['/ejercicios', ejercicioId]"
+              [attr.aria-label]="'Abrir la ficha de ' + nombreEjercicio(ejercicioId)"
             >
-              <mat-card-header>
-                <mat-card-title>{{ etiquetasDia[dia] }}</mat-card-title>
-              </mat-card-header>
-              <mat-card-content>
-                @if (diaPlan.ejercicioIds.length === 0) {
-                  <p class="calendario-semanal__sin-ejercicios">Sin ejercicios</p>
-                } @else {
-                  @for (ejercicioId of diaPlan.ejercicioIds; track ejercicioId) {
-                    <a
-                      class="calendario-semanal__ejercicio"
-                      [routerLink]="['/ejercicios', ejercicioId]"
-                      [attr.aria-label]="'Abrir la ficha de ' + nombreEjercicio(ejercicioId)"
-                    >
-                      <mat-chip>{{ nombreEjercicio(ejercicioId) }}</mat-chip>
-                    </a>
-                  }
-                }
-              </mat-card-content>
-            </mat-card>
+              <mat-icon>fitness_center</mat-icon>
+              {{ nombreEjercicio(ejercicioId) }}
+              <mat-icon>chevron_right</mat-icon>
+            </a>
           }
         }
-      </div>
+      </section>
     }
+
+    <div class="calendario-semanal__cuadricula" aria-label="Comparar los siete días">
+      @for (dia of diasOrdenados; track dia) {
+        @if (obtenerDia(planificacion, dia); as diaPlan) {
+          <mat-card
+            class="calendario-semanal__dia"
+            [class.calendario-semanal__dia--con-ejercicios]="diaPlan.ejercicioIds.length > 0"
+            [class.calendario-semanal__dia--vacio]="diaPlan.ejercicioIds.length === 0"
+            [class.calendario-semanal__dia--hoy]="esHoy(dia)"
+          >
+            <mat-card-header>
+              <mat-card-title>{{ etiquetasDia[dia] }} @if (esHoy(dia)) { <span>· Hoy</span> }</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              @if (diaPlan.ejercicioIds.length === 0) {
+                <p class="calendario-semanal__descanso">Descanso</p>
+              } @else {
+                @for (ejercicioId of diaPlan.ejercicioIds; track ejercicioId) {
+                  <a
+                    mat-button
+                    class="calendario-semanal__fila-ejercicio"
+                    [routerLink]="['/ejercicios', ejercicioId]"
+                    [attr.aria-label]="'Abrir la ficha de ' + nombreEjercicio(ejercicioId)"
+                  >
+                    {{ nombreEjercicio(ejercicioId) }}
+                  </a>
+                }
+              }
+            </mat-card-content>
+          </mat-card>
+        }
+      }
+    </div>
   }
 </section>

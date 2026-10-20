@@ -1,8 +1,16 @@
 import { Injectable, inject } from '@angular/core';
 import type { DatosNuevoEjercicio, Ejercicio } from '../../domain/ejercicio/ejercicio.entity';
+import type { DiaSemana } from '../../domain/planificacion/planificacion.entity';
 import { validarEjercicio } from '../../domain/ejercicio/validar-ejercicio';
 import { EjercicioRepositoryPort } from '../ports/ejercicio-repository.port';
 import { AjustesRepositoryPort } from '../ports/ajustes-repository.port';
+import { PlanificacionRepositoryPort } from '../ports/planificacion-repository.port';
+import { ErrorNoEncontrado } from '../../domain/errores/errores-dominio';
+
+export interface EliminacionEjercicio {
+  ejercicio: Ejercicio;
+  asignaciones: { planificacionId: string; dia: DiaSemana }[];
+}
 
 /**
  * Caso de uso de orquestación para la Historia de Usuario 1: crear, modificar
@@ -14,6 +22,7 @@ import { AjustesRepositoryPort } from '../ports/ajustes-repository.port';
 export class GestionarEjercicioUseCase {
   private readonly ejercicioRepository = inject(EjercicioRepositoryPort);
   private readonly ajustesRepository = inject(AjustesRepositoryPort);
+  private readonly planificacionRepository = inject(PlanificacionRepositoryPort);
 
   async crear(datos: DatosNuevoEjercicio): Promise<Ejercicio> {
     validarEjercicio(datos);
@@ -28,8 +37,29 @@ export class GestionarEjercicioUseCase {
     return actualizado;
   }
 
-  async eliminar(id: string): Promise<void> {
+  async eliminar(id: string): Promise<EliminacionEjercicio> {
+    const ejercicio = await this.ejercicioRepository.obtenerPorId(id);
+    if (!ejercicio) throw new ErrorNoEncontrado(`No existe el ejercicio "${id}".`);
+    const planificaciones = await this.planificacionRepository.listarPorEjercicio(id);
+    const asignaciones = planificaciones.flatMap((planificacion) =>
+      planificacion.dias
+        .filter((dia) => dia.ejercicioIds.includes(id))
+        .map((dia) => ({ planificacionId: planificacion.id, dia: dia.diaSemana }))
+    );
     await this.ejercicioRepository.eliminar(id);
+    await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
+    return { ejercicio, asignaciones };
+  }
+
+  async restaurarEliminacion(snapshot: EliminacionEjercicio): Promise<void> {
+    await this.ejercicioRepository.restaurar(snapshot.ejercicio);
+    for (const asignacion of snapshot.asignaciones) {
+      await this.planificacionRepository.asignarEjercicioADia(
+        asignacion.planificacionId,
+        asignacion.dia,
+        snapshot.ejercicio.id
+      );
+    }
     await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
   }
 }

@@ -1,6 +1,7 @@
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 import { extraerIdYoutube } from '../../../domain/ejercicio/extraer-id-youtube';
 
 /**
@@ -13,7 +14,7 @@ import { extraerIdYoutube } from '../../../domain/ejercicio/extraer-id-youtube';
 @Component({
   selector: 'app-youtube-embed',
   standalone: true,
-  imports: [MatIconModule],
+  imports: [MatIconModule, MatButtonModule],
   templateUrl: './youtube-embed.component.html',
   styleUrl: './youtube-embed.component.scss',
 })
@@ -21,12 +22,21 @@ export class YoutubeEmbedComponent {
   private readonly sanitizador = inject(DomSanitizer);
 
   readonly url = input.required<string>();
+  readonly titulo = input('Vídeo de YouTube');
+  readonly reproduciendo = signal(false);
+  readonly miniaturaConError = signal(false);
 
   protected readonly idVideo = computed(() => extraerIdYoutube(this.url()));
+  protected readonly urlMiniatura = computed(() => {
+    const id = this.idVideo();
+    return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null;
+  });
 
   protected readonly urlSegura = computed(() => {
     const id = this.idVideo();
     if (!id) return null;
-    return this.sanitizador.bypassSecurityTrustResourceUrl(`https://www.youtube-nocookie.com/embed/${id}`);
+    return this.sanitizador.bypassSecurityTrustResourceUrl(
+      `https://www.youtube-nocookie.com/embed/${id}?autoplay=1`
+    );
   });
 }

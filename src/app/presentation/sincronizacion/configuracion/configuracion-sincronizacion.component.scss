@@ -8,6 +8,42 @@
   }
 }
 
+.configuracion-sincronizacion__tarjeta {
+  display: grid;
+  gap: $espaciado-2;
+  max-width: 720px;
+  padding: $espaciado-3;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 16px;
+  background: var(--mat-sys-surface-container-low);
+}
+
+.configuracion-sincronizacion__resumen {
+  display: grid;
+  gap: $espaciado-1;
+}
+
+.configuracion-sincronizacion__configuracion {
+  summary {
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 600;
+  }
+}
+
+.configuracion-sincronizacion__error-carga {
+  display: flex;
+  align-items: center;
+  gap: $espaciado-2;
+  color: var(--mat-sys-error);
+}
+
+.configuracion-sincronizacion__error-campo {
+  font-size: 0.875rem;
+}
+
 .configuracion-sincronizacion__formulario {
   display: flex;
   flex-direction: column;
@@ -22,10 +58,20 @@
 
 .configuracion-sincronizacion__acciones {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: $espaciado-2;
+
+  button {
+    min-height: 56px;
+  }
 }
 
 .configuracion-sincronizacion__aviso {
   color: var(--mat-sys-on-surface-variant, #5f6368);
   margin-top: $espaciado-1;
+}
+
+.configuracion-sincronizacion__sincronizar button {
+  min-height: 56px;
 }

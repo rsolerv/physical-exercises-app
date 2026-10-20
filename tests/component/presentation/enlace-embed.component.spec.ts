@@ -27,6 +27,14 @@ describe('EnlaceEmbedComponent', () => {
     expect(iframe?.hasAttribute('sandbox')).toBe(true);
   });
 
+  it('mantiene siempre accesible el enlace original y el título de la vista previa', async () => {
+    const fixture = await crearComponente('https://example.com/rutina');
+    const raiz = fixture.nativeElement as HTMLElement;
+
+    expect(raiz.querySelector('.enlace-embed__titulo')?.textContent).toContain('example.com');
+    expect(raiz.querySelector<HTMLAnchorElement>('.enlace-embed__fallback')?.href).toBe('https://example.com/rutina');
+  });
+
   it('ofrece "abrir en una pestaña nueva" cuando el sitio no se puede embeber (FR-016)', async () => {
     vi.useFakeTimers();
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
@@ -43,7 +51,7 @@ describe('EnlaceEmbedComponent', () => {
     expect(enlace?.getAttribute('target')).toBe('_blank');
   });
 
-  it('no muestra el enlace de apertura externa mientras el iframe carga a tiempo', async () => {
+  it('mantiene el enlace original accesible mientras el iframe carga a tiempo', async () => {
     vi.useFakeTimers();
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
     const fixture = TestBed.createComponent(EnlaceEmbedComponent);
@@ -54,6 +62,7 @@ describe('EnlaceEmbedComponent', () => {
     iframe.dispatchEvent(new Event('load'));
     fixture.detectChanges();
 
-    expect((fixture.nativeElement as HTMLElement).querySelector('a.enlace-embed__fallback')).toBeNull();
+    expect((fixture.nativeElement as HTMLElement).querySelector('a.enlace-embed__fallback')).toBeTruthy();
+    expect((fixture.nativeElement as HTMLElement).querySelector('.enlace-embed__aviso')).toBeNull();
   });
 });

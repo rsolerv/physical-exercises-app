@@ -34,7 +34,7 @@ describe('Integración del progreso diario dentro de la vista "hoy" (US4)', () =
     let realizado = false;
     const marcar = vi.fn().mockImplementation(() => {
       realizado = true;
-      return Promise.resolve();
+      return Promise.resolve({ fecha: new Date(), ejercicioId: 'ej-1', realizadoAnterior: false });
     });
 
     TestBed.configureTestingModule({
@@ -51,7 +51,11 @@ describe('Integración del progreso diario dentro de la vista "hoy" (US4)', () =
           provide: ProgresoDiarioRepositoryPort,
           useValue: { obtenerPorFecha: vi.fn().mockImplementation(() => Promise.resolve(realizado ? [{ fecha: 'x', ejercicioId: 'ej-1', realizado: true }] : [])) },
         },
-        { provide: GestionarProgresoDiarioUseCase, useValue: { marcar } },
+        {
+          provide: GestionarProgresoDiarioUseCase,
+          useValue: { marcar, restaurarCambio: vi.fn().mockResolvedValue(undefined) },
+        },
+        { provide: MensajeFeedbackService, useValue: { mostrarExitoConAccion: vi.fn(), mostrarError: vi.fn() } },
       ],
     });
 
@@ -97,7 +101,13 @@ describe('Integración del progreso diario dentro de la vista "hoy" (US4)', () =
         },
         { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue([{ id: 'cat-1', nombre: 'Piernas', esGenerica: false }]) } },
         { provide: ProgresoDiarioRepositoryPort, useValue: { obtenerPorFecha: vi.fn().mockResolvedValue([]) } },
-        { provide: GestionarProgresoDiarioUseCase, useValue: { marcar } },
+        {
+          provide: GestionarProgresoDiarioUseCase,
+          useValue: {
+            marcar: vi.fn().mockResolvedValue({ fecha: new Date(), ejercicioId: 'ej-1', realizadoAnterior: false }),
+            restaurarCambio: vi.fn().mockResolvedValue(undefined),
+          },
+        },
         { provide: GestionarEjercicioUseCase, useValue: { eliminar: vi.fn().mockResolvedValue(undefined) } },
         { provide: MensajeFeedbackService, useValue: { mostrarExito: vi.fn(), mostrarError: vi.fn() } },
       ],

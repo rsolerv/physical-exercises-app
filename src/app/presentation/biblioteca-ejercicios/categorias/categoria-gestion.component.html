@@ -1,20 +1,49 @@
 <section class="categoria-gestion">
   <app-cabecera-pagina titulo="Categorías" />
 
-  @if (recursoCategorias.isLoading()) {
+  @if (errorCarga()) {
+    <p class="categoria-gestion__mensaje categoria-gestion__mensaje--error" role="alert">{{ errorCarga() }}</p>
+  } @else if (cargando()) {
     <div class="categoria-gestion__carga" role="status" aria-label="Cargando categorías">
       <mat-spinner diameter="32" />
       <span>Cargando categorías…</span>
     </div>
   } @else {
+    <form
+      class="categoria-gestion__alta"
+      (submit)="$event.preventDefault(); crearCategoria(nombreNuevaCategoria())"
+    >
+      <mat-form-field appearance="outline">
+        <mat-label>Nueva categoría</mat-label>
+        <input
+          matInput
+          [value]="nombreNuevaCategoria()"
+          (input)="nombreNuevaCategoria.set($any($event.target).value)"
+          (keydown.enter)="$event.preventDefault(); crearCategoria(nombreNuevaCategoria())"
+        />
+      </mat-form-field>
+      @if (errorCreacion()) {
+        <p class="categoria-gestion__mensaje categoria-gestion__mensaje--error" role="alert">{{ errorCreacion() }}</p>
+      }
+      @if (confirmacionCreacion()) {
+        <p class="categoria-gestion__mensaje" role="status">{{ confirmacionCreacion() }}</p>
+      }
+      <button mat-flat-button color="primary" type="submit">Añadir categoría</button>
+    </form>
+
     <mat-nav-list>
       @for (categoria of categorias(); track categoria.id) {
-        <mat-list-item class="categoria-gestion__item">
+        <mat-list-item class="categoria-gestion__item" [attr.data-categoria-id]="categoria.id">
           <span matListItemTitle>{{ categoria.nombre }}</span>
+          <span matListItemLine>
+            {{ recuentoEjercicios(categoria.id) }}
+            {{ recuentoEjercicios(categoria.id) === 1 ? 'ejercicio' : 'ejercicios' }}
+          </span>
           @if (!categoria.esGenerica && categoriaEnEdicion() !== categoria.id) {
             <div matListItemMeta class="categoria-gestion__acciones">
               <button
                 mat-icon-button
+                color="warn"
                 type="button"
                 (click)="iniciarEdicionCategoria(categoria.id)"
                 [attr.aria-label]="'Editar categoría ' + categoria.nombre"
@@ -44,6 +73,8 @@
                 matInput
                 [value]="nombreCategoriaEditada()"
                 (input)="nombreCategoriaEditada.set($any($event.target).value)"
+                (keydown.enter)="$event.preventDefault(); guardarEdicionCategoria(categoria.id)"
+                (keydown.escape)="cancelarEdicionCategoria()"
               />
             </mat-form-field>
             @if (errorEdicion()) {
@@ -68,17 +99,4 @@
     }
   }
 
-  <form class="categoria-gestion__alta" (submit)="$event.preventDefault(); crearCategoria(nombreNuevaCategoria()); nombreNuevaCategoria.set('')">
-    <mat-form-field appearance="outline">
-      <mat-label>Nueva categoría</mat-label>
-      <input matInput [value]="nombreNuevaCategoria()" (input)="nombreNuevaCategoria.set($any($event.target).value)" />
-    </mat-form-field>
-    @if (errorCreacion()) {
-      <p class="categoria-gestion__mensaje categoria-gestion__mensaje--error" role="alert">{{ errorCreacion() }}</p>
-    }
-    @if (confirmacionCreacion()) {
-      <p class="categoria-gestion__mensaje" role="status">{{ confirmacionCreacion() }}</p>
-    }
-    <button mat-flat-button color="primary" type="submit">Crear categoría</button>
-  </form>
 </section>

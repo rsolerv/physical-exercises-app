@@ -19,6 +19,16 @@ export class MensajeFeedbackService {
     });
   }
 
+  mostrarExitoConAccion(texto: string, etiquetaAccion: string, accion: () => void): void {
+    this.snackBar
+      .open(texto, etiquetaAccion, {
+        duration: DURACION_MS,
+        panelClass: 'mensaje-feedback--exito',
+      })
+      .onAction()
+      .subscribe(accion);
+  }
+
   mostrarError(texto: string): void {
     this.snackBar.open(texto, undefined, {
       duration: DURACION_MS,

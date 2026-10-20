@@ -12,14 +12,37 @@
     <div class="contenido--centrado">
       <mat-spinner diameter="32" />
     </div>
-  } @else if (ejerciciosDeHoy().length === 0) {
-    <app-estado-vacio icono="event_available" mensaje="No hay ejercicios programados para hoy.">
-      <a accion mat-flat-button color="primary" routerLink="/planificacion/nueva">
-        <mat-icon>add</mat-icon>
-        Crear una planificación
-      </a>
-    </app-estado-vacio>
+  } @else if (errorCarga()) {
+    <div class="dia-actual__error" role="alert">
+      <p>No se pudo cargar la planificación de hoy.</p>
+      <button mat-stroked-button type="button" (click)="reintentarCarga()">Reintentar</button>
+    </div>
   } @else {
-    <app-progreso-diario [fecha]="hoy" [ejercicios]="ejerciciosDeHoy()" />
+    <section class="dia-actual__contexto" aria-label="Fecha y planificación">
+      <p>{{ fechaHoyLegible }}</p>
+      <p>Plan: {{ recursoPlanificacionHoy.value()?.nombre ?? 'Sin planificación activa' }}</p>
+    </section>
+
+    @if (ejerciciosDeHoy().length === 0) {
+      <app-estado-vacio icono="event_available" mensaje="Día de descanso. No hay ejercicios programados para hoy.">
+        <a accion mat-flat-button color="primary" routerLink="/planificacion/nueva">
+          <mat-icon>add</mat-icon>
+          Crear una planificación
+        </a>
+      </app-estado-vacio>
+      @if (proximaSesion(); as sesion) {
+        <section class="dia-actual__proxima-sesion" aria-label="Próxima sesión">
+          <h2>Próxima sesión</h2>
+          <p>{{ sesion.fecha }}</p>
+          <ul>
+            @for (nombre of sesion.ejercicios; track $index) {
+              <li>{{ nombre }}</li>
+            }
+          </ul>
+        </section>
+      }
+    } @else {
+      <app-progreso-diario [fecha]="hoy" [ejercicios]="ejerciciosDeHoy()" />
+    }
   }
 </section>

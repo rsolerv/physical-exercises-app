@@ -6,15 +6,23 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatMenuModule } from '@angular/material/menu';
 import { EjercicioRepositoryPort } from '../../application/ports/ejercicio-repository.port';
 import { CategoriaRepositoryPort } from '../../application/ports/categoria-repository.port';
+import { ProgresoDiarioRepositoryPort } from '../../application/ports/progreso-diario-repository.port';
+import { ConsultarPlanificacionUseCase } from '../../application/casos-uso/consultar-planificacion.use-case';
+import { GestionarProgresoDiarioUseCase } from '../../application/casos-uso/gestionar-progreso-diario.use-case';
 import { GestionarEjercicioUseCase } from '../../application/casos-uso/gestionar-ejercicio.use-case';
+import type { EliminacionEjercicio } from '../../application/casos-uso/gestionar-ejercicio.use-case';
+import type { CambioProgreso } from '../../application/casos-uso/gestionar-progreso-diario.use-case';
 import type { Categoria } from '../../domain/categoria/categoria.entity';
+import { diaSemanaDeFecha } from '../../domain/planificacion/fecha-semana';
 import { CabeceraPaginaComponent } from '../compartido/ui/cabecera-pagina/cabecera-pagina.component';
 import { EstadoVacioComponent } from '../compartido/ui/estado-vacio/estado-vacio.component';
 import { YoutubeEmbedComponent } from '../compartido/embebidos/youtube-embed.component';
 import { EnlaceEmbedComponent } from '../compartido/embebidos/enlace-embed.component';
 import { MensajeFeedbackService } from '../compartido/ui/mensaje-feedback.service';
+import { EstadoCargaComponent } from '../compartido/ui/estado-carga/estado-carga.component';
 
 /**
  * Ficha de un ejercicio (Historias de Usuario 1 y 2): muestra sus datos
@@ -30,8 +38,10 @@ import { MensajeFeedbackService } from '../compartido/ui/mensaje-feedback.servic
     MatIconModule,
     MatChipsModule,
     MatProgressSpinnerModule,
+    MatMenuModule,
     CabeceraPaginaComponent,
     EstadoVacioComponent,
+    EstadoCargaComponent,
     YoutubeEmbedComponent,
     EnlaceEmbedComponent,
   ],
@@ -43,6 +53,9 @@ export class EjercicioFichaComponent {
   private readonly router = inject(Router);
   private readonly ejercicioRepository = inject(EjercicioRepositoryPort);
   private readonly categoriaRepository = inject(CategoriaRepositoryPort);
+  private readonly progresoDiarioRepository = inject(ProgresoDiarioRepositoryPort);
+  private readonly consultarPlanificacion = inject(ConsultarPlanificacionUseCase);
+  private readonly gestionarProgresoDiario = inject(GestionarProgresoDiarioUseCase);
   private readonly gestionarEjercicio = inject(GestionarEjercicioUseCase);
   private readonly mensajeFeedback = inject(MensajeFeedbackService);
 
@@ -52,15 +65,40 @@ export class EjercicioFichaComponent {
     loader: () => this.ejercicioRepository.obtenerPorId(this.ejercicioId),
   });
 
+  protected readonly hoy = new Date();
+  private readonly diaSemanaHoy = diaSemanaDeFecha(this.hoy);
+  protected readonly recursoPlanificacionHoy = resource({
+    loader: () => this.consultarPlanificacion.obtenerDeHoy(this.hoy),
+  });
+  protected readonly recursoProgresoHoy = resource({
+    params: () => ({ fecha: this.hoy }),
+    loader: ({ params }) => this.progresoDiarioRepository.obtenerPorFecha(params.fecha),
+  });
+  protected readonly planificadoHoy = computed(() => {
+    const planificacion = this.recursoPlanificacionHoy.value();
+    return planificacion?.dias.find((dia) => dia.diaSemana === this.diaSemanaHoy)?.ejercicioIds.includes(this.ejercicioId) ?? false;
+  });
+  protected readonly realizadoHoy = computed(
+    () => this.recursoProgresoHoy.value()?.some((registro) => registro.ejercicioId === this.ejercicioId && registro.realizado) ?? false
+  );
+  protected readonly errorProgresoHoy = computed(
+    () => this.recursoPlanificacionHoy.error() !== undefined || this.recursoProgresoHoy.error() !== undefined
+  );
+
   readonly categorias = toSignal(from(this.categoriaRepository.listarTodas()), { initialValue: [] as Categoria[] });
   readonly imagenesConError = signal<ReadonlySet<string>>(new Set());
   readonly errorAlEliminar = signal<string | null>(null);
+  protected readonly errorCarga = computed(() => {
+    const error = this.recursoEjercicio.error();
+    if (!error) return null;
+    return error instanceof Error ? error.message : 'No se ha podido cargar el ejercicio.';
+  });
 
   protected readonly nombresCategorias = computed(() => {
     const ejercicio = this.recursoEjercicio.value();
     if (!ejercicio) return [];
     const porId = new Map(this.categorias().map((categoria) => [categoria.id, categoria.nombre]));
-    return ejercicio.categoriaIds.map((id) => porId.get(id) ?? id);
+    return ejercicio.categoriaIds.map((id) => porId.get(id) ?? 'Sin categoría');
   });
 
   protected readonly enlacesYoutube = computed(
@@ -70,6 +108,18 @@ export class EjercicioFichaComponent {
   protected readonly enlacesWeb = computed(
     () => this.recursoEjercicio.value()?.enlaces.filter((enlace) => enlace.tipo === 'web') ?? []
   );
+
+  protected readonly pautaObservaciones = computed(() => {
+    const observaciones = this.recursoEjercicio.value()?.observaciones;
+    if (!observaciones) return null;
+    const coincidencia = observaciones.match(/\b(\d+)\s+series?\s+de\s+(\d+)\s+repeticiones?\b/i);
+    if (!coincidencia) return null;
+    return {
+      series: coincidencia[1],
+      repeticiones: coincidencia[2],
+      detalle: observaciones.replace(coincidencia[0], '').replace(/^\s*[.,;]\s*/, '').trim(),
+    };
+  });
 
   protected imagenSrc(imagen: { tipo: 'url' | 'archivo'; valorUrl?: string; contenidoBase64?: string; tipoMime?: string }): string {
     if (imagen.tipo === 'url') return imagen.valorUrl ?? '';
@@ -83,14 +133,59 @@ export class EjercicioFichaComponent {
   async eliminar(): Promise<void> {
     this.errorAlEliminar.set(null);
     try {
-      await this.gestionarEjercicio.eliminar(this.ejercicioId);
+      const snapshot = await this.gestionarEjercicio.eliminar(this.ejercicioId);
+      this.mensajeFeedback.mostrarExitoConAccion('Ejercicio eliminado.', 'Deshacer', () => {
+        void this.restaurar(snapshot);
+      });
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'No se ha podido eliminar el ejercicio.';
       this.errorAlEliminar.set(mensaje);
       this.mensajeFeedback.mostrarError(mensaje);
       return;
     }
-    this.mensajeFeedback.mostrarExito('Ejercicio eliminado.');
     await this.router.navigate(['/buscar']);
+  }
+
+  async alternarProgresoHoy(): Promise<void> {
+    const nuevoEstado = !this.realizadoHoy();
+    try {
+      const cambio = await this.gestionarProgresoDiario.marcar(this.hoy, this.ejercicioId, nuevoEstado);
+      this.mensajeFeedback.mostrarExitoConAccion('Progreso actualizado.', 'Deshacer', () => {
+        void this.deshacerProgresoHoy(cambio);
+      });
+      this.recursoProgresoHoy.reload();
+    } catch (error) {
+      this.mensajeFeedback.mostrarError(this.mensajeDeErrorProgreso(error));
+    }
+  }
+
+  protected reintentarProgresoHoy(): void {
+    this.recursoPlanificacionHoy.reload();
+    this.recursoProgresoHoy.reload();
+  }
+
+  private async deshacerProgresoHoy(cambio: CambioProgreso): Promise<void> {
+    try {
+      await this.gestionarProgresoDiario.restaurarCambio(cambio);
+      this.recursoProgresoHoy.reload();
+    } catch (error) {
+      this.mensajeFeedback.mostrarError(this.mensajeDeErrorProgreso(error));
+    }
+  }
+
+  private mensajeDeErrorProgreso(error: unknown): string {
+    return error instanceof Error && error.message
+      ? `No se pudo actualizar el progreso: ${error.message}`
+      : 'No se pudo actualizar el progreso. Inténtalo de nuevo.';
+  }
+
+  private async restaurar(snapshot: EliminacionEjercicio): Promise<void> {
+    try {
+      await this.gestionarEjercicio.restaurarEliminacion(snapshot);
+      this.mensajeFeedback.mostrarExito('Ejercicio restaurado.');
+    } catch (error) {
+      const mensaje = error instanceof Error ? error.message : 'No se ha podido restaurar el ejercicio.';
+      this.mensajeFeedback.mostrarError(mensaje);
+    }
   }
 }

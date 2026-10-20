@@ -29,6 +29,13 @@ export class EnlaceEmbedComponent {
   protected readonly noEmbebible = signal(false);
 
   protected readonly urlSegura = computed(() => this.sanitizador.bypassSecurityTrustResourceUrl(this.url()));
+  protected readonly titulo = computed(() => {
+    try {
+      return new URL(this.url()).hostname;
+    } catch {
+      return 'Enlace web externo';
+    }
+  });
 
   constructor() {
     const temporizador = setTimeout(() => {

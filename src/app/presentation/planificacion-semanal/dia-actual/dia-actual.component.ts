@@ -6,6 +6,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ConsultarPlanificacionUseCase } from '../../../application/casos-uso/consultar-planificacion.use-case';
 import { EjercicioRepositoryPort } from '../../../application/ports/ejercicio-repository.port';
 import type { Ejercicio } from '../../../domain/ejercicio/ejercicio.entity';
+import { DIAS_SEMANA_ORDENADOS } from '../../../domain/planificacion/planificacion.entity';
 import { diaSemanaDeFecha } from '../../../domain/planificacion/fecha-semana';
 import { CabeceraPaginaComponent } from '../../compartido/ui/cabecera-pagina/cabecera-pagina.component';
 import { EstadoVacioComponent } from '../../compartido/ui/estado-vacio/estado-vacio.component';
@@ -31,6 +32,11 @@ export class DiaActualComponent {
 
   protected readonly hoy = new Date();
   protected readonly diaSemanaHoy = diaSemanaDeFecha(this.hoy);
+  protected readonly fechaHoyLegible = new Intl.DateTimeFormat('es-ES', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  }).format(this.hoy);
 
   protected readonly recursoPlanificacionHoy = resource({
     loader: () => this.consultarPlanificacion.obtenerDeHoy(),
@@ -53,7 +59,36 @@ export class DiaActualComponent {
       .filter((ejercicio): ejercicio is Ejercicio => ejercicio !== undefined);
   });
 
+  protected readonly proximaSesion = computed(() => {
+    const planificacion = this.recursoPlanificacionHoy.value();
+    if (!planificacion) return null;
+
+    const indiceHoy = DIAS_SEMANA_ORDENADOS.indexOf(this.diaSemanaHoy);
+    const diaSiguiente = planificacion.dias
+      .filter((dia) => dia.ejercicioIds.length > 0 && DIAS_SEMANA_ORDENADOS.indexOf(dia.diaSemana) > indiceHoy)
+      .sort((a, b) => DIAS_SEMANA_ORDENADOS.indexOf(a.diaSemana) - DIAS_SEMANA_ORDENADOS.indexOf(b.diaSemana))[0];
+    if (!diaSiguiente) return null;
+
+    const diasHastaSesion = DIAS_SEMANA_ORDENADOS.indexOf(diaSiguiente.diaSemana) - indiceHoy;
+    const fecha = new Date(this.hoy);
+    fecha.setDate(fecha.getDate() + diasHastaSesion);
+    const nombresPorId = new Map((this.recursoEjercicios.value() ?? []).map((ejercicio) => [ejercicio.id, ejercicio.nombre]));
+    return {
+      fecha: new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(fecha),
+      ejercicios: diaSiguiente.ejercicioIds.map((id) => nombresPorId.get(id) ?? 'Ejercicio no disponible'),
+    };
+  });
+
   protected readonly cargando = computed(
     () => this.recursoPlanificacionHoy.isLoading() || this.recursoEjercicios.isLoading()
   );
+
+  protected readonly errorCarga = computed(
+    () => this.recursoPlanificacionHoy.error() !== undefined || this.recursoEjercicios.error() !== undefined
+  );
+
+  protected reintentarCarga(): void {
+    this.recursoPlanificacionHoy.reload();
+    this.recursoEjercicios.reload();
+  }
 }

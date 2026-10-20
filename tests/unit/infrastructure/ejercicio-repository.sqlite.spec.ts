@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { SqliteConexionService } from '../../../src/app/infrastructure/persistencia-sqlite/sqlite-conexion.service';
 import { EjercicioRepositorySqlite } from '../../../src/app/infrastructure/persistencia-sqlite/ejercicio-repository.sqlite';
 import { ErrorValidacion, ErrorNoEncontrado } from '../../../src/app/domain/errores/errores-dominio';
-import type { DatosNuevoEjercicio } from '../../../src/app/domain/ejercicio/ejercicio.entity';
+import type { DatosNuevoEjercicio, Ejercicio } from '../../../src/app/domain/ejercicio/ejercicio.entity';
 
 describe('EjercicioRepositorySqlite', () => {
   let conexion: SqliteConexionService;
@@ -94,6 +94,22 @@ describe('EjercicioRepositorySqlite', () => {
     const creado = await repositorio.crear(datos());
     await repositorio.eliminar(creado.id);
     expect(await repositorio.obtenerPorId(creado.id)).toBeNull();
+  });
+
+  it('restaura un ejercicio con su identificador, datos y categorías originales', async () => {
+    const original: Ejercicio = {
+      id: 'ejercicio-restaurado',
+      ...datos({
+        imagenes: [
+          { id: 'img-archivo', tipo: 'archivo', contenidoBase64: 'QQ==', tipoMime: 'image/png', nombreArchivo: 'a.png' },
+        ],
+      }),
+    };
+    await repositorio.eliminar(original.id);
+
+    await repositorio.restaurar(original);
+
+    expect(await repositorio.obtenerPorId(original.id)).toEqual(original);
   });
 
   it('buscarPorTexto encuentra coincidencias parciales sin distinguir mayúsculas (FR-013)', async () => {

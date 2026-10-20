@@ -1,26 +1,37 @@
 <div class="progreso-diario">
-  @if (resultado().porcentaje !== null) {
-    <div class="progreso-diario__resumen">
-      <mat-progress-bar mode="determinate" [value]="resultado().porcentaje" />
-      <span class="progreso-diario__porcentaje">{{ resultado().porcentaje }}% completado</span>
+  @if (recursoRegistros.isLoading()) {
+    <p class="progreso-diario__estado" role="status">Cargando progreso del día...</p>
+  } @else if (recursoRegistros.error()) {
+    <div class="progreso-diario__error" role="alert">
+      <span>No se pudo cargar el progreso del día.</span>
+      <button mat-button type="button" (click)="recursoRegistros.reload()">Reintentar</button>
     </div>
-  }
-
-  <ul class="progreso-diario__lista">
-    @for (ejercicio of ejercicios(); track ejercicio.id) {
-      <li class="progreso-diario__elemento">
-        <mat-checkbox [checked]="estaRealizado(ejercicio.id)" (change)="alternar(ejercicio.id)">
-          {{ ejercicio.nombre }}
-        </mat-checkbox>
-        <a
-          mat-stroked-button
-          class="progreso-diario__consulta"
-          [routerLink]="['/ejercicios', ejercicio.id]"
-          [attr.aria-label]="'Consultar ejercicio: ' + ejercicio.nombre"
-        >
-          Consultar
-        </a>
-      </li>
+  } @else {
+    @if (resultado().porcentaje !== null) {
+      <div class="progreso-diario__resumen" role="status">
+        <span>{{ resultado().totalRealizados }} de {{ resultado().totalPlanificados }} completados</span>
+        <mat-progress-bar mode="determinate" [value]="resultado().porcentaje" />
+        <span class="progreso-diario__porcentaje">{{ resultado().porcentaje }}% completado</span>
+        <span class="progreso-diario__mensaje">{{ mensajeEstado() }}</span>
+      </div>
     }
-  </ul>
+
+    <ul class="progreso-diario__lista">
+      @for (ejercicio of ejercicios(); track ejercicio.id) {
+        <li class="progreso-diario__elemento">
+          <mat-checkbox [checked]="estaRealizado(ejercicio.id)" (change)="alternar(ejercicio.id)">
+            {{ ejercicio.nombre }}
+          </mat-checkbox>
+          <a
+            mat-stroked-button
+            class="progreso-diario__consulta"
+            [routerLink]="['/ejercicios', ejercicio.id]"
+            [attr.aria-label]="'Consultar ejercicio: ' + ejercicio.nombre"
+          >
+            Consultar
+          </a>
+        </li>
+      }
+    </ul>
+  }
 </div>

@@ -11,3 +11,11 @@
   align-items: center;
   padding: $espaciado-6 0;
 }
+
+.ancho-formulario {
+  width: min(100%, var(--ancho-formulario));
+}
+
+.ancho-lista-gestion {
+  width: min(100%, var(--ancho-lista-gestion));
+}

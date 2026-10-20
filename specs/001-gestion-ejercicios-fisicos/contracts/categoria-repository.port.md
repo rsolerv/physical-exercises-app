@@ -25,6 +25,10 @@ interface CategoriaRepositoryPort {
   // Si tiene ejercicios asociados, el llamador (caso de uso de Application) debe invocar
   // antes EjercicioRepositoryPort.quitarCategoriaDeTodos() con el id de la categoría genérica
   // como destino de reasignación, para no dejar ejercicios sin categoría.
+
+  restaurar(categoria: Categoria): Promise<void>;
+  // Restaura una categoría eliminada conservando su id original (FR-069).
+  // Application restaura después las asignaciones de ejercicios capturadas en la instantánea.
 }
 ```
 

@@ -1,0 +1,38 @@
+@use '../../../../../styles/espaciado' as *;
+
+.estado-carga {
+  display: grid;
+  gap: $espaciado-2;
+  width: 100%;
+}
+
+.estado-carga__mensaje {
+  font: var(--tipo-cuerpo);
+  color: var(--color-texto);
+}
+
+.estado-carga__lista {
+  display: grid;
+  gap: $espaciado-2;
+}
+
+.estado-carga__elemento {
+  display: block;
+  height: 64px;
+  border-radius: 16px;
+  background: linear-gradient(90deg, #e4ded4 25%, #f6f3ee 50%, #e4ded4 75%);
+  background-size: 200% 100%;
+  animation: estado-carga-brillo 1.5s ease-in-out infinite;
+}
+
+@keyframes estado-carga-brillo {
+  to {
+    background-position-x: -200%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .estado-carga__elemento {
+    animation: none;
+  }
+}

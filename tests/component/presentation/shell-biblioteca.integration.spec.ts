@@ -57,7 +57,7 @@ describe('Integración de rutas de biblioteca (US1)', () => {
     await harness.fixture.whenStable();
 
     expect(harness.routeNativeElement?.querySelector('app-cabecera-pagina h1')?.textContent).toContain('Categorías');
-    expect(harness.routeNativeElement?.textContent).toContain('Crear categoría');
+    expect(harness.routeNativeElement?.textContent).toContain('Añadir categoría');
   });
 
   it('el formulario de alta muestra su título y acción principal', async () => {
@@ -89,6 +89,6 @@ describe('Integración de rutas de biblioteca (US1)', () => {
     await fixtureShell.whenStable();
 
     const enlaceActivo = (fixtureShell.nativeElement as HTMLElement).querySelector('.shell__enlace-activo');
-    expect(enlaceActivo?.textContent).toContain('Buscar');
+    expect(`${enlaceActivo?.textContent} ${enlaceActivo?.getAttribute('aria-label')}`).toContain('Buscar');
   });
 });

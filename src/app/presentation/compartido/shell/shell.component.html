@@ -1,36 +1,100 @@
-<mat-sidenav-container class="shell__contenedor">
-  <mat-sidenav #menuLateral [mode]="esMovil() ? 'over' : 'side'" [(opened)]="menuAbierto" class="shell__menu-lateral">
-    <mat-nav-list>
+<div class="shell">
+  @if (esRiel()) {
+    <nav class="shell__riel-lateral" aria-label="Navegación principal">
       @for (entrada of entradasMenu; track entrada.ruta) {
         <a
-          mat-list-item
+          mat-icon-button
           [routerLink]="entrada.ruta"
           routerLinkActive="shell__enlace-activo"
           ariaCurrentWhenActive="page"
-          (click)="cerrarMenuMovil()"
+          [attr.aria-label]="entrada.etiqueta"
+          [matTooltip]="entrada.etiqueta"
+          matTooltipPosition="right"
         >
-          <mat-icon matListItemIcon>{{ entrada.icono }}</mat-icon>
-          <span matListItemTitle>{{ entrada.etiqueta }}</span>
+          <mat-icon>{{ entrada.icono }}</mat-icon>
         </a>
       }
-    </mat-nav-list>
-  </mat-sidenav>
-
-  <mat-sidenav-content>
-    <mat-toolbar color="primary" class="shell__barra-superior">
-      <button
-        mat-icon-button
-        (click)="menuLateral.toggle()"
-        aria-label="Abrir o cerrar el menú de navegación"
-        [attr.aria-expanded]="menuAbierto()"
+      <a
+        mat-fab
+        class="shell__nuevo-ejercicio"
+        [routerLink]="accesoNuevoEjercicio.ruta"
+        [attr.aria-label]="accesoNuevoEjercicio.etiqueta"
+        [matTooltip]="accesoNuevoEjercicio.etiqueta"
+        matTooltipPosition="right"
       >
-        <mat-icon>menu</mat-icon>
-      </button>
-      <span>Gestión de Ejercicios Físicos</span>
-    </mat-toolbar>
+        <mat-icon>{{ accesoNuevoEjercicio.icono }}</mat-icon>
+      </a>
+    </nav>
+  } @else if (!esMovil()) {
+    <nav class="shell__menu-escritorio" aria-label="Navegación principal">
+      @for (seccion of seccionesMenu; track seccion.clase) {
+        <section class="shell__grupo" [class]="'shell__grupo-' + seccion.clase" [attr.aria-label]="seccion.etiqueta">
+          <h2>{{ seccion.etiqueta }}</h2>
+          @for (entrada of seccion.entradas; track entrada.ruta) {
+            <a
+              mat-button
+              [routerLink]="entrada.ruta"
+              routerLinkActive="shell__enlace-activo"
+              ariaCurrentWhenActive="page"
+            >
+              <mat-icon>{{ entrada.icono }}</mat-icon>
+              {{ entrada.etiqueta }}
+            </a>
+          }
+        </section>
+      }
+      <a
+        mat-flat-button
+        class="shell__nuevo-ejercicio"
+        [routerLink]="accesoNuevoEjercicio.ruta"
+        [attr.aria-label]="accesoNuevoEjercicio.etiqueta"
+      >
+        <mat-icon>{{ accesoNuevoEjercicio.icono }}</mat-icon>
+        {{ accesoNuevoEjercicio.etiqueta }}
+      </a>
+    </nav>
+  }
 
-    <main class="shell__contenido">
-      <router-outlet />
-    </main>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+  <mat-toolbar class="shell__barra-superior">
+    <span>Gestión de Ejercicios Físicos</span>
+  </mat-toolbar>
+
+  <main class="shell__contenido">
+    <router-outlet />
+  </main>
+
+  @if (esMovil()) {
+    <a
+      mat-fab
+      class="shell__nuevo-ejercicio"
+      [routerLink]="accesoNuevoEjercicio.ruta"
+      [attr.aria-label]="accesoNuevoEjercicio.etiqueta"
+      title="Nuevo ejercicio"
+    >
+      <mat-icon>{{ accesoNuevoEjercicio.icono }}</mat-icon>
+    </a>
+    <nav class="shell__barra-inferior" aria-label="Navegación principal">
+      @for (entrada of entradasMovil; track entrada.ruta) {
+        <a
+          [routerLink]="entrada.ruta"
+          routerLinkActive="shell__enlace-activo"
+          ariaCurrentWhenActive="page"
+          [attr.aria-label]="entrada.etiqueta"
+        >
+          <mat-icon aria-hidden="true">{{ entrada.icono }}</mat-icon>
+          <span>{{ entrada.etiqueta }}</span>
+        </a>
+      }
+      <button
+        type="button"
+        class="shell__mas-toggle"
+        aria-label="Más"
+        [attr.aria-expanded]="masAbierto()"
+        (click)="abrirMas()"
+      >
+        <mat-icon aria-hidden="true">more_horiz</mat-icon>
+        <span>Más</span>
+      </button>
+    </nav>
+  }
+</div>

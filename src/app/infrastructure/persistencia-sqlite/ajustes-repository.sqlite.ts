@@ -6,6 +6,7 @@ interface FilaAjustes {
   token_github: string | null;
   repositorio_github: string | null;
   ultimo_sha_sincronizado: string | null;
+  ultima_sincronizacion_correcta: string | null;
   cambios_locales_pendientes: number;
   catalogo_predefinido_cargado: number;
 }
@@ -17,7 +18,7 @@ export class AjustesRepositorySqlite implements AjustesRepositoryPort {
 
   async obtener(): Promise<AjustesAplicacion> {
     const filas = await this.conexion.ejecutar<FilaAjustes>(
-      'SELECT token_github, repositorio_github, ultimo_sha_sincronizado, cambios_locales_pendientes, catalogo_predefinido_cargado ' +
+      'SELECT token_github, repositorio_github, ultimo_sha_sincronizado, ultima_sincronizacion_correcta, cambios_locales_pendientes, catalogo_predefinido_cargado ' +
         'FROM ajustes_aplicacion WHERE id = 1'
     );
     const fila = filas[0];
@@ -25,6 +26,7 @@ export class AjustesRepositorySqlite implements AjustesRepositoryPort {
       tokenGitHub: fila.token_github,
       repositorioGitHub: fila.repositorio_github,
       ultimoShaSincronizado: fila.ultimo_sha_sincronizado,
+      ultimaSincronizacionCorrecta: fila.ultima_sincronizacion_correcta ? new Date(fila.ultima_sincronizacion_correcta) : null,
       cambiosLocalesPendientes: fila.cambios_locales_pendientes === 1,
       catalogoPredefinidoCargado: fila.catalogo_predefinido_cargado === 1,
     };
@@ -47,6 +49,13 @@ export class AjustesRepositorySqlite implements AjustesRepositoryPort {
     await this.conexion.ejecutarSinResultado(
       'UPDATE ajustes_aplicacion SET ultimo_sha_sincronizado = ? WHERE id = 1',
       [sha]
+    );
+  }
+
+  async registrarSincronizacionCorrecta(fecha: Date): Promise<void> {
+    await this.conexion.ejecutarSinResultado(
+      'UPDATE ajustes_aplicacion SET ultima_sincronizacion_correcta = ? WHERE id = 1',
+      [fecha.toISOString()]
     );
   }
 

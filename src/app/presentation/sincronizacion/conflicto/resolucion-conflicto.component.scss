@@ -4,9 +4,21 @@
   margin-bottom: $espaciado-3;
 }
 
+.resolucion-conflicto__estado {
+  color: var(--mat-sys-on-secondary-container);
+}
+
+.resolucion-conflicto__error {
+  color: var(--mat-sys-error);
+}
+
 .resolucion-conflicto__opciones {
   display: flex;
   flex-direction: column;
   gap: $espaciado-2;
   margin-bottom: $espaciado-3;
+}
+
+.resolucion-conflicto > button {
+  min-height: 56px;
 }

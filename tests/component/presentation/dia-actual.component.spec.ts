@@ -8,7 +8,8 @@ import { ConsultarPlanificacionUseCase } from '../../../src/app/application/caso
 import { GestionarProgresoDiarioUseCase } from '../../../src/app/application/casos-uso/gestionar-progreso-diario.use-case';
 import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejercicio-repository.port';
 import { ProgresoDiarioRepositoryPort } from '../../../src/app/application/ports/progreso-diario-repository.port';
-import { crearDiasVacios } from '../../../src/app/domain/planificacion/planificacion.entity';
+import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
+import { crearDiasVacios, DIAS_SEMANA_ORDENADOS } from '../../../src/app/domain/planificacion/planificacion.entity';
 import { diaSemanaDeFecha } from '../../../src/app/domain/planificacion/fecha-semana';
 import type { Planificacion } from '../../../src/app/domain/planificacion/planificacion.entity';
 import type { Ejercicio } from '../../../src/app/domain/ejercicio/ejercicio.entity';
@@ -27,7 +28,14 @@ describe('DiaActualComponent', () => {
         { provide: ConsultarPlanificacionUseCase, useValue: { obtenerDeHoy: vi.fn().mockResolvedValue(planificacion) } },
         { provide: EjercicioRepositoryPort, useValue: { listarTodos: vi.fn().mockResolvedValue(ejercicios) } },
         { provide: ProgresoDiarioRepositoryPort, useValue: { obtenerPorFecha: vi.fn().mockResolvedValue([]) } },
-        { provide: GestionarProgresoDiarioUseCase, useValue: { marcar: vi.fn().mockResolvedValue(undefined) } },
+        {
+          provide: GestionarProgresoDiarioUseCase,
+          useValue: {
+            marcar: vi.fn().mockResolvedValue({ fecha: new Date(), ejercicioId: 'ej-1', realizadoAnterior: false }),
+            restaurarCambio: vi.fn().mockResolvedValue(undefined),
+          },
+        },
+        { provide: MensajeFeedbackService, useValue: { mostrarExitoConAccion: vi.fn(), mostrarError: vi.fn() } },
       ],
     });
   }
@@ -52,6 +60,8 @@ describe('DiaActualComponent', () => {
 
     const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(texto).toContain('Sentadilla');
+    expect(texto).toContain('Plan: Semana');
+    expect(texto).toContain(new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date()));
   });
 
   it('muestra "no hay ejercicios programados para hoy" cuando no hay planificación activa (FR-030)', async () => {
@@ -60,6 +70,8 @@ describe('DiaActualComponent', () => {
 
     const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(texto.toLowerCase()).toContain('no hay ejercicios programados para hoy');
+    expect(texto).toContain('Día de descanso');
+    expect(texto).toContain('Sin planificación activa');
   });
 
   it('muestra el mismo mensaje cuando hay planificación activa pero hoy no tiene ejercicios', async () => {
@@ -69,5 +81,19 @@ describe('DiaActualComponent', () => {
 
     const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(texto.toLowerCase()).toContain('no hay ejercicios programados para hoy');
+  });
+
+  it('muestra la próxima sesión de la semana cuando el día actual es descanso', async () => {
+    const indiceHoy = DIAS_SEMANA_ORDENADOS.indexOf(diaSemanaDeFecha(new Date()));
+    if (indiceHoy === DIAS_SEMANA_ORDENADOS.length - 1) return;
+    const dias = crearDiasVacios();
+    dias[indiceHoy + 1].ejercicioIds = ['ej-next'];
+    const planificacion: Planificacion = { id: 'plan-1', nombre: 'Semana', fechaInicio: '2020-01-06', dias };
+    configurar(planificacion, [ejercicio('ej-next', 'Estiramiento')]);
+    const fixture = await crearComponente();
+
+    const proximaSesion = (fixture.nativeElement as HTMLElement).querySelector('.dia-actual__proxima-sesion');
+    expect(proximaSesion?.textContent).toContain('Próxima sesión');
+    expect(proximaSesion?.textContent).toContain('Estiramiento');
   });
 });

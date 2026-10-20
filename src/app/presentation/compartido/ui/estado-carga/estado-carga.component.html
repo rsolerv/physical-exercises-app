@@ -1,0 +1,8 @@
+<div class="estado-carga" role="status" aria-live="polite" aria-busy="true">
+  <span class="estado-carga__mensaje">{{ mensaje() }}</span>
+  <div class="estado-carga__lista" aria-hidden="true">
+    @for (elemento of elementos(); track elemento) {
+      <span class="estado-carga__elemento"></span>
+    }
+  </div>
+</div>

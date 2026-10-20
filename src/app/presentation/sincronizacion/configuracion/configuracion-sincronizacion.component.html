@@ -2,53 +2,93 @@
   <app-cabecera-pagina titulo="Sincronización" descripcion="Conserva tus datos y sincronízalos manualmente con GitHub." />
 
   @if (recursoAjustes.isLoading()) {
-    <div class="contenido--centrado">
+    <div class="contenido--centrado" role="status">
       <mat-spinner diameter="32" />
+      <span>Cargando configuración de sincronización...</span>
+    </div>
+  } @else if (recursoAjustes.error()) {
+    <div class="configuracion-sincronizacion__error-carga" role="alert">
+      <p>No se pudo cargar la configuración de sincronización.</p>
+      <button mat-stroked-button type="button" (click)="recursoAjustes.reload()">Reintentar</button>
     </div>
   } @else {
-    <section class="configuracion-sincronizacion__guia">
-      <h3>Cómo configurar la sincronización</h3>
-      <ol>
-        <li>Crea en GitHub un repositorio <strong>privado</strong> dedicado solo a tus datos (por ejemplo, <code>data-physical-exercises</code>), distinto del repositorio de la aplicación.</li>
-        <li>Crea un token <strong>fine-grained</strong> limitado a ese repositorio, con permiso de lectura y escritura de contenidos.</li>
-        <li>Introduce aquí el nombre del repositorio ("usuario/repositorio") y el token.</li>
-      </ol>
-    </section>
-
-    <form class="configuracion-sincronizacion__formulario" (submit)="$event.preventDefault(); guardarCredenciales()">
-      <mat-form-field appearance="outline">
-        <mat-label>Repositorio de datos (usuario/repositorio)</mat-label>
-        <input matInput [formField]="formulario.repositorio" placeholder="usuario/data-physical-exercises" />
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Token fine-grained</mat-label>
-        <input matInput type="password" class="configuracion-sincronizacion__token" [formField]="formulario.token" />
-      </mat-form-field>
-
-      <div class="configuracion-sincronizacion__acciones">
-        <button mat-flat-button color="primary" type="submit" [disabled]="guardando()">Guardar credenciales</button>
+    <section class="configuracion-sincronizacion__tarjeta" aria-label="Estado de sincronización">
+      <div class="configuracion-sincronizacion__resumen" role="status">
+        <strong>{{ estadoVisible() }}</strong>
         @if (tieneCredenciales) {
-          <button mat-stroked-button type="button" (click)="olvidarToken()">
-            <mat-icon>delete</mat-icon>
-            Olvidar token
-          </button>
+          <span>Repositorio: {{ recursoAjustes.value()?.repositorioGitHub }}</span>
+          @if (fechaSincronizacionLegible(); as fecha) {
+            <span>Última sincronización correcta: {{ fecha }}</span>
+          } @else {
+            <span>Aún no hay una sincronización correcta.</span>
+          }
         }
       </div>
-    </form>
 
-    <section class="configuracion-sincronizacion__sincronizar">
-      <button mat-flat-button color="primary" type="button" [disabled]="!tieneCredenciales || sincronizando()" (click)="sincronizarAhora()">
-        @if (sincronizando()) {
-          <mat-spinner diameter="18" />
-        } @else {
-          <mat-icon>sync</mat-icon>
+      <details class="configuracion-sincronizacion__configuracion" [open]="!tieneCredenciales">
+        <summary>Configuración de GitHub</summary>
+        <section class="configuracion-sincronizacion__guia">
+          <h3>Cómo configurar la sincronización</h3>
+          <ol>
+            <li>Crea en GitHub un repositorio <strong>privado</strong> dedicado solo a tus datos (por ejemplo, <code>data-physical-exercises</code>), distinto del repositorio de la aplicación.</li>
+            <li>Crea un token <strong>fine-grained</strong> limitado a ese repositorio, con permiso de lectura y escritura de contenidos.</li>
+            <li>Introduce aquí el nombre del repositorio ("usuario/repositorio") y el token.</li>
+          </ol>
+        </section>
+
+        <form class="configuracion-sincronizacion__formulario" (submit)="$event.preventDefault(); guardarCredenciales()">
+          <mat-form-field appearance="outline">
+            <mat-label>Repositorio de datos (usuario/repositorio)</mat-label>
+            <input
+              matInput
+              [formField]="formulario.repositorio"
+              placeholder="usuario/data-physical-exercises"
+              (input)="errorRepositorio.set(null)"
+            />
+            @if (errorRepositorio(); as error) {
+              <p class="configuracion-sincronizacion__error-campo" role="alert">{{ error }}</p>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Token fine-grained</mat-label>
+            <input
+              matInput
+              type="password"
+              class="configuracion-sincronizacion__token"
+              [formField]="formulario.token"
+              (input)="errorToken.set(null)"
+            />
+            @if (errorToken(); as error) {
+              <p class="configuracion-sincronizacion__error-campo" role="alert">{{ error }}</p>
+            }
+          </mat-form-field>
+
+          <div class="configuracion-sincronizacion__acciones">
+            <button mat-flat-button color="primary" type="submit" [disabled]="guardando()">Guardar credenciales</button>
+            @if (tieneCredenciales) {
+              <button mat-stroked-button type="button" (click)="olvidarToken()">
+                <mat-icon>delete</mat-icon>
+                Olvidar token
+              </button>
+            }
+          </div>
+        </form>
+      </details>
+
+      <section class="configuracion-sincronizacion__sincronizar">
+        <button mat-flat-button color="primary" type="button" [disabled]="!tieneCredenciales || sincronizando()" (click)="sincronizarAhora()">
+          @if (sincronizando()) {
+            <mat-spinner diameter="18" />
+          } @else {
+            <mat-icon>sync</mat-icon>
+          }
+          Sincronizar ahora
+        </button>
+        @if (!tieneCredenciales) {
+          <p class="configuracion-sincronizacion__aviso">Guarda primero el repositorio y el token para poder sincronizar.</p>
         }
-        Sincronizar ahora
-      </button>
-      @if (!tieneCredenciales) {
-        <p class="configuracion-sincronizacion__aviso">Guarda primero el repositorio y el token para poder sincronizar.</p>
-      }
+      </section>
     </section>
   }
 </section>

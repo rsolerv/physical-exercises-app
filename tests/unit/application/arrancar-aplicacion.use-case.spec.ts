@@ -11,6 +11,7 @@ function crearAjustesRepoSimulado(catalogoCargado: boolean): AjustesRepositoryPo
     guardarCredencialesGitHub: vi.fn(),
     olvidarCredencialesGitHub: vi.fn(),
     actualizarUltimoShaSincronizado: vi.fn(),
+    registrarSincronizacionCorrecta: vi.fn(),
     marcarCambiosLocalesPendientes: vi.fn(),
     estaCatalogoPredefinidoCargado: vi.fn().mockResolvedValue(catalogoCargado),
     marcarCatalogoPredefinidoCargado: vi.fn(),

@@ -83,6 +83,15 @@ describe('CategoriaRepositorySqlite', () => {
     expect(await repositorio.obtenerPorId(creada.id)).toBeNull();
   });
 
+  it('restaura una categoría eliminada conservando su identificador y datos', async () => {
+    const original = await repositorio.crear('Rodilla', 'Fortalecimiento de rodilla');
+    await repositorio.eliminar(original.id);
+
+    await repositorio.restaurar(original);
+
+    expect(await repositorio.obtenerPorId(original.id)).toEqual(original);
+  });
+
   it('impide eliminar la categoría genérica (FR-011)', async () => {
     await conexion.ejecutarSinResultado("INSERT INTO categoria (id, nombre, es_generica) VALUES ('cat-generica', 'Sin categoría', 1)");
     await expect(repositorio.eliminar('cat-generica')).rejects.toThrow(ErrorOperacionNoPermitida);

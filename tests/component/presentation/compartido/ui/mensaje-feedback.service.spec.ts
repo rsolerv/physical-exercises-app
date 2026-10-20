@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { of } from 'rxjs';
 import { MensajeFeedbackService } from '../../../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
 
 describe('MensajeFeedbackService', () => {
@@ -31,6 +32,21 @@ describe('MensajeFeedbackService', () => {
       undefined,
       expect.objectContaining({ duration: 4000 })
     );
+  });
+
+  it('mostrarExitoConAccion presenta la acción y la ejecuta al seleccionarla', () => {
+    const accion = vi.fn();
+    open.mockReturnValue({ onAction: () => of(undefined) });
+    const servicio = TestBed.inject(MensajeFeedbackService);
+
+    servicio.mostrarExitoConAccion('Categoría eliminada.', 'Deshacer', accion);
+
+    expect(open).toHaveBeenCalledWith(
+      'Categoría eliminada.',
+      'Deshacer',
+      expect.objectContaining({ duration: 4000 })
+    );
+    expect(accion).toHaveBeenCalledOnce();
   });
 
   it('no requiere que el usuario mueva el foco (política de anuncio por defecto de MatSnackBar)', () => {

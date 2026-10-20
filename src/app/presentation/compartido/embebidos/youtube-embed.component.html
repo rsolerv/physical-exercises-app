@@ -1,12 +1,40 @@
 <div class="youtube-embed">
-  @if (urlSegura(); as src) {
+  @if (reproduciendo() && urlSegura(); as src) {
     <iframe
       class="youtube-embed__iframe"
       [src]="src"
-      title="Vídeo de YouTube del ejercicio"
+      [title]="titulo()"
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
       allowfullscreen
     ></iframe>
+  } @else if (urlMiniatura(); as miniatura) {
+    <div class="youtube-embed__vista-previa">
+      @if (miniaturaConError()) {
+        <div class="youtube-embed__miniatura-no-disponible" aria-hidden="true">
+          <mat-icon>smart_display</mat-icon>
+        </div>
+      } @else {
+        <img
+          class="youtube-embed__miniatura"
+          [src]="miniatura"
+          [alt]="'Miniatura del vídeo: ' + titulo()"
+          (error)="miniaturaConError.set(true)"
+        />
+      }
+      <button
+        mat-icon-button
+        class="youtube-embed__reproducir"
+        type="button"
+        aria-label="Reproducir vídeo de YouTube"
+        (click)="reproduciendo.set(true)"
+      >
+        <mat-icon>play_arrow</mat-icon>
+      </button>
+    </div>
+    <div class="youtube-embed__metadatos">
+      <span class="youtube-embed__titulo">{{ titulo() }}</span>
+      <span>Atribución: YouTube</span>
+    </div>
   } @else {
     <p class="youtube-embed__aviso">
       <mat-icon>videocam_off</mat-icon>

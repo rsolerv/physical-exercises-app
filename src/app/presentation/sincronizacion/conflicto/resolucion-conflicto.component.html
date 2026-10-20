@@ -2,6 +2,7 @@
   <app-cabecera-pagina titulo="Conflicto de sincronización" />
 
   @if (conflicto(); as conflicto) {
+    <p class="resolucion-conflicto__estado" role="status">Conflicto pendiente de resolución</p>
     <p class="resolucion-conflicto__explicacion">
       Hay cambios tanto en este dispositivo como en GitHub desde la última sincronización. Elige qué versión quieres conservar.
     </p>
@@ -11,7 +12,12 @@
       <mat-radio-button value="conservar_remoto">Usar los datos de GitHub</mat-radio-button>
     </mat-radio-group>
 
-    <button mat-flat-button color="primary" type="button" [disabled]="confirmando()" (click)="confirmar()">Confirmar</button>
+    @if (errorAlResolver(); as error) {
+      <p class="resolucion-conflicto__error" role="alert">{{ error }}</p>
+    }
+    <button mat-flat-button color="primary" type="button" [disabled]="confirmando()" (click)="confirmar()">
+      {{ confirmando() ? 'Resolviendo...' : 'Confirmar' }}
+    </button>
   } @else {
     <app-estado-vacio icono="check_circle" mensaje="No hay ningún conflicto pendiente de resolver." />
   }

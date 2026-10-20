@@ -57,12 +57,22 @@ export class EjercicioRepositorySqlite implements EjercicioRepositoryPort {
   async crear(datos: DatosNuevoEjercicio): Promise<Ejercicio> {
     validarEjercicio(datos);
     const id = crypto.randomUUID();
+    await this.guardarEjercicio(id, datos);
+    return { id, ...datos };
+  }
+
+  async restaurar(ejercicio: Ejercicio): Promise<void> {
+    const { id, ...datos } = ejercicio;
+    validarEjercicio(datos);
+    await this.guardarEjercicio(id, datos);
+  }
+
+  private async guardarEjercicio(id: string, datos: DatosNuevoEjercicio): Promise<void> {
     await this.conexion.ejecutarSinResultado(
       'INSERT INTO ejercicio (id, nombre, descripcion, observaciones) VALUES (?, ?, ?, ?)',
       [id, datos.nombre, datos.descripcion, datos.observaciones ?? null]
     );
     await this.guardarRelaciones(id, datos);
-    return { id, ...datos };
   }
 
   async actualizar(id: string, cambios: Partial<DatosNuevoEjercicio>): Promise<Ejercicio> {

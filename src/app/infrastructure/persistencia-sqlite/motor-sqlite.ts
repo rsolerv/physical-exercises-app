@@ -12,9 +12,17 @@ import { ESQUEMA_SQL } from './esquema';
 export class MotorSqlite {
   constructor(private readonly db: Database) {}
 
-  /** Aplica el esquema completo. Es idempotente (usa `CREATE TABLE IF NOT EXISTS`). */
+  /** Aplica el esquema y las migraciones compatibles con instalaciones existentes. */
   async aplicarEsquema(): Promise<void> {
     this.db.exec(ESQUEMA_SQL);
+    const columnasAjustes = this.db.exec({
+      sql: 'PRAGMA table_info(ajustes_aplicacion)',
+      returnValue: 'resultRows',
+      rowMode: 'object',
+    }) as { name: string }[];
+    if (!columnasAjustes.some((columna) => columna.name === 'ultima_sincronizacion_correcta')) {
+      this.db.exec('ALTER TABLE ajustes_aplicacion ADD COLUMN ultima_sincronizacion_correcta TEXT');
+    }
   }
 
   /** Ejecuta una consulta y devuelve las filas como objetos. */

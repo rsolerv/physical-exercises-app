@@ -29,8 +29,9 @@ describe('CabeceraPaginaComponent', () => {
     const fixture = TestBed.createComponent(AnfitrionComponent);
     fixture.detectChanges();
 
-    const encabezado = (fixture.nativeElement as HTMLElement).querySelector('h1, h2');
-    expect(encabezado?.textContent).toContain('Mis ejercicios');
+    const encabezados = (fixture.nativeElement as HTMLElement).querySelectorAll('h1');
+    expect(encabezados).toHaveLength(1);
+    expect(encabezados[0].textContent).toContain('Mis ejercicios');
   });
 
   it('no muestra ninguna descripción si no se proporciona', () => {

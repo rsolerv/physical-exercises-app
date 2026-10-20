@@ -7,7 +7,7 @@
   text-align: center;
   gap: $espaciado-2;
   margin-top: $espaciado-6;
-  color: var(--mat-sys-on-surface-variant);
+  color: var(--color-terciario);
 }
 
 .estado-vacio__icono {
@@ -17,7 +17,7 @@
 }
 
 .estado-vacio__mensaje {
-  font: var(--mat-sys-body-large);
+  font: var(--tipo-lectura);
   margin: 0;
   max-width: 40ch;
 }

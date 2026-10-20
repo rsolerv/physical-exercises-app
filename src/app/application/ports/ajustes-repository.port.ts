@@ -3,6 +3,7 @@ export interface AjustesAplicacion {
   tokenGitHub: string | null;
   repositorioGitHub: string | null;
   ultimoShaSincronizado: string | null;
+  ultimaSincronizacionCorrecta: Date | null;
   cambiosLocalesPendientes: boolean;
   catalogoPredefinidoCargado: boolean;
 }
@@ -27,6 +28,9 @@ export abstract class AjustesRepositoryPort {
   abstract olvidarCredencialesGitHub(): Promise<void>;
 
   abstract actualizarUltimoShaSincronizado(sha: string): Promise<void>;
+
+  /** Persiste la fecha UTC de la última sincronización completada correctamente (FR-070). */
+  abstract registrarSincronizacionCorrecta(fecha: Date): Promise<void>;
 
   /**
    * true tras cualquier alta, modificación o borrado de datos de usuario;

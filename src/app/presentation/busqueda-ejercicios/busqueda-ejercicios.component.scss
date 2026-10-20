@@ -1,17 +1,116 @@
 @use '../../../styles/espaciado' as *;
+@use '../../../styles/breakpoints' as *;
 
 .busqueda-ejercicios__filtros {
+  position: sticky;
+  top: 0;
+  z-index: 3;
   display: flex;
   flex-direction: column;
   gap: $espaciado-2;
-  margin-bottom: $espaciado-3;
+  margin: 0 calc(-1 * var(--contenido-padding, 16px)) $espaciado-3;
+  padding: $espaciado-2 var(--contenido-padding, 16px);
+  background: var(--mat-sys-surface);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
 }
 
 .busqueda-ejercicios__campo-texto {
   width: 100%;
+  margin-bottom: -$espaciado-2;
+}
+
+.busqueda-ejercicios__categorias {
+  display: flex;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.busqueda-ejercicios__disposicion {
+  min-width: 0;
+}
+
+.busqueda-ejercicios__resultados {
+  min-width: 0;
 }
 
 .busqueda-ejercicios__tarjeta {
   margin-bottom: $espaciado-2;
   border-radius: 8px;
+
+  &[aria-current='true'] {
+    background: var(--mat-sys-secondary-container);
+  }
+}
+
+.busqueda-ejercicios__miniatura {
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
+  border-radius: 8px;
+  object-fit: contain;
+  background: var(--mat-sys-surface-container);
+}
+
+.busqueda-ejercicios__descripcion {
+  display: -webkit-box;
+  overflow: hidden;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.busqueda-ejercicios__etiquetas {
+  display: flex;
+  gap: $espaciado-1;
+
+  span {
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.busqueda-ejercicios__detalle {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: $espaciado-2;
+  min-width: 0;
+  padding: $espaciado-3;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 16px;
+  background: var(--mat-sys-surface-container-low);
+
+  h2,
+  p {
+    margin: 0;
+  }
+}
+
+.busqueda-ejercicios__detalle-imagen {
+  width: min(100%, 320px);
+  aspect-ratio: 1;
+  border-radius: 16px;
+  object-fit: contain;
+}
+
+.busqueda-ejercicios__error {
+  color: var(--mat-sys-error);
+}
+
+@include escritorio {
+  .busqueda-ejercicios__filtros {
+    --contenido-padding: 32px;
+  }
+
+  .busqueda-ejercicios__disposicion {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.8fr);
+    align-items: start;
+    gap: $espaciado-3;
+  }
+
+  .busqueda-ejercicios__detalle {
+    position: sticky;
+    top: 168px;
+  }
 }

@@ -2,9 +2,12 @@
 
 
 
+
 **Capa que lo define**: Application (puerto) · **Capa que lo implementa**: Infrastructure (adaptador SQLite WASM)
 
 Puerto de soporte técnico (no es una entidad de negocio del spec) para los ajustes descritos en `data-model.md` → "Ajustes de aplicación".
+
+La infraestructura almacena la fecha como texto ISO 8601 UTC y la expone como `Date`. La migración se aplica al inicializar el esquema y añade el campo opcional a instalaciones existentes, conservando sus valores anteriores y dejando la fecha como `null`.
 
 ```ts
 interface AjustesRepositoryPort {
@@ -16,6 +19,10 @@ interface AjustesRepositoryPort {
   // Borra token y repositorio guardados (acción "Olvidar token", FR-037).
 
   actualizarUltimoShaSincronizado(sha: string): Promise<void>;
+
+  registrarSincronizacionCorrecta(fecha: Date): Promise<void>;
+  // Actualiza la fecha-hora de la última sincronización completada con éxito (FR-070).
+  // No se llama al producirse un error o conflicto; la fecha anterior se conserva.
 
   marcarCambiosLocalesPendientes(pendientes: boolean): Promise<void>;
   // true tras cualquier alta, modificación o borrado de datos de usuario;

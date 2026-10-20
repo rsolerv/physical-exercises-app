@@ -21,13 +21,15 @@
 }
 
 .cabecera-pagina__titulo {
-  font: var(--mat-sys-headline-small);
+  font: var(--tipo-titulo-pagina);
   margin: 0;
+  color: var(--color-texto);
 }
 
 .cabecera-pagina__descripcion {
-  font: var(--mat-sys-body-medium);
-  color: var(--mat-sys-on-surface-variant);
+  max-width: 65ch;
+  font: var(--tipo-cuerpo);
+  color: var(--color-terciario);
   margin: 0;
 }
 

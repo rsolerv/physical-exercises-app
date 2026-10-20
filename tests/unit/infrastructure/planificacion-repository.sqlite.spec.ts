@@ -142,6 +142,19 @@ describe('PlanificacionRepositorySqlite', () => {
     expect(leida?.dias.find((d) => d.diaSemana === 'lunes')?.ejercicioIds).toEqual([]);
   });
 
+  it('restaura la relación del ejercicio con cada día planificado después de reponer el ejercicio', async () => {
+    const ejercicio = await crearEjercicio('Sentadilla');
+    const plan = await repositorio.crear({ nombre: 'Semana', fechaInicio: '2026-10-12', dias: crearDiasVacios() });
+    await repositorio.asignarEjercicioADia(plan.id, 'lunes', ejercicio.id);
+    await ejercicios.eliminar(ejercicio.id);
+    await ejercicios.restaurar(ejercicio);
+
+    await repositorio.asignarEjercicioADia(plan.id, 'lunes', ejercicio.id);
+
+    const leida = await repositorio.obtenerPorId(plan.id);
+    expect(leida?.dias.find((d) => d.diaSemana === 'lunes')?.ejercicioIds).toEqual([ejercicio.id]);
+  });
+
   it('listarTodas() devuelve todas las planificaciones', async () => {
     await repositorio.crear({ nombre: 'Semana 1', fechaInicio: '2026-10-12', dias: crearDiasVacios() });
     await repositorio.crear({ nombre: 'Plantilla', dias: crearDiasVacios() });

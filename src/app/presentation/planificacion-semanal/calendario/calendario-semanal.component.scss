@@ -1,58 +1,131 @@
 @use '../../../../styles/espaciado' as *;
 @use '../../../../styles/breakpoints' as *;
 
-.calendario-semanal__lista {
-  margin-bottom: $espaciado-3;
-}
-
-.calendario-semanal__item {
-  cursor: pointer;
-  border-radius: 8px;
-}
-
-.calendario-semanal__item--seleccionada {
-  background: var(--mat-sys-secondary-container, #e8eaed);
-}
-
-.calendario-semanal__titulo-semana {
-  margin-bottom: $espaciado-2;
-}
-
-.calendario-semanal__cuadricula {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+.calendario-semanal__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: $espaciado-2;
+}
 
-  @include movil {
-    grid-template-columns: 1fr;
+.calendario-semanal__selector-plan {
+  width: min(100%, 280px);
+}
+
+.calendario-semanal__opcion-plan {
+  display: flex;
+  flex-direction: column;
+
+  small {
+    color: var(--mat-sys-on-surface-variant);
   }
 }
 
+.calendario-semanal__error {
+  color: var(--mat-sys-error);
+}
+
+.calendario-semanal__dias-movil {
+  display: flex;
+  gap: $espaciado-1;
+  overflow-x: auto;
+  padding: $espaciado-1 0 $espaciado-2;
+  margin-bottom: $espaciado-2;
+}
+
+.calendario-semanal__dia-movil {
+  position: relative;
+  display: flex;
+  flex: 0 0 80px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $espaciado-1;
+  min-height: 72px;
+  padding: $espaciado-1;
+  border-radius: 16px;
+
+  mat-icon {
+    font-size: 20px;
+  }
+
+  &[aria-current='date']::after {
+    position: absolute;
+    right: 8px;
+    bottom: 4px;
+    left: 8px;
+    height: 3px;
+    border-radius: 999px;
+    background: var(--mat-sys-primary);
+    content: '';
+  }
+}
+
+.calendario-semanal__dia-movil--activo {
+  background: var(--mat-sys-secondary-container);
+}
+
+.calendario-semanal__dia-movil--con-ejercicios mat-icon {
+  color: var(--mat-sys-primary);
+}
+
+.calendario-semanal__dia-seleccionado {
+  margin-bottom: $espaciado-3;
+
+  h2 {
+    margin: 0 0 $espaciado-2;
+    font: var(--mat-sys-title-medium);
+  }
+}
+
+.calendario-semanal__descanso {
+  margin: 0;
+  padding: $espaciado-2;
+  border-radius: 8px;
+  background: var(--color-descanso, #f1ede5);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.calendario-semanal__cuadricula {
+  display: none;
+}
+
+.calendario-semanal__dia {
+  min-width: 0;
+  min-height: 160px;
+  border-radius: 16px;
+}
+
 .calendario-semanal__dia--vacio {
-  opacity: 0.6;
+  background: var(--color-descanso, #f1ede5);
 }
 
-.calendario-semanal__sin-ejercicios {
-  color: var(--mat-sys-on-surface-variant, #5f6368);
-  font-style: italic;
-}
-
-.calendario-semanal__ejercicio {
-  display: inline-flex;
-  max-width: 100%;
-  min-height: 48px;
-  margin: 0 8px 8px 0;
-  border-radius: 999px;
-  text-decoration: none;
-}
-
-.calendario-semanal__ejercicio mat-chip {
-  max-width: 100%;
-  min-height: 48px;
-  height: auto;
-}
-
-.calendario-semanal__ejercicio:focus-visible {
+.calendario-semanal__dia--hoy {
   outline: 2px solid var(--mat-sys-primary);
-  outline-offset: 2px;
+  outline-offset: 1px;
+}
+
+.calendario-semanal__fila-ejercicio {
+  display: flex;
+  width: 100%;
+  min-height: 48px;
+  justify-content: flex-start;
+  gap: $espaciado-1;
+  margin-bottom: $espaciado-1;
+  border-radius: 8px;
+  text-align: left;
+  white-space: normal;
+}
+
+@include escritorio {
+  .calendario-semanal__dias-movil,
+  .calendario-semanal__dia-seleccionado {
+    display: none;
+  }
+
+  .calendario-semanal__cuadricula {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: $espaciado-2;
+  }
 }

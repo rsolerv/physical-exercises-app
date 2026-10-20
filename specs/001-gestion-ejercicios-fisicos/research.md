@@ -8,9 +8,13 @@
 
 
 
-**Feature**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md) | **Fecha**: 2026-10-15
+
+
+**Feature**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md) | **Fecha**: 2026-10-20
 
 Este documento no parte de ningún `NEEDS CLARIFICATION` pendiente (la fase de especificación y de clarificación ya resolvieron las ambigüedades funcionales). Documenta en su lugar las decisiones técnicas necesarias para pasar de la especificación al diseño, derivadas de: (a) la instrucción explícita del usuario para esta planificación, y (b) la constitución del proyecto.
+
+Las decisiones transversales de las secciones 12–18 se incorporan a partir de la Living Spec de la feature `001-gestion-ejercicios-fisicos`; sus referencias a requisitos y criterios de aceptación identifican la fuente funcional de cada decisión.
 
 ## 1. Versión de Angular
 
@@ -84,16 +88,47 @@ Este documento no parte de ningún `NEEDS CLARIFICATION` pendiente (la fase de e
 - **Rationale**: `/ejercicios` es actualmente la ruta canónica expuesta por el menú para la biblioteca, por lo que puede haber marcadores o enlaces guardados. La redirección preserva esos accesos sin conservar una pantalla denominada “Mis ejercicios”. Las rutas anidadas siguen sirviendo funciones vigentes y no deben confundirse con la ruta retirada.
 - **Alternatives considered**: Eliminar también `/ejercicios` — rechazado por romper enlaces guardados sin necesidad. Mantener el listado como alias o conservarlo en el menú — rechazado porque contradice FR-053.
 
-## 13. Reutilización de búsqueda y límites de implementación
+## 13. Búsqueda, ficha y medios
 
-- **Decision**: Dejar sin cambios los archivos de implementación de `presentation/busqueda-ejercicios/`. El caso de uso existente ya devuelve el catálogo completo cuando no hay filtros; cada resultado abre una ficha que proporciona edición y eliminación. Tras eliminar desde la ficha, volver a `/buscar`. Probar estas rutas de extremo a extremo sin cambiar el componente, su plantilla ni sus estilos.
-- **Rationale**: La búsqueda ya cubre la consulta del catálogo y la ficha conserva las operaciones CRUD; reutilizarlas preserva las capacidades y respeta la instrucción de no modificar el código de la pantalla Buscar. El dominio, los repositorios, los datos semilla y el esquema de persistencia no requieren cambios.
-- **Alternatives considered**: Incorporar edición/eliminación dentro del listado de Buscar o modificar el componente de búsqueda para presentar el catálogo — descartado porque las capacidades ya existen en la ficha y la pantalla Buscar está expresamente fuera de los cambios de implementación.
+- **Decision**: La experiencia de búsqueda conserva los resultados y criterios al mostrar una ficha en un panel contiguo en escritorio; en móvil, la selección abre la ficha. Los resultados incluyen imagen cuando existe, descripción y categorías. Las fichas priorizan los medios, presentan imágenes completas y muestran vídeos mediante una vista previa 16:9 que se abre por acción explícita. Los enlaces se identifican por su URL.
+- **Rationale**: Esta decisión, incorporada a la Living Spec de esta feature, aborda la legibilidad de las listas y la consulta de medios desde móvil y escritorio sin perder el contexto de búsqueda. Los requisitos vigentes están en [spec.md](./spec.md), FR-053, FR-064, FR-065 y FR-071.
+- **Alternatives considered**: Mantener una lista de una sola columna en escritorio o cargar todos los reproductores al abrir una ficha — descartadas por el contexto perdido, el uso poco eficiente del espacio y la carga innecesaria antes de que el usuario elija reproducir.
 
-## 14. Regresión visual de Buscar y comportamiento del menú móvil
+## 14. Navegación adaptable por dispositivo
 
-- **Decision**: Mantener y verificar el listado diferenciado, legible, ajustable y desplazable verticalmente de Buscar (FR-039) sin editar su implementación. Conservar el `mat-sidenav` overlay de ancho completo hasta 599 px y el cierre al elegir una entrada; probar que las dos entradas nuevas siguen el mismo comportamiento.
-- **Rationale**: La pantalla ya usa una lista de resultados y el shell actual implementa overlay móvil a 599 px, ancho completo y cierre al seleccionar una ruta. El cambio de menú debe reutilizar ese comportamiento; la prueba de regresión basta si la conducta actual se mantiene.
-- **Alternatives considered**: Rediseñar la pantalla Buscar o reimplementar el menú móvil — rechazado por no ser necesario para conservar los comportamientos descritos y por exceder el alcance.
+- **Decision**: En móvil, la navegación principal se presenta como barra inferior con "Hoy", "Planificación", "Buscar" y "Más"; las opciones secundarias Categorías y Sincronización se agrupan en el panel inferior de "Más", y "Nuevo ejercicio" permanece como acción destacada. En tablet se usa un riel lateral y en escritorio un menú lateral fijo agrupado por propósito. La opción activa mantiene el mismo tratamiento visual en todos los tamaños.
+- **Rationale**: La decisión reemplaza el planteamiento anterior de un menú superpuesto de ancho completo en móvil, que queda obsoleto. Está registrada en la Living Spec de esta feature, FR-047, FR-050 a FR-052.
+- **Alternatives considered**: Conservar el mismo menú lateral en todos los dispositivos — descartado porque ocupa casi toda la pantalla móvil y no prioriza las secciones de uso diario.
 
-**Alcance de requisitos**: La especificación activa termina en FR-054; FR-055 no está definido y no se infiere ni se incorpora como requisito.
+## 15. Sistema visual transversal
+
+- **Decision**: La identidad visual común a toda la aplicación es un tema claro, cálido y profesional, con paleta definida por tokens, Roboto Flex, jerarquía tipográfica común, escala de espaciado de 8 px, tres radios de esquina, contraste accesible, estados de carga con esqueletos, acciones destructivas separadas y mensajes contextuales. Las decisiones y valores exactos forman parte de la Living Spec de esta feature, FR-044 a FR-046 y FR-055 a FR-060, FR-072 a FR-074.
+- **Rationale**: La propuesta de diseño se aplica transversalmente a biblioteca, búsqueda, planificación, progreso, fichas y sincronización; documentarla aquí evita decisiones visuales divergentes al ampliar otras features.
+- **Alternatives considered**: Mantener los valores predeterminados visuales de los componentes o definir una paleta distinta por pantalla — descartadas porque perpetuarían inconsistencias y no proporcionarían identidad común.
+
+**Alcance de requisitos**: La especificación activa se amplía de forma incremental desde FR-054; los requisitos posteriores quedan definidos en [spec.md](./spec.md) y no crean una feature independiente.
+
+## 16. Tipografía local y deshacer operaciones
+
+- **Decision**: Servir Roboto Flex como recurso estático local, en lugar de depender de un CDN, para que la tipografía definida por la feature esté disponible también durante el uso sin conexión. La acción "Deshacer" mantiene temporalmente en memoria una instantánea de los datos y relaciones afectados; no añade una entidad persistida ni un registro permanente de auditoría.
+- **Rationale**: La aplicación debe seguir siendo utilizable sin conexión y no debe introducir dependencias o servicios externos para presentar la interfaz. La instantánea temporal limita el cambio al flujo actual y permite restaurar las asociaciones requeridas por FR-069 sin modificar el modelo persistente de negocio.
+- **Alternatives considered**: Cargar la tipografía desde un servicio externo — descartado por depender de conexión y realizar solicitudes de terceros. Añadir un historial permanente de borrados — descartado porque excede la acción temporal "Deshacer" aprobada y añade persistencia no solicitada.
+
+## 17. Fecha de última sincronización
+
+- **Decision**: Guardar en Ajustes de aplicación la fecha-hora de la última sincronización completada correctamente, en UTC, y exponerla mediante el puerto de ajustes. Actualizarla solo al terminar una sincronización exitosa; los errores y conflictos mantienen la fecha anterior. SQLite conserva el valor como texto ISO 8601 y, durante la inicialización del esquema, añade la columna si falta para migrar instalaciones existentes sin recrear ni borrar sus ajustes.
+- **Rationale**: FR-070 requiere que la persona pueda consultar cuándo se sincronizó por última vez, incluso después de cerrar y reabrir la aplicación. El ajuste es metadato técnico y no se exporta como una entidad de negocio distinta.
+- **Alternatives considered**: Derivar la fecha del SHA/ETag remoto — descartado porque no contiene una fecha de sincronización utilizable. Mantenerla solo en memoria — descartado porque desaparecería al recargar y no cumpliría el comportamiento persistente de la pantalla.
+- **Referencia Living Spec**: Feature `001-gestion-ejercicios-fisicos`, FR-070 y [data-model.md](./data-model.md), campo `ultimaSincronizacionCorrecta`.
+
+## 18. Tiempo de respuesta de búsqueda y cambio de día
+
+- **Decision**: Con los datos ya cargados, la búsqueda por texto o categoría y el cambio del día seleccionado deben mostrar el contenido actualizado en menos de 1 segundo, sin bloquear la interacción. La comprobación manual se documenta en [spec.md](./spec.md), SC-031, y [quickstart.md](./quickstart.md).
+- **Rationale**: El objetivo previo de que la búsqueda y el cambio entre días respondieran "sin bloquear" no definía un resultado medible. El umbral de un segundo hace verificable el comportamiento percibido sin añadir servicios, dependencias ni instrumentación de producción.
+- **Alternatives considered**: Mantener solo "sin bloquear" — descartado por no ser verificable de forma consistente. Añadir telemetría o una herramienta de rendimiento de ejecución — descartado porque excedería el alcance y no es necesaria para la validación manual acordada.
+
+## 19. Previsualización explícita de medios externos
+
+- **Decision**: Los vídeos de YouTube muestran primero una miniatura con título, atribución y una acción explícita de reproducción; el iframe se crea solo tras esa acción. Las vistas previas web conservan siempre un enlace externo directo, incluso mientras cargan o cuando el sitio impide su inserción.
+- **Rationale**: La decisión limita las solicitudes a terceros antes de que el usuario elija reproducir el vídeo y mantiene disponible el contenido original ante bloqueos de iframe. Se aplica a la ficha de ejercicio de esta feature, FR-065.
+- **Alternatives considered**: Crear el iframe de vídeo inmediatamente — descartado porque inicializa contenido de terceros antes de la solicitud explícita de reproducción. Ocultar el enlace directo hasta que falle la vista previa — descartado porque algunos sitios señalan carga aunque bloqueen el contenido y dejarían el recurso sin alternativa.

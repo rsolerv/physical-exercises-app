@@ -1,7 +1,7 @@
 # Data Model: Gestión de Ejercicios Físicos y Planificación Semanal
 
 
-**Feature**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md) | **Fecha**: 2026-10-15
+**Feature**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md) | **Fecha**: 2026-10-20
 
 Este modelo recoge las entidades descritas en la sección "Key Entities" del spec, junto con los campos, relaciones y reglas de validación que se derivan de los requisitos funcionales (FR), reglas de negocio y casos límite. Todos los nombres de campo se dan en español, en línea con el Principio I de la constitución (el modelo de dominio no es texto de interfaz, pero se mantiene el mismo idioma por coherencia y porque algunos de estos nombres pueden aparecer en mensajes de validación mostrados al usuario).
 
@@ -96,13 +96,14 @@ Registro de si un ejercicio planificado para una fecha concreta ha sido marcado 
 
 ## Ajustes de aplicación (entidad técnica de soporte)
 
-No es una entidad de negocio descrita en el spec, pero es necesaria para implementar correctamente requisitos ya aprobados sin añadir alcance nuevo (Principio II): el almacenamiento y borrado del token de GitHub (FR-002, FR-037), la decisión de sincronización (FR-035) y evitar volver a insertar el catálogo predefinido en cada arranque (FR-034).
+No es una entidad de negocio descrita en el spec, pero es necesaria para implementar correctamente requisitos ya aprobados sin añadir alcance nuevo (Principio II): el almacenamiento y borrado del token de GitHub (FR-002, FR-037), la decisión y la fecha de la última sincronización correcta (FR-035, FR-070) y evitar volver a insertar el catálogo predefinido en cada arranque (FR-034).
 
 | Campo | Tipo | Obligatorio | Regla de validación / origen |
 |---|---|---|---|
 | tokenGitHub | texto (PAT fine-grained) | No | Introducido manualmente por el usuario (FR-002); se envía en la cabecera de autorización de cada llamada a la API de GitHub. Se muestra oculto en pantalla, NUNCA se incluye en el documento JSON sincronizado y se borra con la acción "Olvidar token" (FR-037) |
 | repositorioGitHub | texto (owner/repo) | No | Repositorio **privado** de datos configurado por el usuario (p. ej. `owner/data-physical-exercises`), distinto del repositorio público de la aplicación (FR-037) |
 | últimoShaSincronizado | texto | No | SHA/ETag remoto conocido tras la última sincronización correcta; se usa para detectar conflictos (FR-035) |
+| ultimaSincronizacionCorrecta | fecha-hora ISO 8601 en UTC | No | Se actualiza solo cuando una sincronización termina correctamente; permite mostrar la última sincronización tras cerrar y volver a abrir la aplicación (FR-070). Un error o conflicto no debe sobrescribir la fecha anterior. En instalaciones anteriores a este campo, el valor inicial es nulo |
 | cambiosLocalesPendientes | booleano | Sí (por defecto `false`) | Pasa a `true` tras cualquier alta, modificación o borrado de datos de usuario, y vuelve a `false` tras una sincronización completada. Junto con `últimoShaSincronizado` permite distinguir "solo cambios locales", "solo cambios remotos" y "cambios en ambos lados" (FR-035) |
 | catálogoPredefinidoCargado | booleano | Sí (por defecto `false`) | Pasa a `true` la primera vez que se inserta el catálogo de ejercicios predefinidos y la categoría genérica "Sin categoría"; evita reinsertar el catálogo de fábrica en arranques posteriores (FR-034, FR-011) |
 
@@ -127,3 +128,11 @@ Los identificadores no vienen en el archivo: el caso de uso de siembra los gener
 - Un Ejercicio no puede repetirse dos veces en el mismo "Día de planificación" (FR-021).
 - Solo puede existir una Planificación activa (no plantilla) por semana (FR-022), donde "activa" se calcula por fecha, no por marca manual; se garantiza impidiendo dos planificaciones concretas con la misma `fechaInicio`, que siempre es un lunes (FR-017).
 - Imagen de archivo: máximo 5 MB por imagen (FR-036).
+
+## Impacto de la presentación y de "Deshacer"
+
+Los nuevos formatos de búsqueda, navegación, fichas y planificación son estados de presentación y no modifican las entidades de negocio. El estado de sincronización se deriva de los datos existentes y del resultado de la operación actual. La fecha de la última sincronización correcta sí se conserva en Ajustes de aplicación para cumplir FR-070.
+
+"Deshacer" es una operación temporal, no una entidad de negocio ni un historial. Mientras la notificación está visible, la capa de Application conserva una instantánea en memoria con los datos eliminados y las relaciones necesarias para cumplir FR-069 y FR-075. En una eliminación de categoría, incluye la categoría original y las asignaciones previas de categoría de los ejercicios afectados; en una eliminación de ejercicio, incluye el ejercicio completo y sus asociaciones con categorías y días de planificación. La restauración conserva los identificadores originales. Al desaparecer la notificación, se libera la instantánea; no se sincroniza y no sobrevive a una recarga.
+
+Los estados de carga, edición, error, sincronización y la ficha mostrada en el panel de búsqueda de escritorio tampoco se persisten. Los estados de sincronización se derivan de los datos existentes de configuración y del resultado de la última operación.

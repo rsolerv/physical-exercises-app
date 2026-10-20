@@ -3,6 +3,12 @@ import type { Categoria } from '../../domain/categoria/categoria.entity';
 import { CategoriaRepositoryPort } from '../ports/categoria-repository.port';
 import { EjercicioRepositoryPort } from '../ports/ejercicio-repository.port';
 import { AjustesRepositoryPort } from '../ports/ajustes-repository.port';
+import { ErrorNoEncontrado } from '../../domain/errores/errores-dominio';
+
+export interface EliminacionCategoria {
+  categoria: Categoria;
+  ejercicios: { id: string; categoriaIds: string[] }[];
+}
 
 /**
  * Caso de uso de orquestación para la Historia de Usuario 1: crear, modificar
@@ -28,10 +34,24 @@ export class GestionarCategoriaUseCase {
     return actualizada;
   }
 
-  async eliminar(id: string): Promise<void> {
+  async eliminar(id: string): Promise<EliminacionCategoria> {
+    const categoria = await this.categoriaRepository.obtenerPorId(id);
+    if (!categoria) throw new ErrorNoEncontrado(`No existe la categoría "${id}".`);
+    const ejercicios = (await this.ejercicioRepository.listarTodos())
+      .filter((ejercicio) => ejercicio.categoriaIds.includes(id))
+      .map(({ id: ejercicioId, categoriaIds }) => ({ id: ejercicioId, categoriaIds: [...categoriaIds] }));
     const generica = await this.categoriaRepository.obtenerGenerica();
     await this.ejercicioRepository.quitarCategoriaDeTodos(id, generica.id);
     await this.categoriaRepository.eliminar(id);
+    await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
+    return { categoria, ejercicios };
+  }
+
+  async restaurarEliminacion(snapshot: EliminacionCategoria): Promise<void> {
+    await this.categoriaRepository.restaurar(snapshot.categoria);
+    for (const ejercicio of snapshot.ejercicios) {
+      await this.ejercicioRepository.actualizar(ejercicio.id, { categoriaIds: ejercicio.categoriaIds });
+    }
     await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
   }
 }

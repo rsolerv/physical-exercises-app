@@ -24,6 +24,7 @@ describe('SembrarCatalogoPredefinidoUseCase', () => {
       crearGenerica: vi.fn().mockResolvedValue({ id: 'cat-generica', nombre: 'Sin categoría', esGenerica: true }),
       actualizar: vi.fn(),
       eliminar: vi.fn(),
+      restaurar: vi.fn(),
     };
     ejercicioRepo = {
       obtenerPorId: vi.fn(),
@@ -33,6 +34,7 @@ describe('SembrarCatalogoPredefinidoUseCase', () => {
       crear: vi.fn().mockImplementation(async (datos: DatosNuevoEjercicio) => ({ id: 'ej-x', ...datos })),
       actualizar: vi.fn(),
       eliminar: vi.fn(),
+      restaurar: vi.fn(),
       quitarCategoriaDeTodos: vi.fn(),
     };
     ajustesRepo = {
@@ -40,6 +42,7 @@ describe('SembrarCatalogoPredefinidoUseCase', () => {
       guardarCredencialesGitHub: vi.fn(),
       olvidarCredencialesGitHub: vi.fn(),
       actualizarUltimoShaSincronizado: vi.fn(),
+      registrarSincronizacionCorrecta: vi.fn(),
       marcarCambiosLocalesPendientes: vi.fn(),
       estaCatalogoPredefinidoCargado: vi.fn().mockResolvedValue(false),
       marcarCatalogoPredefinidoCargado: vi.fn(),

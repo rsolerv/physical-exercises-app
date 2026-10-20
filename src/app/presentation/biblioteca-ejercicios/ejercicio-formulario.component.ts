@@ -8,6 +8,7 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatListModule } from '@angular/material/list';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { from } from 'rxjs';
 import { GestionarEjercicioUseCase } from '../../application/casos-uso/gestionar-ejercicio.use-case';
@@ -45,6 +46,7 @@ interface ModeloFormularioEjercicio {
     MatIconModule,
     MatChipsModule,
     MatListModule,
+    MatProgressSpinnerModule,
     CabeceraPaginaComponent,
   ],
   templateUrl: './ejercicio-formulario.component.html',
@@ -68,8 +70,13 @@ export class EjercicioFormularioComponent {
     required(ruta.descripcion, { message: 'La descripción del ejercicio no puede estar vacía.' });
   });
 
-  readonly categorias = toSignal(from(this.categoriaRepository.listarTodas()), { initialValue: [] as Categoria[] });
+  readonly categoriasCargando = signal(true);
+  readonly errorCargaCategorias = signal<string | null>(null);
+  readonly categorias = toSignal(from(this.cargarCategorias()), { initialValue: [] as Categoria[] });
   readonly categoriaIdsSeleccionadas = signal<string[]>([]);
+  readonly categoriasPrevisualizacion = computed(() =>
+    this.categorias().filter((categoria) => this.categoriaIdsSeleccionadas().includes(categoria.id))
+  );
 
   readonly enlaces = signal<EnlaceEjercicio[]>([]);
   readonly erroresEnlaces = computed(() =>
@@ -87,24 +94,55 @@ export class EjercicioFormularioComponent {
 
   readonly guardando = signal(false);
   readonly errorAlGuardar = signal<string | null>(null);
+  readonly cargandoEjercicio = signal(false);
+  readonly errorCargaEjercicio = signal<string | null>(null);
+  private readonly ultimoGuardado = signal<string | null>(null);
+  readonly estadoGuardado = computed(() => {
+    if (this.guardando()) return 'guardando';
+    const ultimoGuardado = this.ultimoGuardado();
+    return ultimoGuardado !== null && ultimoGuardado === JSON.stringify(this.datosActuales()) ? 'guardado' : 'sin-guardar';
+  });
 
   constructor() {
     if (this.ejercicioId) {
+      this.cargandoEjercicio.set(true);
       void this.cargarParaEdicion(this.ejercicioId);
     }
   }
 
+  private async cargarCategorias(): Promise<Categoria[]> {
+    try {
+      return await this.categoriaRepository.listarTodas();
+    } catch (error) {
+      this.errorCargaCategorias.set(error instanceof Error ? error.message : 'No se han podido cargar las categorías.');
+      return [];
+    } finally {
+      this.categoriasCargando.set(false);
+    }
+  }
+
   private async cargarParaEdicion(id: string): Promise<void> {
-    const ejercicio = await this.ejercicioRepository.obtenerPorId(id);
-    if (!ejercicio) return;
-    this.modelo.set({
-      nombre: ejercicio.nombre,
-      descripcion: ejercicio.descripcion,
-      observaciones: ejercicio.observaciones ?? '',
-    });
-    this.categoriaIdsSeleccionadas.set(ejercicio.categoriaIds);
-    this.enlaces.set(ejercicio.enlaces);
-    this.imagenes.set(ejercicio.imagenes);
+    this.errorCargaEjercicio.set(null);
+    try {
+      const ejercicio = await this.ejercicioRepository.obtenerPorId(id);
+      if (!ejercicio) {
+        this.errorCargaEjercicio.set('No se ha encontrado el ejercicio que quieres editar.');
+        return;
+      }
+      this.modelo.set({
+        nombre: ejercicio.nombre,
+        descripcion: ejercicio.descripcion,
+        observaciones: ejercicio.observaciones ?? '',
+      });
+      this.categoriaIdsSeleccionadas.set(ejercicio.categoriaIds);
+      this.enlaces.set(ejercicio.enlaces);
+      this.imagenes.set(ejercicio.imagenes);
+      this.ultimoGuardado.set(JSON.stringify(this.datosActuales()));
+    } catch (error) {
+      this.errorCargaEjercicio.set(error instanceof Error ? error.message : 'No se ha podido cargar el ejercicio.');
+    } finally {
+      this.cargandoEjercicio.set(false);
+    }
   }
 
   anadirEnlace(tipo: TipoEnlaceEjercicio, url: string): void {
@@ -114,7 +152,8 @@ export class EjercicioFormularioComponent {
 
   /** Invocado desde el formulario: añade el enlace introducido y limpia el campo. */
   agregarEnlaceDesdeFormulario(): void {
-    this.anadirEnlace(this.nuevoEnlaceTipo(), this.nuevoEnlaceUrl());
+    const url = this.nuevoEnlaceUrl();
+    this.anadirEnlace(esUrlYoutube(url) ? 'youtube' : this.nuevoEnlaceTipo(), url);
     this.nuevoEnlaceUrl.set('');
   }
 
@@ -149,6 +188,11 @@ export class EjercicioFormularioComponent {
 
   anadirImagenDesdeUrl(url: string): void {
     if (!url.trim()) return;
+    if (!esUrlValida(url)) {
+      this.errorImagen.set(`La imagen "${url}" no tiene un formato de URL válido.`);
+      return;
+    }
+    this.errorImagen.set(null);
     this.imagenes.update((actuales) => [...actuales, { id: crypto.randomUUID(), tipo: 'url', valorUrl: url }]);
   }
 
@@ -167,7 +211,11 @@ export class EjercicioFormularioComponent {
     const input = evento.target as HTMLInputElement;
     const archivo = input.files?.[0];
     if (archivo) {
-      await this.anadirImagenDesdeArchivo(archivo);
+      try {
+        await this.anadirImagenDesdeArchivo(archivo);
+      } catch (error) {
+        this.errorImagen.set(error instanceof Error ? error.message : 'No se ha podido leer el archivo de imagen.');
+      }
     }
     input.value = '';
   }
@@ -178,6 +226,10 @@ export class EjercicioFormularioComponent {
     );
   }
 
+  async cancelar(): Promise<void> {
+    await this.router.navigate(this.ejercicioId ? ['/ejercicios', this.ejercicioId] : ['/buscar']);
+  }
+
   async guardar(): Promise<void> {
     if (!this.formulario().valid() || this.erroresEnlaces().length > 0 || this.categoriaIdsSeleccionadas().length === 0) {
       return;
@@ -185,18 +237,12 @@ export class EjercicioFormularioComponent {
     this.guardando.set(true);
     this.errorAlGuardar.set(null);
     try {
-      const datos = {
-        nombre: this.modelo().nombre,
-        descripcion: this.modelo().descripcion,
-        categoriaIds: this.categoriaIdsSeleccionadas(),
-        enlaces: this.enlaces(),
-        imagenes: this.imagenes(),
-        observaciones: this.modelo().observaciones,
-      };
+      const datos = this.datosActuales();
       const guardado =
         this.modoEdicion && this.ejercicioId
           ? await this.gestionarEjercicio.actualizar(this.ejercicioId, datos)
           : await this.gestionarEjercicio.crear(datos);
+      this.ultimoGuardado.set(JSON.stringify(datos));
       this.mensajeFeedback.mostrarExito('Ejercicio guardado.');
       await this.router.navigate(guardado?.id ? ['/ejercicios', guardado.id] : ['/ejercicios']);
     } catch (error) {
@@ -207,12 +253,32 @@ export class EjercicioFormularioComponent {
       this.guardando.set(false);
     }
   }
+
+  private datosActuales() {
+    return {
+      nombre: this.modelo().nombre,
+      descripcion: this.modelo().descripcion,
+      categoriaIds: this.categoriaIdsSeleccionadas(),
+      enlaces: this.enlaces(),
+      imagenes: this.imagenes(),
+      observaciones: this.modelo().observaciones,
+    };
+  }
 }
 
 function esUrlValida(url: string): boolean {
   try {
     const analizada = new URL(url);
     return analizada.protocol === 'http:' || analizada.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function esUrlYoutube(url: string): boolean {
+  try {
+    const hostname = new URL(url).hostname.toLowerCase();
+    return hostname === 'youtu.be' || hostname === 'youtube.com' || hostname.endsWith('.youtube.com');
   } catch {
     return false;
   }

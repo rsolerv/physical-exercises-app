@@ -20,8 +20,12 @@ describe('YoutubeEmbedComponent', () => {
 
   it('muestra el iframe de youtube-nocookie.com/embed/<id> para una URL de YouTube válida (FR-015)', async () => {
     const fixture = await crearComponente('https://www.youtube.com/watch?v=abc123');
+    const raiz = fixture.nativeElement as HTMLElement;
 
-    const iframe = (fixture.nativeElement as HTMLElement).querySelector('iframe');
+    expect(raiz.querySelector('iframe')).toBeNull();
+    raiz.querySelector<HTMLButtonElement>('[aria-label="Reproducir vídeo de YouTube"]')?.click();
+    fixture.detectChanges();
+    const iframe = raiz.querySelector('iframe');
     expect(iframe).toBeTruthy();
     expect(iframe?.getAttribute('src')).toContain('youtube-nocookie.com/embed/abc123');
   });
@@ -32,5 +36,21 @@ describe('YoutubeEmbedComponent', () => {
     const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(texto.toLowerCase()).toContain('vídeo no disponible');
     expect((fixture.nativeElement as HTMLElement).querySelector('iframe')).toBeNull();
+  });
+
+  it('muestra título, miniatura y atribución, y no crea el reproductor hasta solicitar la reproducción', async () => {
+    const fixture = await crearComponente('https://www.youtube.com/watch?v=abc123');
+    const raiz = fixture.nativeElement as HTMLElement;
+
+    expect(raiz.querySelector('.youtube-embed__titulo')?.textContent).toContain('Vídeo de YouTube');
+    expect(raiz.querySelector<HTMLImageElement>('.youtube-embed__miniatura')?.src).toContain('abc123');
+    expect(getComputedStyle(raiz.querySelector('.youtube-embed__vista-previa') as Element).aspectRatio).toBe('16/9');
+    expect(raiz.textContent).toContain('YouTube');
+    expect(raiz.querySelector('iframe')).toBeNull();
+
+    raiz.querySelector<HTMLButtonElement>('[aria-label="Reproducir vídeo de YouTube"]')?.click();
+    fixture.detectChanges();
+
+    expect(raiz.querySelector('iframe')?.getAttribute('src')).toContain('autoplay=1');
   });
 });

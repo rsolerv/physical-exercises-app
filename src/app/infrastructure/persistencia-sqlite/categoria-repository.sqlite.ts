@@ -93,4 +93,11 @@ export class CategoriaRepositorySqlite implements CategoriaRepositoryPort {
     // de Application debe llamar antes a quitarCategoriaDeTodos().
     await this.conexion.ejecutarSinResultado('DELETE FROM categoria WHERE id = ?', [id]);
   }
+
+  async restaurar(categoria: Categoria): Promise<void> {
+    await this.conexion.ejecutarSinResultado(
+      'INSERT INTO categoria (id, nombre, descripcion, es_generica) VALUES (?, ?, ?, ?)',
+      [categoria.id, categoria.nombre, categoria.descripcion ?? null, categoria.esGenerica ? 1 : 0]
+    );
+  }
 }

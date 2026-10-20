@@ -39,6 +39,7 @@ export class SincronizarGithubUseCase {
 
     switch (accion.tipo) {
       case 'nada':
+        await this.ajustesRepository.registrarSincronizacionCorrecta(new Date());
         return { tipo: 'completada', accion: 'nada' };
       case 'subir': {
         const shaEsperado = lecturaRemota.existe ? lecturaRemota.sha : null;
@@ -77,12 +78,14 @@ export class SincronizarGithubUseCase {
     const { shaNuevo } = await this.githubSync.escribirRemoto(credenciales, datos, imagenesParaSubir, shaEsperado);
     await this.ajustesRepository.actualizarUltimoShaSincronizado(shaNuevo);
     await this.ajustesRepository.marcarCambiosLocalesPendientes(false);
+    await this.ajustesRepository.registrarSincronizacionCorrecta(new Date());
   }
 
   private async aplicarDescarga(credenciales: CredencialesGitHub, datos: ExportacionJSON, sha: string): Promise<void> {
     await this.exportarImportarDatos.importar(datos, credenciales);
     await this.ajustesRepository.actualizarUltimoShaSincronizado(sha);
     await this.ajustesRepository.marcarCambiosLocalesPendientes(false);
+    await this.ajustesRepository.registrarSincronizacionCorrecta(new Date());
   }
 
   private async obtenerCredenciales(): Promise<CredencialesGitHub> {

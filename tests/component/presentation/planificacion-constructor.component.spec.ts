@@ -25,6 +25,7 @@ describe('PlanificacionConstructorComponent', () => {
     actualizar?: ReturnType<typeof vi.fn>;
     duplicar?: ReturnType<typeof vi.fn>;
     asignarEjercicioADia?: ReturnType<typeof vi.fn>;
+    quitarEjercicioDeDia?: ReturnType<typeof vi.fn>;
   }) {
     TestBed.configureTestingModule({
       providers: [
@@ -47,7 +48,7 @@ describe('PlanificacionConstructorComponent', () => {
             actualizar: opciones.actualizar ?? vi.fn().mockResolvedValue({}),
             duplicar: opciones.duplicar ?? vi.fn().mockResolvedValue({ id: 'plan-copia' }),
             asignarEjercicioADia: opciones.asignarEjercicioADia ?? vi.fn().mockResolvedValue(undefined),
-            quitarEjercicioDeDia: vi.fn().mockResolvedValue(undefined),
+            quitarEjercicioDeDia: opciones.quitarEjercicioDeDia ?? vi.fn().mockResolvedValue(undefined),
           },
         },
       ],
@@ -184,6 +185,46 @@ describe('PlanificacionConstructorComponent', () => {
 
     expect(texto).toContain('Ejercicio no disponible');
     expect(texto).not.toContain(idEjercicio);
+  });
+
+  it('filtra ejercicios en el selector contextual de cada día', async () => {
+    configurar({ ejercicios: [ejercicio('ej-1', 'Sentadilla'), ejercicio('ej-2', 'Plancha')] });
+    const fixture = await crearComponente();
+    const componente = fixture.componentInstance;
+
+    componente.establecerBusquedaEjercicio('lunes', 'plan');
+    fixture.detectChanges();
+
+    expect(componente.ejerciciosDisponiblesParaDia('lunes').map((item) => item.nombre)).toEqual(['Plancha']);
+    expect((fixture.nativeElement as HTMLElement).querySelector('input[aria-label="Buscar ejercicios del lunes"]')).toBeTruthy();
+  });
+
+  it('identifica la plantilla o la planificación activa desde el formulario', async () => {
+    configurar({});
+    const fixture = await crearComponente();
+    const componente = fixture.componentInstance;
+
+    expect(componente.etiquetaTipoPlan()).toBe('Plantilla');
+    const lunes = new Date();
+    lunes.setDate(lunes.getDate() - ((lunes.getDay() + 6) % 7));
+    componente.establecerFechaInicio(lunes.toISOString().slice(0, 10));
+    fixture.detectChanges();
+
+    expect(componente.etiquetaTipoPlan()).toBe('Activa');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Activa');
+  });
+
+  it('revierte la selección local y presenta un error si falla la asignación persistida', async () => {
+    const asignarEjercicioADia = vi.fn().mockRejectedValue(new Error('No se pudo asignar.'));
+    const planificacionExistente: Planificacion = { id: 'plan-1', nombre: 'Semana', dias: crearDiasVacios() };
+    configurar({ idRuta: 'plan-1', planificacionExistente, ejercicios: [ejercicio('ej-1', 'Sentadilla')], asignarEjercicioADia });
+    const fixture = await crearComponente();
+
+    await fixture.componentInstance.anadirEjercicioADia('lunes', 'ej-1');
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.ejerciciosPorDia().lunes).toEqual([]);
+    expect(fixture.componentInstance.errorDia()).toContain('No se pudo asignar');
   });
 
   it('informa si no se pueden cargar los nombres de los ejercicios', async () => {

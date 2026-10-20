@@ -1,7 +1,7 @@
 <section class="busqueda-ejercicios">
   <app-cabecera-pagina titulo="Buscar ejercicios" descripcion="Filtra por categoría o por texto libre." />
 
-  <div class="busqueda-ejercicios__filtros">
+  <div class="busqueda-ejercicios__filtros busqueda-ejercicios__filtros--fijados">
     <mat-form-field appearance="outline" class="busqueda-ejercicios__campo-texto">
       <mat-label>Buscar por nombre o descripción</mat-label>
       <input matInput [value]="texto()" (input)="texto.set($any($event.target).value)" />
@@ -9,7 +9,14 @@
     </mat-form-field>
 
     @if (categorias().length > 0) {
-      <mat-chip-listbox class="busqueda-ejercicios__categorias" multiple>
+      <mat-chip-listbox class="busqueda-ejercicios__categorias" multiple aria-label="Filtrar por categoría">
+        <mat-chip-option
+          data-todas-categorias
+          [selected]="categoriaIdsSeleccionadas().length === 0"
+          (click)="limpiarCategorias()"
+        >
+          Todas
+        </mat-chip-option>
         @for (categoria of categorias(); track categoria.id) {
           <mat-chip-option
             [selected]="categoriaIdsSeleccionadas().includes(categoria.id)"
@@ -22,22 +29,60 @@
     }
   </div>
 
-  @if (recursoTotalEjercicios.isLoading() || recursoResultados.isLoading()) {
-    <div class="contenido--centrado">
-      <mat-spinner diameter="32" />
-    </div>
+  @if (errorCarga()) {
+    <p class="busqueda-ejercicios__error" role="alert">{{ errorCarga() }}</p>
+  } @else if (recursoTotalEjercicios.isLoading() || recursoResultados.isLoading()) {
+    <app-estado-carga mensaje="Cargando ejercicios" [cantidad]="4" />
   } @else if ((recursoTotalEjercicios.value() ?? []).length === 0) {
     <app-estado-vacio icono="search_off" mensaje="No hay ejercicios registrados todavía." />
   } @else if ((recursoResultados.value() ?? []).length === 0) {
     <app-estado-vacio icono="search_off" mensaje="No se han encontrado ejercicios con los criterios seleccionados." />
   } @else {
-    <mat-nav-list>
-      @for (ejercicio of recursoResultados.value(); track ejercicio.id) {
-        <a mat-list-item class="busqueda-ejercicios__tarjeta" [routerLink]="['/ejercicios', ejercicio.id]">
-          <span matListItemTitle>{{ ejercicio.nombre }}</span>
-          <span matListItemLine>{{ ejercicio.descripcion }}</span>
-        </a>
+    <div class="busqueda-ejercicios__disposicion">
+      <mat-nav-list class="busqueda-ejercicios__resultados" aria-label="Resultados de ejercicios">
+        @for (ejercicio of recursoResultados.value(); track ejercicio.id) {
+          <a
+            mat-list-item
+            class="busqueda-ejercicios__tarjeta"
+            [routerLink]="['/ejercicios', ejercicio.id]"
+            [attr.aria-current]="ejercicioSeleccionadoId() === ejercicio.id ? 'true' : null"
+            (click)="seleccionarEjercicio($event, ejercicio.id)"
+          >
+            @if (ejercicio.imagenes[0]; as imagen) {
+              <img
+                matListItemAvatar
+                class="busqueda-ejercicios__miniatura"
+                [src]="imagenSrc(imagen)"
+                alt=""
+                aria-hidden="true"
+              />
+            }
+            <span matListItemTitle>{{ ejercicio.nombre }}</span>
+            <span matListItemLine class="busqueda-ejercicios__descripcion">{{ ejercicio.descripcion }}</span>
+            <span matListItemLine class="busqueda-ejercicios__etiquetas">
+              @for (nombre of nombresCategorias(ejercicio); track nombre) {
+                <span>{{ nombre }}</span>
+              }
+            </span>
+          </a>
+        }
+      </mat-nav-list>
+
+      @if (esEscritorio()) {
+        <aside class="busqueda-ejercicios__detalle" aria-label="Ficha del ejercicio seleccionado">
+          @if (ejercicioSeleccionado(); as ejercicio) {
+            @if (ejercicio.imagenes[0]; as imagen) {
+              <img class="busqueda-ejercicios__detalle-imagen" [src]="imagenSrc(imagen)" alt="" />
+            }
+            <h2>{{ ejercicio.nombre }}</h2>
+            <p>{{ ejercicio.descripcion }}</p>
+            <p>{{ nombresCategorias(ejercicio).join(', ') }}</p>
+            <a mat-stroked-button [routerLink]="['/ejercicios', ejercicio.id]">Abrir ficha completa</a>
+          } @else {
+            <p>Selecciona un ejercicio para ver su ficha sin perder los resultados.</p>
+          }
+        </aside>
       }
-    </mat-nav-list>
+    </div>
   }
 </section>

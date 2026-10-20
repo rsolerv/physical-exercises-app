@@ -31,12 +31,14 @@ export class ResolucionConflictoComponent {
   readonly opcionSeleccionada = signal<'conservar_local' | 'conservar_remoto'>(this.conflicto()?.opcionPorDefecto ?? 'conservar_remoto');
 
   readonly confirmando = signal(false);
+  readonly errorAlResolver = signal<string | null>(null);
 
   protected readonly puedeConfirmar = computed(() => this.conflicto() !== null);
 
   async confirmar(): Promise<void> {
     const conflicto = this.conflicto();
     if (!conflicto) return;
+    this.errorAlResolver.set(null);
     this.confirmando.set(true);
     try {
       await this.sincronizarGithub.resolverConflicto(this.opcionSeleccionada(), conflicto.datosRemotos, conflicto.sha);
@@ -44,7 +46,9 @@ export class ResolucionConflictoComponent {
       this.mensajeFeedback.mostrarExito('Conflicto resuelto. Sincronización completada.');
       await this.router.navigate(['/sincronizacion']);
     } catch (error) {
-      this.mensajeFeedback.mostrarError(error instanceof Error ? error.message : 'No se ha podido resolver el conflicto.');
+      const mensaje = error instanceof Error ? error.message : 'No se ha podido resolver el conflicto.';
+      this.errorAlResolver.set(mensaje);
+      this.mensajeFeedback.mostrarError(mensaje);
     } finally {
       this.confirmando.set(false);
     }

@@ -1,4 +1,8 @@
 <div class="enlace-embed">
+  <div class="enlace-embed__cabecera">
+    <span class="enlace-embed__titulo">{{ titulo() }}</span>
+    <span>Atribución: sitio externo</span>
+  </div>
   <iframe
     class="enlace-embed__iframe"
     [src]="urlSegura()"
@@ -8,12 +12,10 @@
     (error)="onError()"
   ></iframe>
   @if (noEmbebible()) {
-    <p class="enlace-embed__aviso">
-      <mat-icon>open_in_new</mat-icon>
-      Este sitio no se puede mostrar dentro de la aplicación.
-      <a class="enlace-embed__fallback" mat-stroked-button [href]="url()" target="_blank" rel="noopener noreferrer">
-        Abrir en una pestaña nueva
-      </a>
-    </p>
+    <p class="enlace-embed__aviso">Este sitio no se puede mostrar dentro de la aplicación.</p>
   }
+  <a class="enlace-embed__fallback" mat-stroked-button [href]="url()" target="_blank" rel="noopener noreferrer">
+    <mat-icon>open_in_new</mat-icon>
+    Abrir enlace externo
+  </a>
 </div>

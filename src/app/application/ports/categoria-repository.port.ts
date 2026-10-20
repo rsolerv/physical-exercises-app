@@ -31,4 +31,7 @@ export abstract class CategoriaRepositoryPort {
    * ejercicios sin categoría (FR-011).
    */
   abstract eliminar(id: string): Promise<void>;
+
+  /** Restaura una categoría eliminada conservando su identificador original (FR-069). */
+  abstract restaurar(categoria: Categoria): Promise<void>;
 }

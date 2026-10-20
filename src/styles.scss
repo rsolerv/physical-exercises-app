@@ -8,6 +8,14 @@
 @use 'styles/breakpoints';
 @use 'styles/utilidades';
 
+@font-face {
+  font-family: 'Roboto Flex';
+  font-style: normal;
+  font-weight: 100 1000;
+  font-display: swap;
+  src: url('../public/assets/fonts/roboto-flex-variable.woff2') format('woff2');
+}
+
 html {
   height: 100%;
   @include mat.theme(
@@ -16,10 +24,49 @@ html {
         primary: mat.$azure-palette,
         tertiary: mat.$blue-palette,
       ),
-      typography: Roboto,
+      typography: 'Roboto Flex',
       density: 0,
     )
   );
+}
+
+:root {
+  --color-fondo: #f6f3ee;
+  --color-superficie: #ffffff;
+  --color-borde: #e4ded4;
+  --color-texto: #161d1d;
+  --color-primario: #00696b;
+  --color-primario-suave: #d7eeec;
+  --color-primario-elemento: #9cf1f0;
+  --color-terciario: #4a6380;
+  --color-terciario-suave: #d2e4ff;
+  --color-exito: #2e7d5b;
+  --color-descanso: #f1ede5;
+  --color-error: #ba1a1a;
+
+  --mat-sys-primary: var(--color-primario);
+  --mat-sys-on-primary: #ffffff;
+  --mat-sys-primary-container: var(--color-primario-suave);
+  --mat-sys-on-primary-container: var(--color-texto);
+  --mat-sys-secondary: var(--color-terciario);
+  --mat-sys-on-secondary: #ffffff;
+  --mat-sys-tertiary: var(--color-terciario);
+  --mat-sys-tertiary-container: var(--color-terciario-suave);
+  --mat-sys-on-tertiary-container: var(--color-texto);
+  --mat-sys-surface: var(--color-superficie);
+  --mat-sys-background: var(--color-fondo);
+  --mat-sys-on-surface: var(--color-texto);
+  --mat-sys-outline: var(--color-borde);
+  --mat-sys-error: var(--color-error);
+
+  --tipo-display: 700 32px/40px 'Roboto Flex', sans-serif;
+  --tipo-titulo-pagina: 650 22px/28px 'Roboto Flex', sans-serif;
+  --tipo-seccion: 600 16px/24px 'Roboto Flex', sans-serif;
+  --tipo-lectura: 400 16px/26px 'Roboto Flex', sans-serif;
+  --tipo-cuerpo: 400 14px/20px 'Roboto Flex', sans-serif;
+  --tipo-metadato: 400 12px/16px 'Roboto Flex', sans-serif;
+  --ancho-formulario: 720px;
+  --ancho-lista-gestion: 640px;
 }
 
 body {
@@ -31,13 +78,68 @@ body {
   // Set a default background, font and text colors for the application using
   // Angular Material's system-level CSS variables. Learn more about these
   // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font: var(--tipo-cuerpo);
 
   // Reset the user agent margin.
   margin: 0;
   height: 100%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-terciario);
+  outline-offset: 2px;
+}
+
+input:-webkit-autofill,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--color-superficie) inset;
+  -webkit-text-fill-color: var(--color-texto);
+  caret-color: var(--color-texto);
+}
+
+.mat-mdc-button,
+.mat-mdc-unelevated-button,
+.mat-mdc-outlined-button,
+.mat-mdc-raised-button,
+.mat-mdc-icon-button {
+  border-radius: 999px;
+}
+
+.ejercicio-ficha__accion-destructiva,
+.ejercicio-ficha__accion-destructiva mat-icon {
+  color: var(--mat-sys-error) !important;
+}
+
+.numero-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.mensaje-feedback--exito {
+  --mdc-snackbar-container-color: var(--color-exito);
+  --mat-snack-bar-button-color: #ffffff;
+  --mdc-snackbar-supporting-text-color: #ffffff;
+}
+
+.mensaje-feedback--error {
+  --mdc-snackbar-container-color: var(--color-error);
+  --mat-snack-bar-button-color: #ffffff;
+  --mdc-snackbar-supporting-text-color: #ffffff;
 }
 
 @include breakpoints.movil {

@@ -1,106 +1,89 @@
-# Quickstart: Validación de Gestión de Ejercicios Físicos y Planificación Semanal
+# Quickstart: Validación de la experiencia de ejercicios y planificación
 
+**Feature**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md) | **Modelo de datos**: [data-model.md](./data-model.md) | **Contrato de interfaz**: [contracts/interfaz-usuario.md](./contracts/interfaz-usuario.md)
 
-
-**Feature**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md) | **Modelo de datos**: [data-model.md](./data-model.md)
-
-Esta guía permite validar manualmente, navegando por la interfaz de la aplicación (sin leer código, logs ni la base SQLite), que cada historia de usuario del spec funciona de extremo a extremo. Está pensada para que la siga una persona sin conocimientos de programación, tal como exige el Principio III de la constitución.
+Guía para validar los flujos desde la interfaz, sin inspeccionar el código, los registros de ejecución ni la base de datos. Las etiquetas visibles se comprobarán en español de España.
 
 ## Requisitos previos
 
-- La aplicación compilada y servida localmente (ver comandos de ejecución más abajo) o ya publicada en GitHub Pages, abierta en un navegador de escritorio o móvil.
-- Para validar la historia de usuario 5 (sincronización): una cuenta de GitHub; un repositorio **privado** y vacío dedicado solo a los datos (por ejemplo, `data-physical-exercises`), distinto del repositorio público donde se publica la aplicación; un token *fine-grained* limitado solo a ese repositorio de datos con permiso de lectura y escritura de contenidos (la pantalla de configuración de la app explica cómo crearlo); y **dos navegadores distintos** (o un navegador normal y una ventana de otro perfil) para simular dos dispositivos. No es necesario para validar las historias 1 a 4.
+- Node.js y las dependencias del proyecto instaladas.
+- Para las comprobaciones de sincronización: un repositorio privado de datos, un token fine-grained limitado a ese repositorio y dos navegadores o perfiles diferentes.
+- Para validar el diseño responsive: navegador con herramientas para cambiar el tamaño de la ventana.
 
-## Puesta en marcha (para quien ejecuta la validación localmente)
+## Ejecución local y validaciones automatizadas
 
 ```powershell
-npm install
-npm start            # sirve la aplicación en local (ng serve)
-npm test             # ejecuta la batería de pruebas automatizadas con Vitest
+npm start
+npm test -- --watch=false
+npm run lint
+npm run build
 ```
 
-Abrir la URL local indicada por `npm start` en el navegador. En el primer arranque, la aplicación debe cargar sola, sin pasos adicionales, el catálogo de ejercicios predefinidos y la categoría genérica "Sin categoría" (FR-034).
+Abre la URL que muestra `npm start`. El primer arranque debe cargar el catálogo predefinido y la categoría "Sin categoría".
 
-## US1 — Gestionar la biblioteca personal de ejercicios (P1)
+## US1 — Biblioteca, ejercicio y categorías
 
-1. Abrir la aplicación por primera vez y entrar en “Buscar”. **Esperado**: ya existen ejercicios predefinidos visibles sin haber creado ninguno manualmente (escenario 7 / FR-034).
-2. Crear una categoría nueva, p. ej. "Cuello", indicando solo el nombre. **Esperado**: aparece inmediatamente disponible para asignarla a un ejercicio (escenario 1).
-3. Crear un ejercicio nuevo indicando nombre, descripción y la categoría "Cuello". **Esperado**: se guarda y aparece en “Buscar” sin filtros (escenario 2).
-4. Editar ese ejercicio cambiando su descripción y añadiendo una observación. **Esperado**: los cambios se conservan al volver a abrir la ficha del ejercicio (escenario 3).
-5. Intentar crear otra categoría llamada también "Cuello". **Esperado**: la aplicación rechaza la operación e indica que el nombre ya existe (escenario 4).
-6. Intentar guardar un ejercicio con un enlace con formato incorrecto (p. ej. escribir `ejercicio1` en el campo de enlace). **Esperado**: la aplicación rechaza el enlace e indica que el formato no es válido (escenario 6).
-7. Eliminar la categoría "Cuello" (que ya tiene el ejercicio del paso 3 asociado). **Esperado**: la categoría desaparece; el ejercicio conserva sus demás categorías si tenía más de una, o pasa a mostrar la categoría "Sin categoría" si esa era la única que tenía (escenario 5).
-8. Intentar eliminar la categoría "Sin categoría". **Esperado**: la aplicación lo impide.
-9. Abrir "Gestionar categorías", cambiar el nombre de "Cuello" (o de otra categoría no genérica) y guardar. **Esperado**: la lista refleja el nuevo nombre y muestra una confirmación junto a la categoría; si el nombre ya existe, el error aparece junto al formulario de edición.
-10. Mientras se abre la gestión de categorías, comprobar que se indica que están cargando; tras terminar, se muestra el listado.
-11. En la ficha de un ejercicio con imagen, probar una imagen cuyo destino ya no esté disponible. **Esperado**: aparece un aviso junto a la imagen y el nombre, la descripción y el resto de la ficha siguen visibles.
+1. Abre "Gestionar categorías". Comprueba el estado de carga, que el campo "Nueva categoría" y "Añadir" están juntos antes de la lista, y que cada categoría muestra su recuento de ejercicios.
+2. Edita una categoría desde su fila. Guarda con Enter y repite cancelando con Escape. Comprueba que no pierdes la posición ni el contexto de la lista. "Sin categoría" debe estar identificada como categoría del sistema y no debe poder eliminarse.
+3. Elimina una categoría que tenga ejercicios. **Esperado**: los ejercicios conservan sus otras categorías o pasan a "Sin categoría" cuando corresponda; la notificación ofrece "Deshacer". Actívalo y comprueba que se restaura la categoría y sus asociaciones.
+4. Crea o edita un ejercicio. Comprueba que se identifican los campos obligatorios y opcionales, los errores aparecen junto al campo afectado y la interfaz distingue cambios sin guardar, guardado en curso y guardado. En escritorio, comprueba que el formulario y la vista previa aparecen en dos columnas y que "Guardar" y "Cancelar" permanecen visibles sin desplazamiento vertical.
+5. Añade una URL válida de YouTube sin elegir antes un tipo de enlace. Comprueba que se identifica el enlace y que la vista previa muestra título y miniatura cuando estén disponibles. La reproducción no debe iniciarse hasta que la solicites.
+6. Añade una imagen y un vídeo a la ficha. Comprueba las proporciones de miniatura, que las imágenes no se recortan, que las series/repeticiones recomendadas se destacan solo cuando están en las observaciones y que un medio no disponible no oculta el resto de la ficha.
+7. Desde la ficha, comprueba que "Editar" está disponible y que "Eliminar" aparece dentro de un menú secundario identificado como destructivo. Elimina un ejercicio planificado y asociado a categorías; comprueba que desaparece de las listas y que "Deshacer" restaura el ejercicio y las asociaciones.
 
-## US2 — Buscar y consultar ejercicios (P2)
+## US2 — Buscar y consultar
 
-1. Con varios ejercicios ya creados en distintas categorías, seleccionar una categoría concreta. **Esperado**: solo se muestran los ejercicios de esa categoría (escenario 1).
-2. Escribir parte del nombre de un ejercicio conocido en el buscador de texto. **Esperado**: el ejercicio aparece entre los resultados (escenario 2).
-3. Abrir un ejercicio que tenga un enlace de YouTube válido. **Esperado**: el vídeo se reproduce embebido dentro de la propia aplicación, sin abrir YouTube en otra pestaña (escenario 3).
-4. Seleccionar una categoría sin ejercicios asociados. **Esperado**: se muestra una lista vacía con un mensaje indicándolo, no un error (escenario 4).
-5. Quitar todos los filtros de texto y categoría. **Esperado**: aparecen todos los ejercicios, incluidos los predefinidos y los creados por el usuario.
+1. Abre "Buscar" sin texto ni categorías seleccionadas. **Esperado**: aparece el catálogo completo.
+2. Busca por nombre y filtra por categoría. Comprueba el estado de carga con placeholders que anticipan el contenido, que el buscador y los filtros permanecen disponibles al recorrer resultados y que el texto largo no provoca desplazamiento horizontal.
+3. En móvil, confirma que los resultados muestran nombre, descripción, categorías e imagen cuando existe; selecciona uno y comprueba que abre su ficha.
+4. En escritorio, selecciona resultados diferentes. **Esperado**: la ficha aparece junto a la lista y cambiar la selección no borra los criterios ni los resultados.
+5. En la ficha, vuelve a la búsqueda, edita y elimina un ejercicio. Comprueba el feedback de cada operación y que el borrado puede deshacerse mientras la notificación esté visible.
 
-## Regresión de menú, catálogo y compatibilidad (FR-039, FR-047, FR-050…FR-054)
+## US3 — Calendario y constructor semanal
 
-1. Abrir el menú principal en escritorio y móvil. **Esperado**: aparecen “Hoy”, “Buscar”, “Planificación”, “Sincronización”, “Nuevo ejercicio” y “Gestionar categorías”; no aparece “Mis ejercicios”.
-2. Elegir “Nuevo ejercicio” y volver al menú; elegir “Gestionar categorías”. **Esperado**: cada opción abre directamente su pantalla y, en móvil (≤599 px), el menú se cierra después de la selección.
-3. Abrir la URL antigua `/ejercicios` directamente. **Esperado**: se abre “Buscar”, no aparece un listado independiente ni el título “Mis ejercicios”. Las URL de detalle y edición `/ejercicios/:id` y `/ejercicios/:id/editar`, además de `/ejercicios/nuevo` y `/ejercicios/categorias`, siguen funcionando.
-4. En “Buscar”, con filtros vacíos, localizar un ejercicio y abrirlo. **Esperado**: la ficha permite editarlo y eliminarlo; tras eliminarlo, se vuelve a “Buscar” y el ejercicio ya no aparece.
-5. Revisar “Buscar” en móvil y escritorio con resultados largos. **Esperado**: cada resultado se distingue, nombre y descripción se leen sin desplazamiento horizontal, el texto largo no rompe el diseño y la lista permite desplazamiento vertical.
-6. En un viewport de 599 px o menos, abrir el menú. **Esperado**: se superpone a ancho completo sin comprimir el contenido y se cierra al seleccionar cualquiera de sus entradas; repetir la comprobación con las dos nuevas opciones.
-7. Repetir la comprobación del menú a 768 px y 1024 px, y en escritorio a 1280 px o más. **Esperado**: la navegación sigue utilizable y muestra las mismas seis opciones, sin “Mis ejercicios”; en tablet y escritorio el menú no comprime ni solapa el contenido.
+1. Crea o selecciona una planificación con ejercicios en varios días. Comprueba el estado de carga. En móvil, selecciona cada día en la tira semanal. **Esperado**: solo se muestra el contenido del día elegido; los puntos indican actividad, "Hoy" identifica el día actual y los días vacíos aparecen como "Descanso".
+2. Repite en escritorio. **Esperado**: la cuadrícula permite comparar los siete días y las filas de ejercicios abren la ficha correspondiente.
+3. Cambia el plan desde la cabecera. Comprueba que se identifica como "Activa" o "Plantilla" y que su nombre no se repite como título redundante.
+4. Edita una planificación y añade un ejercicio usando la búsqueda del selector del día. Intenta añadirlo dos veces al mismo día. **Esperado**: el duplicado se impide; el selector y la presentación de días son coherentes con el calendario.
+5. Comprueba que duplicar una planificación o plantilla conserva sus ejercicios y días, y que las restricciones de fecha y plan activo siguen vigentes.
 
-## US3 — Planificar la semana de ejercicios (P3)
+## US4 — Hoy y progreso
 
-1. Crear una planificación semanal nueva con fecha de inicio en el lunes de la semana actual, y asignar 2-3 ejercicios a distintos días. **Esperado**: al consultarla, se ven claramente los ejercicios de cada día (escenario 1).
-2. Volver a la pantalla principal / abrir la aplicación de nuevo. **Esperado**: se muestra en primer lugar la planificación de hoy, sin tener que buscarla manualmente (escenario 2), porque su fecha de inicio hace que se considere "activa" automáticamente para la semana en curso.
-3. Si no se ha creado ninguna planificación para la semana actual, abrir la aplicación. **Esperado**: mensaje indicando que no hay ejercicios programados para hoy (escenario 3).
-4. Duplicar la planificación creada en el paso 1. **Esperado**: se genera una copia independiente con los mismos ejercicios y días (escenario 4).
-5. Crear una plantilla (sin fecha de inicio) y después usarla para generar una planificación concreta asignándole una fecha. **Esperado**: la nueva planificación concreta conserva los ejercicios y días de la plantilla (escenario 5).
-6. Intentar añadir el mismo ejercicio dos veces al mismo día de la misma planificación. **Esperado**: la aplicación lo impide (escenario 6).
-7. Con la planificación del paso 1 ya activa para la semana actual, intentar crear otra planificación concreta con fecha de inicio también en la semana actual. **Esperado**: la aplicación lo impide (escenario 7).
-8. Consultar todos los ejercicios de una planificación concreta, sin filtrar por día. **Esperado**: se listan todos, independientemente del día al que estén asociados (escenario 9).
-9. Desde “Hoy”, activar “Consultar” en uno de los ejercicios planificados. **Esperado**: se abre la ficha del ejercicio elegido sin buscarlo en la biblioteca; consultar no cambia su estado de progreso. Comprobar que el enlace se alcanza y activa con teclado, y que es un control separado de la casilla para marcarlo como realizado; repetir la acción mediante tacto (escenario 11, FR-048, SC-015).
-10. Abrir `/planificacion` y seleccionar una planificación con ejercicios en días distintos. Activar “Ver ficha” para cada ejercicio. **Esperado**: cada acceso abre la ficha del ejercicio correspondiente en `/ejercicios/:id` sin tener que buscarlo en la biblioteca; comprobar los accesos con teclado y mediante tacto (FR-049, SC-016).
+1. Con una planificación activa, abre "Hoy". Comprueba el estado de carga y que la fecha, el plan, los ejercicios y el progreso son lo primero que ves.
+2. Marca un ejercicio y observa el recuento parcial; pulsa "Deshacer" mientras aparece la notificación y confirma que vuelve al estado anterior.
+3. Marca todos los ejercicios. **Esperado**: se muestra una confirmación visual del 100 %.
+4. Abre la ficha de un ejercicio planificado para hoy. Marca y desmarca desde la ficha; comprueba que el acceso a la ficha y el control del progreso son independientes.
+5. Sin ejercicios planificados para hoy, comprueba el mensaje de descanso y que se indica la próxima sesión cuando exista.
 
-## US4 — Marcar el progreso diario (P4)
+## US5 — Sincronización
 
-1. Con ejercicios planificados para hoy, marcar uno de ellos como realizado. **Esperado**: su estado cambia visualmente y se mantiene al volver a consultar el día (escenario 1).
-2. Marcar todos los ejercicios del día como realizados. **Esperado**: el indicador de progreso muestra el 100% (escenario 2).
-3. Dejar solo una parte de los ejercicios del día marcados como realizados. **Esperado**: el indicador de progreso muestra el porcentaje correspondiente, no 0% ni 100% (escenario 3).
+1. Abre "Más" y después "Sincronización" en móvil, o la sección "Sistema" en escritorio. Comprueba el estado de carga y los estados "Sin configurar", "Sincronizado", "Sincronizando", "Error" y "Conflicto" según corresponda.
+2. Configura el repositorio y el token. Comprueba que el token permanece oculto, que los errores de validación aparecen junto a sus campos y que la configuración queda plegada en la siguiente visita.
+3. Completa una sincronización correcta, cierra y vuelve a abrir la pantalla. **Esperado**: se muestra la fecha de la última sincronización. Provoca después un error o conflicto y comprueba que la fecha de la última operación correcta no se reemplaza.
+4. Sincroniza con dos navegadores y comprueba los casos existentes de primera sincronización, cambios locales, cambios remotos, conflicto y recuperación tras un fallo. Los datos locales deben conservarse ante errores.
 
-## US5 — Conservar y sincronizar la información (P5)
+## US6 — Navegación, estados y accesibilidad
 
-En esta sección, "navegador A" y "navegador B" son dos navegadores distintos (o dos perfiles) que simulan dos dispositivos. Nada de lo que sigue requiere entrar en GitHub: todo se comprueba en la pantalla de la aplicación.
+1. Cambia el tamaño de ventana y valida 320, 359, 375, 599, 600, 768, 1024, 1280 y 1366 px de ancho. Comprueba que la navegación cambia a la presentación correspondiente, que la sección activa se distingue y que no hay solapamientos ni desplazamiento horizontal.
+2. En móvil, verifica la barra inferior "Hoy", "Planificación", "Buscar" y "Más". Abre "Más", entra en Categorías y Sincronización y comprueba que el panel se cierra. Comprueba que "Nuevo ejercicio" sigue disponible como acción destacada.
+3. Recorre con Tab y Mayús+Tab los flujos principales. Comprueba el orden lógico, el foco visible y que se puede activar cada control sin ratón.
+4. Comprueba que los controles táctiles principales tienen un área de al menos 48 × 48 px y que las acciones de uso durante el ejercicio tienen al menos 56 px de alto. Verifica que los botones de una fila tienen alturas uniformes y espaciado horizontal y vertical.
+5. Revisa contraste de texto normal (al menos 4,5:1) y de texto grande e iconos funcionales (al menos 3:1). Comprueba que los campos y chips tienen radios de 8 px, las tarjetas y medios de 16 px, los botones forma de píldora, y el tema, la tipografía, la escala de 8 px y los botones mantienen una presentación coherente entre pantallas.
+6. Comprueba los estados de carga, error, guardado y vacío en las pantallas funcionales. Los estados de carga deben anticipar la forma del contenido; los errores deben explicar qué hacer y aparecer junto al campo o la operación afectada.
 
-1. Crear o modificar cualquier dato (un ejercicio, una categoría, etc.), cerrar completamente la aplicación/pestaña y volver a abrirla. **Esperado**: todos los datos siguen disponibles (escenario 1).
-2. En el navegador A, con varios datos creados (incluida al menos una imagen subida como archivo), ir a la pantalla de sincronización, introducir el token y el repositorio, y sincronizar. **Esperado**: mensaje de sincronización completada. Después, en el navegador B, abrir la aplicación, configurar el mismo token y repositorio y sincronizar. **Esperado**: como es la primera sincronización de B y GitHub ya tiene datos, aparece la elección entre datos locales y remotos con "Usar los datos de GitHub" marcada; al aceptarla, B muestra los mismos ejercicios, imágenes, categorías, planificaciones y progreso que A (escenarios 2 y 6).
-3. En A, editar un ejercicio y sincronizar. En B, sin tocar nada, sincronizar. **Esperado**: B muestra el cambio sin que aparezca ninguna pantalla de conflicto (escenario 7).
-4. Editar el mismo ejercicio de forma distinta en A y en B, sin sincronizar entre medias. Sincronizar A y después B. **Esperado**: en B aparece la pantalla de conflicto para elegir entre la versión local y la remota; tras elegir, B muestra la versión elegida, y al sincronizar de nuevo A también la muestra (escenario 5).
-5. Simular que GitHub no está disponible (p. ej. desconectando la red) e intentar sincronizar. **Esperado**: los datos permanecen localmente sin pérdida y se muestra un mensaje de error de sincronización (escenario 3).
-6. Eliminar un ejercicio que esté asociado a varias planificaciones. **Esperado**: desaparece de todas ellas (escenario 4).
-7. En la pantalla de sincronización, comprobar que el token aparece oculto y pulsar "Olvidar token". **Esperado**: el token deja de estar configurado y, al intentar sincronizar, la aplicación pide configurarlo de nuevo (FR-037).
+## Comprobación de tiempos y respuesta
 
-## US6 — Usar una aplicación clara, coherente y accesible (P1)
+Con el catálogo cargado y los datos de prueba preparados, usa un cronómetro desde la acción indicada hasta que el resultado sea visible. Repite cada recorrido tres veces y anota el resultado:
 
-1. Abrir las pantallas funcionales de Hoy, Buscar, Planificación, Sincronización y los formularios/fichas principales; comprobar también las acciones directas de “Nuevo ejercicio” y “Gestionar categorías”. **Esperado**: cada pantalla tiene título visible y las acciones disponibles aparecen en la cabecera cuando corresponda; no existe la pantalla “Mis ejercicios”.
-2. En una ventana de 599 px o menos, abrir el menú desde el botón superior. **Esperado**: el menú se superpone al contenido, lo cubre sin comprimirlo y se cierra al elegir una sección.
-3. Repetir en 600 px, 768 px y 1280 px. **Esperado**: el panel lateral se adapta al ancho, la sección seleccionada se distingue y el contenido permanece legible.
-4. Recorrer con Tab y Mayús+Tab los flujos principales de creación, edición, eliminación y navegación. **Esperado**: todos los controles se alcanzan en orden lógico, se pueden activar con teclado y el foco siempre es visible.
-5. Redimensionar entre móvil, tablet, escritorio y anchos intermedios, incluyendo 320 px, 359 px, 375 px y 599 px. **Esperado**: no hay solapamientos, texto cortado ni desplazamiento horizontal; los botones principales de Material (rellenos, contorneados y solo icono) en móvil tienen un área táctil mínima de 48 × 48 px.
-6. Comprobar contraste de texto normal (≥4,5:1), texto grande e iconos funcionales (≥3:1) y foco de cada tipo de control interactivo.
-
-## Casos límite adicionales a comprobar
-
-- Sin ningún ejercicio registrado (instalación recién reseteada, antes de que se cargue el catálogo, o tras borrarlos todos manualmente si la implementación lo permite): se muestra un mensaje indicando que no hay ejercicios, no una pantalla vacía sin explicación.
-- Un vídeo de YouTube asociado a un ejercicio ya no existe: el ejercicio se sigue mostrando con el resto de su información, indicando que el vídeo no está disponible.
-- Una imagen de la ficha no carga: se indica el problema y se conservan visibles los demás datos.
-- Intentar añadir a un ejercicio una imagen de archivo de más de 5 MB: se rechaza con un mensaje que indica el tamaño máximo (FR-036).
-- Intentar crear una planificación concreta para un lunes que ya tiene otra planificación: la aplicación lo impide (FR-017, FR-022).
+1. **SC-001**: inicia "Nuevo ejercicio" y detén el cronómetro cuando aparezca la confirmación del alta completa. Objetivo: menos de 1 minuto.
+2. **SC-002**: inicia una búsqueda conocida por texto o categoría y detén el cronómetro cuando aparezca el ejercicio. Objetivo: menos de 10 segundos.
+3. **SC-004**: inicia al marcar el primer ejercicio del día y detén el cronómetro al ver el 100 % de progreso. Objetivo: menos de 1 minuto.
+4. **SC-006**: inicia al duplicar una plantilla o planificación y detén el cronómetro cuando la nueva planificación esté disponible para editar. Objetivo: menos de 2 minutos.
+5. **SC-009**: al abrir cada pantalla funcional, identifica la acción principal. Objetivo: menos de 3 segundos.
+6. **SC-023**: tras cambiar de sección, identifica cuál está activa. Objetivo: menos de 3 segundos.
+7. **SC-026**: inicia al seleccionar un día y detén el cronómetro cuando se haya añadido por búsqueda un ejercicio y se pueda consultar la semana. Objetivo: menos de 30 segundos.
+8. **SC-031**: con los datos ya cargados, mide desde la búsqueda o selección del día hasta que el contenido visible se actualice. Objetivo: menos de 1 segundo, sin bloquear la interacción.
 
 ## Criterio de aceptación global
 
-La validación se considera superada cuando se han recorrido las seis historias de usuario anteriores sin desviaciones respecto al resultado "Esperado" de cada paso, y sin haber necesitado en ningún momento consultar código fuente, logs o el contenido de la base SQLite directamente.
+La validación se supera cuando los flujos principales de las seis historias funcionan según sus resultados esperados en móvil, tablet y escritorio; los cambios de progreso y eliminaciones se deshacen dentro del periodo de notificación; no hay errores visibles sin explicación y una persona puede completar las tareas principales con teclado o tacto.

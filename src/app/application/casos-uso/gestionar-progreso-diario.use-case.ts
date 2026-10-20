@@ -6,6 +6,12 @@ import { calcularPorcentajeDia } from '../../domain/progreso-diario/calcular-por
 import type { ResultadoPorcentajeDia } from '../../domain/progreso-diario/calcular-porcentaje-dia';
 import { diaSemanaDeFecha } from '../../domain/planificacion/fecha-semana';
 
+export interface CambioProgreso {
+  fecha: Date;
+  ejercicioId: string;
+  realizadoAnterior: boolean;
+}
+
 /**
  * Caso de uso de orquestación para la Historia de Usuario 4: marcar o
  * desmarcar un ejercicio como realizado (FR-024) y obtener el porcentaje de
@@ -18,8 +24,20 @@ export class GestionarProgresoDiarioUseCase {
   private readonly consultarPlanificacion = inject(ConsultarPlanificacionUseCase);
   private readonly ajustesRepository = inject(AjustesRepositoryPort);
 
-  async marcar(fecha: Date, ejercicioId: string, realizado: boolean): Promise<void> {
+  async marcar(fecha: Date, ejercicioId: string, realizado: boolean): Promise<CambioProgreso> {
+    const registros = await this.progresoDiarioRepository.obtenerPorFecha(fecha);
+    const cambio: CambioProgreso = {
+      fecha,
+      ejercicioId,
+      realizadoAnterior: registros.some((registro) => registro.ejercicioId === ejercicioId && registro.realizado),
+    };
     await this.progresoDiarioRepository.marcar(fecha, ejercicioId, realizado);
+    await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
+    return cambio;
+  }
+
+  async restaurarCambio(cambio: CambioProgreso): Promise<void> {
+    await this.progresoDiarioRepository.marcar(cambio.fecha, cambio.ejercicioId, cambio.realizadoAnterior);
     await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
   }
 

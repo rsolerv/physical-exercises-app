@@ -12,17 +12,20 @@ import type { ExportacionJSON } from '../../../src/app/application/ports/github-
 const DATOS_REMOTOS: ExportacionJSON = { version: 1, ejercicios: [], categorias: [], planificaciones: [], progresoDiario: [] };
 
 describe('ResolucionConflictoComponent', () => {
+  let mostrarError: ReturnType<typeof vi.fn>;
+
   function configurar(
     conflicto: { opcionPorDefecto: 'conservar_local' | 'conservar_remoto'; datosRemotos: ExportacionJSON; sha: string } | null,
     resolverConflicto?: ReturnType<typeof vi.fn>
   ) {
+    mostrarError = vi.fn();
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
         provideRouter([]),
         provideNoopAnimations(),
         { provide: SincronizarGithubUseCase, useValue: { resolverConflicto: resolverConflicto ?? vi.fn().mockResolvedValue(undefined) } },
-        { provide: MensajeFeedbackService, useValue: { mostrarExito: vi.fn(), mostrarError: vi.fn() } },
+        { provide: MensajeFeedbackService, useValue: { mostrarExito: vi.fn(), mostrarError } },
       ],
     });
     const estado = TestBed.inject(ConflictoSincronizacionEstadoService);
@@ -62,6 +65,31 @@ describe('ResolucionConflictoComponent', () => {
     await fixture.componentInstance.confirmar();
 
     expect(resolverConflicto).toHaveBeenCalledWith('conservar_remoto', DATOS_REMOTOS, 'sha-1');
+  });
+
+  it('bloquea una segunda confirmación mientras resuelve y comunica el error', async () => {
+    let fallar: (error: Error) => void = () => undefined;
+    const resolverConflicto = vi.fn().mockImplementation(
+      () =>
+        new Promise<void>((_, reject) => {
+          fallar = reject;
+        })
+    );
+    configurar({ opcionPorDefecto: 'conservar_local', datosRemotos: DATOS_REMOTOS, sha: 'sha-1' }, resolverConflicto);
+    const fixture = crearComponente();
+
+    const peticion = fixture.componentInstance.confirmar();
+    fixture.detectChanges();
+    const boton = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('button');
+    expect(boton?.disabled).toBe(true);
+    expect(boton?.textContent).toContain('Resolviendo');
+    fallar(new Error('No se pudo subir la copia.'));
+    await peticion;
+
+    expect(resolverConflicto).toHaveBeenCalledOnce();
+    expect(mostrarError).toHaveBeenCalledWith('No se pudo subir la copia.');
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('[role="alert"]')?.textContent).toContain('No se pudo subir');
   });
 
   it('muestra un mensaje cuando no hay ningún conflicto pendiente', () => {

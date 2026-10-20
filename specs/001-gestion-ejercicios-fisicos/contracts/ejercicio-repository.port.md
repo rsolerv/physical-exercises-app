@@ -29,6 +29,11 @@ interface EjercicioRepositoryPort {
   eliminar(id: string): Promise<void>;
   // Debe propagar la eliminación a todas las planificaciones que lo referencien (FR-028).
 
+  restaurar(ejercicio: Ejercicio): Promise<void>;
+  // Restaura el ejercicio eliminado con su id, datos y categorías originales (FR-069).
+  // Application restaura las asociaciones con los días mediante PlanificacionRepositoryPort
+  // antes de informar que "Deshacer" se completó.
+
   quitarCategoriaDeTodos(categoriaId: string, categoriaGenericaId: string): Promise<void>;
   // Usado al eliminar una Categoría: retira categoriaId de todos los ejercicios que la tengan;
   // si algún ejercicio queda sin ninguna categoría, le añade categoriaGenericaId (FR-011).

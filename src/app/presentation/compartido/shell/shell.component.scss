@@ -1,39 +1,19 @@
 @use '../../../../styles/espaciado' as *;
 @use '../../../../styles/breakpoints' as *;
 
-.shell__contenedor {
-  height: 100vh;
+.shell {
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
-.shell__menu-lateral {
-  width: 260px;
-}
-
-.shell__menu-lateral a[mat-list-item] {
-  min-height: 48px;
-}
-
-.shell__contenido {
-  padding: $espaciado-2;
-}
-
-// Tratamiento visual del enlace activo más allá de `font-weight` (FR-012):
-// fondo con el token de sistema M3 para que sea distinguible sin depender
-// únicamente del peso de la fuente.
-.shell__enlace-activo {
-  font-weight: 600;
-  background-color: var(--mat-sys-secondary-container);
-  color: var(--mat-sys-on-secondary-container);
-  border-radius: 8px;
-}
-
-// El botón de alternar menú debe tener un tamaño cómodo para interacción
-// táctil (FR-011): el `mat-icon-button` de Material ya ofrece un área
-// mínima de 48x48px, se refuerza explícitamente para no depender solo del
-// valor por defecto.
-.shell__barra-superior button[mat-icon-button] {
-  min-width: 48px;
-  min-height: 48px;
+.shell__barra-superior {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  box-sizing: border-box;
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  border-bottom: 1px solid var(--color-borde);
 }
 
 .shell__barra-superior > span {
@@ -42,14 +22,180 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font: var(--tipo-seccion);
 }
 
-// Diseño responsive: el menú lateral se oculta por defecto en pantallas
-// estrechas (móvil) y se abre bajo demanda con el botón de la barra superior
-// (Principio IV de la constitución); el estado inicial lo calcula
-// `ShellComponent.menuAbierto` según el ancho de viewport.
+.shell__contenido {
+  min-width: 0;
+  padding: $espaciado-2;
+}
+
+.shell__menu-escritorio,
+.shell__riel-lateral {
+  position: fixed;
+  z-index: 3;
+  inset: 0 auto 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: $espaciado-2;
+  overflow-y: auto;
+  background: var(--color-superficie);
+  border-right: 1px solid var(--color-borde);
+}
+
+.shell__menu-escritorio {
+  width: 260px;
+  padding: $espaciado-3 $espaciado-2;
+}
+
+.shell__grupo {
+  display: grid;
+  gap: $espaciado-1;
+}
+
+.shell__grupo h2 {
+  margin: 0;
+  padding: 0 $espaciado-2;
+  color: var(--color-terciario);
+  font: var(--tipo-metadato);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.shell__grupo a {
+  justify-content: flex-start;
+  min-height: 48px;
+  border-radius: 999px;
+}
+
+.shell__grupo a mat-icon,
+.shell__nuevo-ejercicio mat-icon {
+  margin-right: $espaciado-1;
+}
+
+.shell__enlace-activo {
+  color: var(--color-primario);
+  background: var(--color-primario-suave);
+  font-weight: 650;
+}
+
+.shell__menu-escritorio > .shell__nuevo-ejercicio {
+  justify-content: flex-start;
+  min-height: 48px;
+  margin-top: $espaciado-1;
+}
+
+.shell__riel-lateral {
+  align-items: center;
+  width: 80px;
+  padding: $espaciado-2 $espaciado-1;
+}
+
+.shell__riel-lateral a[mat-icon-button] {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+}
+
+.shell__riel-lateral .shell__nuevo-ejercicio {
+  margin-top: auto;
+}
+
+.shell__barra-inferior {
+  display: none;
+}
+
+.shell__nuevo-ejercicio {
+  z-index: 4;
+}
+
+@include navegacion-riel {
+  .shell__barra-superior,
+  .shell__contenido {
+    margin-left: 80px;
+  }
+
+  .shell__barra-superior {
+    width: calc(100% - 80px);
+    padding-left: $espaciado-3;
+  }
+
+  .shell__contenido {
+    padding: $espaciado-3;
+  }
+}
+
+@include escritorio {
+  .shell__barra-superior,
+  .shell__contenido {
+    margin-left: 260px;
+  }
+
+  .shell__barra-superior {
+    width: calc(100% - 260px);
+    padding-left: $espaciado-4;
+  }
+
+  .shell__contenido {
+    padding: $espaciado-4;
+  }
+}
+
 @include movil {
-  .shell__menu-lateral {
-    width: 100%;
+  .shell__barra-superior {
+    padding-inline: $espaciado-2;
+  }
+
+  .shell__contenido {
+    padding: $espaciado-2;
+    padding-bottom: calc(112px + env(safe-area-inset-bottom));
+  }
+
+  .shell__barra-inferior {
+    position: fixed;
+    z-index: 5;
+    inset: auto 0 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    min-height: 72px;
+    padding: 0 8px env(safe-area-inset-bottom);
+    background: var(--color-superficie);
+    border-top: 1px solid var(--color-borde);
+  }
+
+  .shell__barra-inferior a,
+  .shell__mas-toggle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    min-width: 48px;
+    min-height: 64px;
+    padding: 0 8px;
+    color: var(--color-texto);
+    text-decoration: none;
+    background: transparent;
+    border: 0;
+    border-radius: 16px;
+    font: var(--tipo-metadato);
+    cursor: pointer;
+  }
+
+  .shell__barra-inferior mat-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
+  }
+
+  .shell__barra-inferior .shell__enlace-activo {
+    color: var(--color-primario);
+  }
+
+  .shell__nuevo-ejercicio {
+    position: fixed;
+    right: $espaciado-2;
+    bottom: calc(88px + env(safe-area-inset-bottom));
   }
 }

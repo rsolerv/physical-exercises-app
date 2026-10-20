@@ -1,14 +1,28 @@
 @use '../../../styles/espaciado' as *;
 
 .progreso-diario__resumen {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: $espaciado-2;
   margin-bottom: $espaciado-2;
 
   mat-progress-bar {
-    flex: 1;
+    grid-column: 1 / -1;
   }
+}
+
+.progreso-diario__mensaje {
+  grid-column: 1 / -1;
+  color: var(--color-texto-secundario);
+}
+
+.progreso-diario__estado,
+.progreso-diario__error {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  gap: $espaciado-2;
 }
 
 .progreso-diario__porcentaje {
@@ -30,14 +44,18 @@
   align-items: center;
   justify-content: space-between;
   gap: $espaciado-2;
+  min-height: 56px;
 
   mat-checkbox {
     min-width: 0;
     flex: 1;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
   }
 }
 
 .progreso-diario__consulta {
   flex-shrink: 0;
-  min-height: 48px;
+  min-height: 56px;
 }

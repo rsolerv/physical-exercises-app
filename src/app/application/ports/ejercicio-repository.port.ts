@@ -22,6 +22,9 @@ export abstract class EjercicioRepositoryPort {
   /** Debe propagar la eliminación a todas las planificaciones que lo referencien (FR-028). */
   abstract eliminar(id: string): Promise<void>;
 
+  /** Restaura un ejercicio eliminado con su identificador, datos y categorías originales (FR-069). */
+  abstract restaurar(ejercicio: Ejercicio): Promise<void>;
+
   /**
    * Usado al eliminar una Categoría: retira `categoriaId` de todos los
    * ejercicios que la tengan; si algún ejercicio queda sin ninguna categoría,
