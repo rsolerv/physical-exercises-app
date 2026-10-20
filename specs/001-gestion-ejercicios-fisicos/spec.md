@@ -1,39 +1,5 @@
 # Feature Specification: Gestión de Ejercicios Físicos y Planificación Semanal
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 **Feature Branch**: `001-gestion-ejercicios-fisicos`
 
 **Created**: 2026-10-14
