@@ -1,0 +1,22 @@
+Modificaciones a realizar en Ejercicios Fisicos
+------------------------------------------------
+1. Scroll infinito en listados de ejercicios
+Todos los listados de ejercicios deberán tener el scroll infinito a los 20 ejercicios. Para ello quiero probar el IntersectionObserver o algo asi que detecta visualmente un componente oculto, y cuando lo detecta carga los siguientes 20 ejercicios.
+2. Selección de ejercicio en editor de planificación semanal.
+Eliminar la búsqueda horrible que hay y dejar un botón de agregar ejercicio.
+- Movil: Ver como queda con un bottom sheet o de lado, y si no que sea nueva pantalla. No debe ocultar el menú inferior. 
+- Comun: Botón de agergar ejercicio que en una pantalla nueva busque tranquilamente el ejercicio y lo selecciones. Que permita selección múltiple. La pantalla de búsqueda deberá mostrar la categoría, el nombre y la descripción del ejercicio. Contendrá un buscador parcial en la parte de arriba.
+4. La categoria que sale en el buscador que se vea mas bonita... como un chip o algo. Y que no este tan pegada a la descripción. Colocar filas alternas de color suave.
+6. Formulario ejercicio - Volver: Que vuelva a la pantalla de donde venga, no siempre va a buscar, porque puede ir a planificación, a Hoy o al semanal.
+9. En la planificación de hoy cabe perfectamente la descripción de cada ejercicio debajo. Que quepa completamente. En lugar de consultar pondria la palabra Ver detalle o Detalle.
+11. No me gusta que en movil, el boton + para agregar ejercicio tape el contenido de debajo. A veces es imposible verlo. Una solución sería en movil dar siempre un margen inferior a todaas las pantallas o a la padre con la misma altura de ese botón.
+12. La edición del formulario de ejercicio y de la planificación tienen un máximo de ancho en escritorio. Eso no es optimo porque no aprovecha la pantalla. Eliminar ese máximo.
+
+Copilot hará:
+--------------
+3. Eliminar la ayuda cutre que se muestra a la derecha en el Buscar de: Selecciona un ejercicio para ver su ficha...
+5. Formulario ejercicio: Las series y repeticiones en campos separados no obligatorios.
+7. Listado de categorías: Que no se vea la categoría especial: Sin categoria.
+8. Edición de ejercicio: Aparece un Guardado en el menú inferior feo y desalineado. Además para que vale? No aporta información relevante porque al editar no se ha guardado nada. Si es para indicar que hay cambios sin guardar que no salga el Guardado, pero sí el Cambios sin guardar, mejor puesto, como warning.
+10. El botón de cerrado del mas del menú infierior que se suele ver en movil no va. Debería volver al menú inicial inferior.
+13. Quitar el Hoy de la planificación semanal en movil porque se ve todo apretado. Ademas ya esta seleccionado asi que no lo veo necesario.

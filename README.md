@@ -44,6 +44,18 @@ To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use th
 ng test
 ```
 
+## Storybook and MCP
+
+Start Storybook with:
+
+```bash
+npm run storybook
+```
+
+The Storybook MCP server is available at `http://localhost:6006/mcp` while
+Storybook is running. VS Code discovers it through `.vscode/mcp.json`; start or
+restart the server from the VS Code MCP Servers view after Storybook starts.
+
 ## Running end-to-end tests
 
 For end-to-end (e2e) testing, run:
