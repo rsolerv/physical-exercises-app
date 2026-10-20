@@ -49,7 +49,7 @@
           <mat-chip-set>
             @if (recursoEjercicios.hasValue()) {
               @for (ejercicioId of ejerciciosPorDia()[dia]; track ejercicioId) {
-                <mat-chip (removed)="quitarEjercicioDeDia(dia, ejercicioId)">
+                <mat-chip (removed)="quitarEjercicioDeDia(dia, ejercicioId)" [routerLink]="['/ejercicios', ejercicioId]">
                   {{ nombresEjercicios().get(ejercicioId) ?? 'Ejercicio no disponible' }}
                   <button matChipRemove type="button" aria-label="Quitar ejercicio">
                     <mat-icon>cancel</mat-icon>
