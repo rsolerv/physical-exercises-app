@@ -241,9 +241,14 @@ Completar primero la base visual y de navegación de US6, en particular T004, y 
 
 ## Validation Summary
 
-- **Total**: 34 tareas.
+- **Total**: 36 tareas, incluidas las 2 tareas de convergencia añadidas tras el plan original.
 - **Por historia**: US1 = 7; US6 = 5; US2 = 4; US3 = 4; US4 = 4; US5 = 6.
-- **Fuera de historias**: Setup = 1; Foundational = 0; Polish = 3.
+- **Fuera de historias**: Setup = 1; Foundational = 0; Polish = 3; Convergence = 2.
 - **Criterios de prueba independientes**: definidos en cada fase de US1–US6.
 - **MVP**: US6 como base visual seguida de US1 como primer incremento funcional.
 - **Formato**: todas las tareas usan `- [ ] T###`, incluyen etiqueta de historia cuando corresponde y citan rutas concretas.
+
+## Phase 10: Convergence
+
+- [ ] T035 Completar y registrar los recorridos manuales pendientes: tiempos de SC-001, SC-002, SC-004, SC-006, SC-009 y SC-023; además, verificar teclado, foco, contraste y áreas táctiles según US6/AC6–8 y SC-028, corrigiendo los incumplimientos que se detecten (partial).
+- [ ] T036 Validar la sincronización real entre dos navegadores o perfiles, incluidos los escenarios de cambios locales/remotos y conflicto, y comprobar la transferencia de los datos según US5/AC2–7, FR-035 y SC-008; usar credenciales locales del usuario, sin compartir el token (partial).

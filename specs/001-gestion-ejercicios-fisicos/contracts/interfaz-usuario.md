@@ -1,5 +1,6 @@
 # Contrato de interfaz de usuario
 
+
 **Ámbito**: Interacción visible de la aplicación de gestión de ejercicios.  
 **Especificación normativa**: [spec.md](../spec.md), en especial FR-038–FR-078.  
 **Plan**: [plan.md](../plan.md).
@@ -29,6 +30,7 @@ Los anchos entre rangos y menores de 360 px siguen siendo utilizables. Ninguna v
 ### Buscar y ficha
 
 - El buscador y los filtros siguen disponibles al recorrer los resultados.
+- Los filtros de categoría se muestran en una sola fila horizontalmente desplazable, sin provocar desbordamiento horizontal de la página.
 - Con los datos cargados, una búsqueda por texto o categoría muestra los resultados en menos de 1 segundo (SC-031).
 - Cada resultado proporciona nombre, descripción, categorías e imagen cuando exista.
 - En escritorio, seleccionar un resultado muestra su ficha junto a la lista sin descartar los resultados ni los filtros. En móvil, abre la ficha.

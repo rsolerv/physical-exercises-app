@@ -26,6 +26,16 @@
   white-space: nowrap;
 }
 
+:host ::ng-deep .busqueda-ejercicios__categorias > .mdc-evolution-chip-set__chips {
+  flex-wrap: nowrap;
+  width: max-content;
+  min-width: 100%;
+}
+
+:host ::ng-deep .busqueda-ejercicios__categorias mat-chip-option {
+  min-height: 48px;
+}
+
 .busqueda-ejercicios__disposicion {
   min-width: 0;
 }

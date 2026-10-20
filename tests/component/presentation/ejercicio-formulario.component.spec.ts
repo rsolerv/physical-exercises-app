@@ -70,6 +70,18 @@ describe('EjercicioFormularioComponent', () => {
     expect(componente.formulario().valid()).toBe(true);
   });
 
+  it('ofrece áreas táctiles de 48 px para categorías y selectores del formulario', () => {
+    crearComponente();
+    const estilos = Array.from(document.querySelectorAll('style'), (estilo) => estilo.textContent ?? '').join('\n');
+
+    expect(
+      estilos.includes('.ejercicio-formulario mat-chip-option') && estilos.includes('min-height: 48px')
+    ).toBe(true);
+    expect(
+      estilos.includes('.ejercicio-formulario__tipo .mat-button-toggle-button') && estilos.includes('min-height: 48px')
+    ).toBe(true);
+  });
+
   it('rechaza un enlace con formato de URL inválido (FR-007) con un mensaje en español', () => {
     const fixture = crearComponente();
     const componente = fixture.componentInstance;

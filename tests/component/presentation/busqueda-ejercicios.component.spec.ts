@@ -115,6 +115,35 @@ describe('BusquedaEjerciciosComponent', () => {
     expect(raiz.querySelector<HTMLImageElement>('.busqueda-ejercicios__miniatura')?.src).toContain('peso.jpg');
   });
 
+  it('mantiene los filtros de categoría en una sola fila desplazable horizontalmente', async () => {
+    configurar({
+      ejercicios: [ejercicio('1', 'Sentadilla')],
+      categorias: [
+        categoria('cat-1', 'Abdomen'),
+        categoria('cat-2', 'Cadera'),
+        categoria('cat-3', 'Cervicales'),
+        categoria('cat-4', 'Glúteo'),
+        categoria('cat-5', 'Isquiotibiales'),
+        categoria('cat-6', 'Lumbar'),
+        categoria('cat-7', 'Rodilla'),
+        categoria('cat-8', 'Sin categoría'),
+      ],
+    });
+    const fixture = await crearComponente();
+    const raiz = fixture.nativeElement as HTMLElement;
+    const filtros = raiz.querySelector<HTMLElement>('.busqueda-ejercicios__categorias');
+    const estilos = Array.from(document.querySelectorAll('style'), (estilo) => estilo.textContent ?? '').join('\n');
+
+    expect(filtros).toBeTruthy();
+    expect(filtros && getComputedStyle(filtros).overflowX).toBe('auto');
+    expect(
+      estilos.includes('.mdc-evolution-chip-set__chips') && estilos.includes('flex-wrap: nowrap')
+    ).toBe(true);
+    expect(estilos.includes('.busqueda-ejercicios__categorias mat-chip-option') && estilos.includes('min-height: 48px')).toBe(
+      true
+    );
+  });
+
   it('incluye la opción Todas y permite abrir una ficha junto a los resultados en escritorio', async () => {
     const buscar = configurar({
       ejercicios: [ejercicio('1', 'Sentadilla')],

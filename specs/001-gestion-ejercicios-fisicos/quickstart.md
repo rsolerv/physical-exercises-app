@@ -34,7 +34,7 @@ Abre la URL que muestra `npm start`. El primer arranque debe cargar el catálogo
 ## US2 — Buscar y consultar
 
 1. Abre "Buscar" sin texto ni categorías seleccionadas. **Esperado**: aparece el catálogo completo.
-2. Busca por nombre y filtra por categoría. Comprueba el estado de carga con placeholders que anticipan el contenido, que el buscador y los filtros permanecen disponibles al recorrer resultados y que el texto largo no provoca desplazamiento horizontal.
+2. Busca por nombre y filtra por categoría. Comprueba el estado de carga con placeholders que anticipan el contenido, que el buscador permanece disponible al recorrer resultados, que los filtros de categoría forman una sola fila desplazable horizontalmente y que el texto largo no provoca desplazamiento horizontal de la página.
 3. En móvil, confirma que los resultados muestran nombre, descripción, categorías e imagen cuando existe; selecciona uno y comprueba que abre su ficha.
 4. En escritorio, selecciona resultados diferentes. **Esperado**: la ficha aparece junto a la lista y cambiar la selección no borra los criterios ni los resultados.
 5. En la ficha, vuelve a la búsqueda, edita y elimina un ejercicio. Comprueba el feedback de cada operación y que el borrado puede deshacerse mientras la notificación esté visible.

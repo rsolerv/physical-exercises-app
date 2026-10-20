@@ -70,6 +70,15 @@
   flex-shrink: 0;
 }
 
+:host ::ng-deep .ejercicio-formulario mat-chip-option,
+:host ::ng-deep .ejercicio-formulario__tipo mat-button-toggle {
+  min-height: 48px;
+}
+
+:host ::ng-deep .ejercicio-formulario__tipo .mat-button-toggle-button {
+  min-height: 48px;
+}
+
 .ejercicio-formulario__campo-anadir {
   flex: 1 1 220px;
   min-width: 0;
