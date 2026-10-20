@@ -20,6 +20,7 @@ describe('PlanificacionConstructorComponent', () => {
     idRuta?: string | null;
     planificacionExistente?: Planificacion | null;
     ejercicios?: Ejercicio[];
+    listarEjercicios?: () => Promise<Ejercicio[]>;
     crear?: ReturnType<typeof vi.fn>;
     actualizar?: ReturnType<typeof vi.fn>;
     duplicar?: ReturnType<typeof vi.fn>;
@@ -35,7 +36,10 @@ describe('PlanificacionConstructorComponent', () => {
           provide: PlanificacionRepositoryPort,
           useValue: { obtenerPorId: vi.fn().mockResolvedValue(opciones.planificacionExistente ?? null) },
         },
-        { provide: EjercicioRepositoryPort, useValue: { listarTodos: vi.fn().mockResolvedValue(opciones.ejercicios ?? []) } },
+        {
+          provide: EjercicioRepositoryPort,
+          useValue: { listarTodos: opciones.listarEjercicios ?? vi.fn().mockResolvedValue(opciones.ejercicios ?? []) },
+        },
         {
           provide: GestionarPlanificacionUseCase,
           useValue: {
@@ -123,6 +127,84 @@ describe('PlanificacionConstructorComponent', () => {
 
     expect(componente.modelo().nombre).toBe('Semana original');
     expect(componente.ejerciciosPorDia().lunes).toEqual(['ej-1']);
+  });
+
+  it('no muestra el identificador del ejercicio mientras se cargan sus nombres', async () => {
+    const idEjercicio = 'ejercicio-con-identificador-largo';
+    const dias = crearDiasVacios();
+    dias[0].ejercicioIds = [idEjercicio];
+    const planificacionExistente: Planificacion = {
+      id: 'plan-1',
+      nombre: 'Semana original',
+      fechaInicio: '2026-10-12',
+      dias,
+    };
+    let resolverEjercicios!: (ejercicios: Ejercicio[]) => void;
+    const ejerciciosPendientes = new Promise<Ejercicio[]>((resolve) => {
+      resolverEjercicios = resolve;
+    });
+    configurar({
+      idRuta: 'plan-1',
+      planificacionExistente,
+      listarEjercicios: () => ejerciciosPendientes,
+    });
+
+    const fixture = TestBed.createComponent(PlanificacionConstructorComponent);
+    fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    const textoDuranteLaCarga = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(textoDuranteLaCarga).toContain('Cargando ejercicios...');
+    expect(textoDuranteLaCarga).not.toContain(idEjercicio);
+
+    resolverEjercicios([ejercicio(idEjercicio, 'Sentadilla')]);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const textoTrasLaCarga = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(textoTrasLaCarga).toContain('Sentadilla');
+    expect(textoTrasLaCarga).not.toContain(idEjercicio);
+  });
+
+  it('muestra un texto alternativo si la planificación referencia un ejercicio no disponible', async () => {
+    const idEjercicio = 'ejercicio-no-disponible-123456';
+    const dias = crearDiasVacios();
+    dias[0].ejercicioIds = [idEjercicio];
+    const planificacionExistente: Planificacion = {
+      id: 'plan-1',
+      nombre: 'Semana original',
+      fechaInicio: '2026-10-12',
+      dias,
+    };
+    configurar({ idRuta: 'plan-1', planificacionExistente });
+
+    const fixture = await crearComponente();
+    const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
+
+    expect(texto).toContain('Ejercicio no disponible');
+    expect(texto).not.toContain(idEjercicio);
+  });
+
+  it('informa si no se pueden cargar los nombres de los ejercicios', async () => {
+    const dias = crearDiasVacios();
+    dias[0].ejercicioIds = ['ej-1'];
+    const planificacionExistente: Planificacion = {
+      id: 'plan-1',
+      nombre: 'Semana original',
+      fechaInicio: '2026-10-12',
+      dias,
+    };
+    configurar({
+      idRuta: 'plan-1',
+      planificacionExistente,
+      listarEjercicios: () => Promise.reject(new Error('Error de almacenamiento')),
+    });
+
+    const fixture = await crearComponente();
+    const error = (fixture.nativeElement as HTMLElement).querySelector('[role="alert"]');
+
+    expect(error?.textContent).toContain('No se han podido cargar los ejercicios');
   });
 
   it('crea una nueva planificación al guardar en modo alta', async () => {

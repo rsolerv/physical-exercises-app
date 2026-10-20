@@ -1,8 +1,6 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, resource, signal } from '@angular/core';
 import { form, required, FormField } from '@angular/forms/signals';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { from } from 'rxjs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -92,7 +90,13 @@ export class PlanificacionConstructorComponent {
   readonly guardando = signal(false);
   readonly errorAlGuardar = signal<string | null>(null);
 
-  readonly ejercicios = toSignal(from(this.ejercicioRepository.listarTodos()), { initialValue: [] as Ejercicio[] });
+  protected readonly recursoEjercicios = resource({
+    loader: () => this.ejercicioRepository.listarTodos(),
+  });
+
+  readonly ejercicios = computed(() =>
+    this.recursoEjercicios.hasValue() ? this.recursoEjercicios.value() : ([] as Ejercicio[])
+  );
 
   protected readonly nombresEjercicios = computed(() => new Map(this.ejercicios().map((e) => [e.id, e.nombre])));
 

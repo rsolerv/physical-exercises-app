@@ -34,6 +34,11 @@
 
   <section class="planificacion-constructor__seccion">
     <h3>Ejercicios por día</h3>
+    @if (recursoEjercicios.isLoading()) {
+      <p role="status">Cargando ejercicios...</p>
+    } @else if (recursoEjercicios.error()) {
+      <p role="alert">No se han podido cargar los ejercicios. No puedes ver sus nombres ni añadirlos ahora.</p>
+    }
     @if (errorDia()) {
       <mat-error>{{ errorDia() }}</mat-error>
     }
@@ -42,18 +47,24 @@
         <div class="planificacion-constructor__dia">
           <h4>{{ etiquetasDia[dia] }}</h4>
           <mat-chip-set>
-            @for (ejercicioId of ejerciciosPorDia()[dia]; track ejercicioId) {
-              <mat-chip (removed)="quitarEjercicioDeDia(dia, ejercicioId)">
-                {{ nombresEjercicios().get(ejercicioId) ?? ejercicioId }}
-                <button matChipRemove type="button" aria-label="Quitar ejercicio">
-                  <mat-icon>cancel</mat-icon>
-                </button>
-              </mat-chip>
+            @if (recursoEjercicios.hasValue()) {
+              @for (ejercicioId of ejerciciosPorDia()[dia]; track ejercicioId) {
+                <mat-chip (removed)="quitarEjercicioDeDia(dia, ejercicioId)">
+                  {{ nombresEjercicios().get(ejercicioId) ?? 'Ejercicio no disponible' }}
+                  <button matChipRemove type="button" aria-label="Quitar ejercicio">
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                </mat-chip>
+              }
             }
           </mat-chip-set>
           <mat-form-field appearance="outline" class="planificacion-constructor__selector">
             <mat-label>Añadir ejercicio</mat-label>
-            <mat-select #selector (selectionChange)="anadirEjercicioADia(dia, selector.value); selector.value = null">
+            <mat-select
+              #selector
+              [disabled]="!recursoEjercicios.hasValue()"
+              (selectionChange)="anadirEjercicioADia(dia, selector.value); selector.value = null"
+            >
               @for (ejercicio of ejercicios(); track ejercicio.id) {
                 <mat-option [value]="ejercicio.id">{{ ejercicio.nombre }}</mat-option>
               }
