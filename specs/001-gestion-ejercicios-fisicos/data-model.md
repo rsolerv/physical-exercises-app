@@ -1,5 +1,6 @@
 # Data Model: Gestión de Ejercicios Físicos y Planificación Semanal
 
+
 **Feature**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md) | **Fecha**: 2026-10-15
 
 Este modelo recoge las entidades descritas en la sección "Key Entities" del spec, junto con los campos, relaciones y reglas de validación que se derivan de los requisitos funcionales (FR), reglas de negocio y casos límite. Todos los nombres de campo se dan en español, en línea con el Principio I de la constitución (el modelo de dominio no es texto de interfaz, pero se mantiene el mismo idioma por coherencia y porque algunos de estos nombres pueden aparecer en mensajes de validación mostrados al usuario).

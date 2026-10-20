@@ -117,3 +117,7 @@ Completar US1: publicar las dos acciones directas, retirar la pantalla de listad
 - Los marcadores `[P]` indican archivos independientes que pueden trabajarse en paralelo, una vez completadas las dependencias indicadas.
 - Los tests deben preceder a la implementación; las pruebas de regresión de Buscar no autorizan cambios en `src/app/presentation/busqueda-ejercicios/`.
 - La ruta `/ejercicios` es solo una redirección de compatibilidad; no se conserva como pantalla ni como opción de navegación.
+
+## Phase 7: Convergence
+
+- [X] T013 Corregir el desbordamiento horizontal de la cabecera del shell entre 320 y 359 px y añadir una prueba de regresión, sin modificar la implementación de Buscar, conforme a SC-011 (partial).

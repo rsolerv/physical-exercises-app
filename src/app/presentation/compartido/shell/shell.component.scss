@@ -36,6 +36,14 @@
   min-height: 48px;
 }
 
+.shell__barra-superior > span {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 // Diseño responsive: el menú lateral se oculta por defecto en pantallas
 // estrechas (móvil) y se abre bajo demanda con el botón de la barra superior
 // (Principio IV de la constitución); el estado inicial lo calcula

@@ -1,5 +1,7 @@
 # Contrato: AjustesRepositoryPort
 
+
+
 **Capa que lo define**: Application (puerto) · **Capa que lo implementa**: Infrastructure (adaptador SQLite WASM)
 
 Puerto de soporte técnico (no es una entidad de negocio del spec) para los ajustes descritos en `data-model.md` → "Ajustes de aplicación".

@@ -172,6 +172,27 @@ describe('ShellComponent (navegación)', () => {
     expect(fixture.componentInstance.menuAbierto()).toBe(true);
   });
 
+  it.each([320, 359])('permite que el título de la cabecera se ajuste a %i px (SC-011)', (ancho) => {
+    simularAnchoViewport(ancho);
+    const fixture = TestBed.createComponent(ShellComponent);
+    fixture.detectChanges();
+
+    const titulo = fixture.nativeElement.querySelector('.shell__barra-superior > span') as HTMLSpanElement | null;
+    expect(titulo).not.toBeNull();
+    if (!titulo) throw new Error('No se ha renderizado el título de la cabecera.');
+
+    document.body.appendChild(fixture.nativeElement);
+    try {
+      const estilos = window.getComputedStyle(titulo);
+      expect(estilos.minWidth).toBe('0px');
+      expect(estilos.overflow).toBe('hidden');
+      expect(estilos.textOverflow).toBe('ellipsis');
+      expect(estilos.whiteSpace).toBe('nowrap');
+    } finally {
+      fixture.nativeElement.remove();
+    }
+  });
+
   it('cierra el menú superpuesto después de elegir una sección (FR-047)', async () => {
     simularAnchoViewport(599);
     const fixture = TestBed.createComponent(ShellComponent);
