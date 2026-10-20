@@ -64,6 +64,8 @@ export class CalendarioSemanalComponent {
 
   private readonly nombresPorId = computed(() => new Map((this.recursoEjercicios.value() ?? []).map((e) => [e.id, e.nombre])));
 
+  protected readonly cargando = computed(() => this.recursoPlanificaciones.isLoading() || this.recursoEjercicios.isLoading());
+
   readonly seleccionada = signal<Planificacion | null>(null);
 
   protected readonly planificacionMostrada = computed(() => {
@@ -78,7 +80,7 @@ export class CalendarioSemanalComponent {
   }
 
   protected nombreEjercicio(ejercicioId: string): string {
-    return this.nombresPorId().get(ejercicioId) ?? ejercicioId;
+    return this.nombresPorId().get(ejercicioId) ?? 'Ejercicio no disponible';
   }
 
   protected obtenerDia(planificacion: Planificacion, dia: (typeof DIAS_SEMANA_ORDENADOS)[number]) {
