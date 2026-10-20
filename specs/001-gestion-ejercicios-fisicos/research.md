@@ -2,6 +2,12 @@
 
 
 
+
+
+
+
+
+
 **Feature**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md) | **Fecha**: 2026-10-15
 
 Este documento no parte de ningún `NEEDS CLARIFICATION` pendiente (la fase de especificación y de clarificación ya resolvieron las ambigüedades funcionales). Documenta en su lugar las decisiones técnicas necesarias para pasar de la especificación al diseño, derivadas de: (a) la instrucción explícita del usuario para esta planificación, y (b) la constitución del proyecto.
@@ -14,7 +20,7 @@ Este documento no parte de ningún `NEEDS CLARIFICATION` pendiente (la fase de e
 
 ## 2. Signals y change detection zoneless
 
-- **Decision**: Signals (`signal()`, `computed()`, `effect()`, `input()`/`output()` basados en signals) como primitiva de estado por defecto en Domain, Application y Presentation. Change detection zoneless mediante `provideZonelessChangeDetection()` en el bootstrap de la aplicación, sin incluir `zone.js` como polyfill.
+- **Decision**: Signals (`signal()`, `computed()`, `effect()`, `input()`/`output()` basados en signals) como primitiva de estado por defecto en Domain, Application y Presentation. Change detection zoneless mediante `provideZonelessChangeDetection()` en el bootstrap de la aplicación, sin incluir `zone.js` como polyfill. Usar `resource` de Angular en la medida de lo posible para obtener datos de Promises de la capa infraestructura.
 - **Rationale**: Instrucción explícita del usuario. Zoneless es estable desde Angular v20.2 (ya no es experimental), por lo que es una elección de producción razonable para una SPA sin backend publicada en GitHub Pages, donde reducir el peso del bundle y mejorar el rendimiento percibido es directamente relevante para los criterios de éxito SC-002/SC-003 del spec.
 - **Alternatives considered**: Change detection basado en `zone.js` (comportamiento histórico por defecto) — rechazado por instrucción explícita del usuario y por ser la vía que Angular está dejando de recomendar.
 

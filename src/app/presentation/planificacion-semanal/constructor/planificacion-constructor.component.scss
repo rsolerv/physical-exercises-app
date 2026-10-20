@@ -17,6 +17,10 @@
   }
 }
 
+.planificacion-constructor__seccion mat-form-field + mat-form-field {
+  margin-top: $espaciado-2;
+}
+
 .planificacion-constructor__dias {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -36,3 +40,5 @@
 .planificacion-constructor__selector {
   width: 100%;
 }
+
+

@@ -1,6 +1,7 @@
 # Quickstart: Validación de Gestión de Ejercicios Físicos y Planificación Semanal
 
 
+
 **Feature**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md) | **Modelo de datos**: [data-model.md](./data-model.md)
 
 Esta guía permite validar manualmente, navegando por la interfaz de la aplicación (sin leer código, logs ni la base SQLite), que cada historia de usuario del spec funciona de extremo a extremo. Está pensada para que la siga una persona sin conocimientos de programación, tal como exige el Principio III de la constitución.

@@ -12,3 +12,8 @@ El proyecto utiliza el modelo Living Spec.
 ## Instrucciones
 
 Aplica a todas las features las instrucciones que contenga la carpeta `.github/instructions` si es posible.
+
+## Decisiones comunes entre specs
+
+- Todos los specs, plan y tasks deben usar los prerequisitos técnicos indicados en el documento `specs/001-gestion-ejercicios-fisicos/research.md`
+- Actualizar este documento con las decisiones de diseño transversales encontrados en las feature, referenciando la feature donde se tomó la decisión.
