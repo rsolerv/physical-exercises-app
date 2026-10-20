@@ -3,7 +3,7 @@
 // escritorio 1280px en adelante.
 
 @mixin movil {
-  @media (max-width: 599px) {
+  @media (max-width: 599.99px) {
     @content;
   }
 }

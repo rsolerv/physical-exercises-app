@@ -14,11 +14,11 @@ import { ProgresoDiarioRepositoryPort } from '../../../src/app/application/ports
 import { AjustesRepositoryPort } from '../../../src/app/application/ports/ajustes-repository.port';
 import { GitHubSyncPort } from '../../../src/app/application/ports/github-sync.port';
 
-function simularMatchMedia(esMovil: boolean): void {
+function simularAnchoViewport(ancho: number): void {
   vi.stubGlobal(
     'matchMedia',
     vi.fn().mockImplementation((query: string) => ({
-      matches: query === '(max-width: 599px)' ? esMovil : !esMovil,
+      matches: query === '(max-width: 599.99px)' ? ancho <= 599 : ancho > 599,
       media: query,
       addListener: vi.fn(),
       removeListener: vi.fn(),
@@ -106,7 +106,7 @@ describe('ShellComponent (navegación)', () => {
   });
 
   it('el menú lateral está cerrado por defecto en viewport móvil (FR-010)', () => {
-    simularMatchMedia(true);
+    simularAnchoViewport(599);
     const fixture = TestBed.createComponent(ShellComponent);
     fixture.detectChanges();
 
@@ -114,7 +114,7 @@ describe('ShellComponent (navegación)', () => {
   });
 
   it('el menú lateral está abierto por defecto en viewport de escritorio (FR-010)', () => {
-    simularMatchMedia(false);
+    simularAnchoViewport(600);
     const fixture = TestBed.createComponent(ShellComponent);
     fixture.detectChanges();
 
@@ -122,7 +122,7 @@ describe('ShellComponent (navegación)', () => {
   });
 
   it('la entrada de menú de la ruta activa lleva un indicador adicional más allá de font-weight (aria-current)', async () => {
-    simularMatchMedia(false);
+    simularAnchoViewport(600);
     const harness = await RouterTestingHarness.create();
     const fixtureShell = TestBed.createComponent(ShellComponent);
     fixtureShell.detectChanges();
@@ -136,23 +136,23 @@ describe('ShellComponent (navegación)', () => {
   });
 
   it('usa una superposición en móvil hasta 599 px y un panel lateral desde 600 px (FR-047)', () => {
-    simularMatchMedia(true);
+    simularAnchoViewport(599);
     const fixtureMovil = TestBed.createComponent(ShellComponent);
     fixtureMovil.detectChanges();
     expect(fixtureMovil.componentInstance.menuLateral()?.mode).toBe('over');
 
-    simularMatchMedia(false);
+    simularAnchoViewport(600);
     const fixtureEscritorio = TestBed.createComponent(ShellComponent);
     fixtureEscritorio.detectChanges();
     expect(fixtureEscritorio.componentInstance.menuLateral()?.mode).toBe('side');
   });
 
   it('adapta el modo al cambiar el ancho de ventana entre móvil y escritorio (FR-026)', () => {
-    let esMovil = true;
+    let ancho = 599;
     vi.stubGlobal(
       'matchMedia',
       vi.fn().mockImplementation((query: string) => ({
-        matches: query === '(max-width: 599px)' ? esMovil : !esMovil,
+        matches: query === '(max-width: 599.99px)' ? ancho <= 599 : ancho > 599,
         media: query,
         addListener: vi.fn(),
         removeListener: vi.fn(),
@@ -164,7 +164,7 @@ describe('ShellComponent (navegación)', () => {
     fixture.detectChanges();
     expect(fixture.componentInstance.menuLateral()?.mode).toBe('over');
 
-    esMovil = false;
+    ancho = 600;
     window.dispatchEvent(new Event('resize'));
     fixture.detectChanges();
 
@@ -173,7 +173,7 @@ describe('ShellComponent (navegación)', () => {
   });
 
   it('cierra el menú superpuesto después de elegir una sección (FR-047)', async () => {
-    simularMatchMedia(true);
+    simularAnchoViewport(599);
     const fixture = TestBed.createComponent(ShellComponent);
     fixture.detectChanges();
     const sidenav = fixture.componentInstance.menuLateral();

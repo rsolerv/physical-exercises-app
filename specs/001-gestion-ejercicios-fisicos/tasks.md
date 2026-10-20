@@ -21,7 +21,7 @@ description: "Tareas acotadas para retirar Mis ejercicios y centralizar el catá
 
 **Purpose**: Verificar primero el comportamiento compartido del menú móvil antes de ampliar las entradas de navegación.
 
-- [ ] T001 [P] Ampliar las pruebas de `tests/component/presentation/shell.component.spec.ts` para comprobar overlay hasta 599 px, cierre al seleccionar una sección, adaptación de modo al cambiar de ancho y menú utilizable sin comprimir el contenido; conservar la verificación del modo lateral en escritorio (FR-047).
+- [X] T001 [P] Ampliar las pruebas de `tests/component/presentation/shell.component.spec.ts` para comprobar overlay hasta 599 px, cierre al seleccionar una sección, adaptación de modo al cambiar de ancho y menú utilizable sin comprimir el contenido; conservar la verificación del modo lateral en escritorio (FR-047).
 
 ## Phase 3: User Story 1 - Gestionar ejercicios y categorías desde el menú (Priority: P1)
 
@@ -33,15 +33,15 @@ description: "Tareas acotadas para retirar Mis ejercicios y centralizar el catá
 
 > Escribir y ejecutar estas pruebas primero; comprobar que las nuevas expectativas fallan antes de aplicar los cambios de implementación.
 
-- [ ] T002 [P] [US1] Actualizar las pruebas de integración para comprobar las seis entradas exactas del menú, el acceso directo a alta y categorías, la ausencia de “Mis ejercicios” y la redirección de `/ejercicios` a `/buscar`, conservando las rutas anidadas, en `tests/component/presentation/shell-biblioteca.integration.spec.ts`.
-- [ ] T003 [P] [US1] Cambiar la prueba de eliminación de la ficha para esperar que la navegación finalice en `/buscar`, conservando la comprobación de feedback de éxito y la de que un error no navega, en `tests/component/presentation/ejercicio-ficha.component.spec.ts`.
+- [X] T002 [P] [US1] Actualizar las pruebas de integración para comprobar las seis entradas exactas del menú, el acceso directo a alta y categorías, la ausencia de “Mis ejercicios” y la redirección de `/ejercicios` a `/buscar`, conservando las rutas anidadas, en `tests/component/presentation/shell-biblioteca.integration.spec.ts`.
+- [X] T003 [P] [US1] Cambiar la prueba de eliminación de la ficha para esperar que la navegación finalice en `/buscar`, conservando la comprobación de feedback de éxito y la de que un error no navega, en `tests/component/presentation/ejercicio-ficha.component.spec.ts`.
 
 ### Implementation for User Story 1
 
-- [ ] T004 [P] [US1] Retirar la entrada “Mis ejercicios” y añadir “Nuevo ejercicio” (`/ejercicios/nuevo`) y “Gestionar categorías” (`/ejercicios/categorias`) a `MENU_PRINCIPAL` en `src/app/presentation/compartido/shell/menu-principal.ts` (depende de T001 y T002).
-- [ ] T005 [P] [US1] Eliminar el import y la ruta de componente del listado; sustituir la ruta exacta `/ejercicios` por una redirección a `/buscar` y conservar las rutas anidadas existentes en `src/app/app.routes.ts` (depende de T002).
-- [ ] T006 [P] [US1] Navegar a `/buscar` tras una eliminación correcta, en lugar de volver a la ruta antigua de biblioteca, en `src/app/presentation/biblioteca-ejercicios/ejercicio-ficha.component.ts` (depende de T003).
-- [ ] T007 [P] [US1] Eliminar el componente y los estilos exclusivos del listado retirado junto con su prueba dedicada en `src/app/presentation/biblioteca-ejercicios/biblioteca-listado.component.ts`, `src/app/presentation/biblioteca-ejercicios/biblioteca-listado.component.html`, `src/app/presentation/biblioteca-ejercicios/biblioteca-listado.component.scss` y `tests/component/presentation/biblioteca-listado.component.spec.ts`; conservar las pruebas de formularios, ficha y categorías (depende de T005).
+- [X] T004 [P] [US1] Retirar la entrada “Mis ejercicios” y añadir “Nuevo ejercicio” (`/ejercicios/nuevo`) y “Gestionar categorías” (`/ejercicios/categorias`) a `MENU_PRINCIPAL` en `src/app/presentation/compartido/shell/menu-principal.ts` (depende de T001 y T002).
+- [X] T005 [P] [US1] Eliminar el import y la ruta de componente del listado; sustituir la ruta exacta `/ejercicios` por una redirección a `/buscar` y conservar las rutas anidadas existentes en `src/app/app.routes.ts` (depende de T002).
+- [X] T006 [P] [US1] Navegar a `/buscar` tras una eliminación correcta, en lugar de volver a la ruta antigua de biblioteca, en `src/app/presentation/biblioteca-ejercicios/ejercicio-ficha.component.ts` (depende de T003).
+- [X] T007 [P] [US1] Eliminar el componente y los estilos exclusivos del listado retirado junto con su prueba dedicada en `src/app/presentation/biblioteca-ejercicios/biblioteca-listado.component.ts`, `src/app/presentation/biblioteca-ejercicios/biblioteca-listado.component.html`, `src/app/presentation/biblioteca-ejercicios/biblioteca-listado.component.scss` y `tests/component/presentation/biblioteca-listado.component.spec.ts`; conservar las pruebas de formularios, ficha y categorías (depende de T005).
 
 **Checkpoint**: Las entradas nuevas llegan a sus pantallas; `/ejercicios` redirige a “Buscar”; el detalle, la edición, la creación, las categorías y el borrado siguen disponibles; no queda una pantalla de listado ni una entrada “Mis ejercicios”.
 
@@ -51,7 +51,7 @@ description: "Tareas acotadas para retirar Mis ejercicios y centralizar el catá
 
 **Independent Test**: En móvil hasta 599 px, comprobar el menú superpuesto de ancho completo y el cierre tras seleccionar una sección, “Nuevo ejercicio” o “Gestionar categorías”. En tablet y escritorio, comprobar que las mismas seis opciones siguen disponibles y que el contenido no se comprime ni solapa.
 
-- [ ] T008 [US6] Completar la comprobación manual de FR-047 y SC-021 descrita en `specs/001-gestion-ejercicios-fisicos/quickstart.md` a 599 px o menos, 768 px, 1024 px y 1280 px o más; confirmar el cierre del menú tras elegir las dos acciones nuevas (depende de T004, T005 y T007).
+- [X] T008 [US6] Completar la comprobación manual de FR-047 y SC-021 descrita en `specs/001-gestion-ejercicios-fisicos/quickstart.md` a 599 px o menos, 768 px, 1024 px y 1280 px o más; confirmar el cierre del menú tras elegir las dos acciones nuevas (depende de T004, T005 y T007).
 
 **Checkpoint**: El menú móvil ocupa todo el ancho sin comprimir el contenido y se cierra al elegir secciones y acciones; “Mis ejercicios” no aparece en móvil, tablet ni escritorio.
 
@@ -65,9 +65,9 @@ description: "Tareas acotadas para retirar Mis ejercicios y centralizar el catá
 
 > Añadir cobertura de regresión. Los cambios de esta historia se limitan a pruebas y validación manual; no se editará el código de la pantalla Buscar.
 
-- [ ] T009 [P] [US2] Añadir una prueba que confirme que, sin filtros, la búsqueda muestra todos los ejercicios disponibles, incluidos los predefinidos y los creados por el usuario, en `tests/component/presentation/busqueda-ejercicios.component.spec.ts`.
-- [ ] T010 [P] [US2] Ampliar la prueba de integración para navegar desde un resultado de “Buscar” a su ficha y comprobar que allí siguen disponibles las acciones “Editar” y “Eliminar”, en `tests/component/presentation/shell-busqueda.integration.spec.ts`.
-- [ ] T011 [US2] Completar la comprobación visual de FR-039 descrita en `specs/001-gestion-ejercicios-fisicos/quickstart.md`: resultados diferenciados, texto legible y ajustado, scroll vertical y ausencia de scroll horizontal en móvil y escritorio; no modificar `src/app/presentation/busqueda-ejercicios/`.
+- [X] T009 [P] [US2] Añadir una prueba que confirme que, sin filtros, la búsqueda muestra todos los ejercicios disponibles, incluidos los predefinidos y los creados por el usuario, en `tests/component/presentation/busqueda-ejercicios.component.spec.ts`.
+- [X] T010 [P] [US2] Ampliar la prueba de integración para navegar desde un resultado de “Buscar” a su ficha y comprobar que allí siguen disponibles las acciones “Editar” y “Eliminar”, en `tests/component/presentation/shell-busqueda.integration.spec.ts`.
+- [X] T011 [US2] Completar la comprobación visual de FR-039 descrita en `specs/001-gestion-ejercicios-fisicos/quickstart.md`: resultados diferenciados, texto legible y ajustado, scroll vertical y ausencia de scroll horizontal en móvil y escritorio; no modificar `src/app/presentation/busqueda-ejercicios/`.
 
 **Checkpoint**: La búsqueda sin filtros presenta todo el catálogo; los filtros conservan su comportamiento; cada resultado permite llegar a las acciones existentes de la ficha y la lista cumple la comprobación visual FR-039.
 
@@ -75,7 +75,7 @@ description: "Tareas acotadas para retirar Mis ejercicios y centralizar el catá
 
 **Purpose**: Confirmar que el cambio no afecta otras rutas ni funciones y ejecutar las comprobaciones existentes.
 
-- [ ] T012 Ejecutar las pruebas Vitest de `tests/component/presentation/shell-biblioteca.integration.spec.ts`, `tests/component/presentation/ejercicio-ficha.component.spec.ts`, `tests/component/presentation/shell.component.spec.ts`, `tests/component/presentation/busqueda-ejercicios.component.spec.ts`, `tests/component/presentation/shell-busqueda.integration.spec.ts`, `tests/component/presentation/ejercicio-formulario.component.spec.ts` y `tests/component/presentation/categoria-gestion.component.spec.ts`; ejecutar también `npm run lint` y `npm run build` según `package.json`, y completar los recorridos pertinentes de `specs/001-gestion-ejercicios-fisicos/quickstart.md`.
+- [X] T012 Ejecutar las pruebas Vitest de `tests/component/presentation/shell-biblioteca.integration.spec.ts`, `tests/component/presentation/ejercicio-ficha.component.spec.ts`, `tests/component/presentation/shell.component.spec.ts`, `tests/component/presentation/busqueda-ejercicios.component.spec.ts`, `tests/component/presentation/shell-busqueda.integration.spec.ts`, `tests/component/presentation/ejercicio-formulario.component.spec.ts` y `tests/component/presentation/categoria-gestion.component.spec.ts`; ejecutar también `npm run lint` y `npm run build` según `package.json`, y completar los recorridos pertinentes de `specs/001-gestion-ejercicios-fisicos/quickstart.md`.
 
 ## Dependencies & Execution Order
 

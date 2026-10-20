@@ -29,7 +29,7 @@ export class ShellComponent {
   private calcularSiEsMovil(): boolean {
     if (typeof window === 'undefined') return false;
     if (typeof window.matchMedia === 'function') {
-      return window.matchMedia('(max-width: 599px)').matches;
+      return window.matchMedia('(max-width: 599.99px)').matches;
     }
     return window.innerWidth <= 599;
   }
