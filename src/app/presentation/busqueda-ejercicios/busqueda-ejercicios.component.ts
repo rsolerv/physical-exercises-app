@@ -1,4 +1,4 @@
-import { Component, HostListener, computed, inject, resource, signal } from '@angular/core';
+import { Component, computed, inject, resource, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { from } from 'rxjs';
 import { RouterLink } from '@angular/router';
@@ -47,8 +47,6 @@ export class BusquedaEjerciciosComponent {
 
   readonly texto = signal('');
   readonly categoriaIdsSeleccionadas = signal<string[]>([]);
-  readonly esEscritorio = signal(esPantallaEscritorio());
-  readonly ejercicioSeleccionadoId = signal<string | null>(null);
 
   readonly categorias = toSignal(from(this.categoriaRepository.listarTodas()), { initialValue: [] as Categoria[] });
   readonly errorCarga = computed(() => {
@@ -56,9 +54,6 @@ export class BusquedaEjerciciosComponent {
     if (!error) return null;
     return error instanceof Error ? error.message : 'No se han podido cargar los ejercicios.';
   });
-  readonly ejercicioSeleccionado = computed(
-    () => this.recursoResultados.value()?.find((ejercicio) => ejercicio.id === this.ejercicioSeleccionadoId()) ?? null
-  );
 
   protected readonly recursoTotalEjercicios = resource({
     loader: () => this.ejercicioRepository.listarTodos(),
@@ -68,15 +63,6 @@ export class BusquedaEjerciciosComponent {
     params: () => ({ texto: this.texto(), categoriaIds: this.categoriaIdsSeleccionadas() }),
     loader: ({ params }) => this.buscarEjercicios.buscar(params.texto, params.categoriaIds),
   });
-
-  constructor() {
-    this.actualizarAncho();
-  }
-
-  @HostListener('window:resize')
-  actualizarAncho(): void {
-    this.esEscritorio.set(esPantallaEscritorio());
-  }
 
   limpiarCategorias(): void {
     this.categoriaIdsSeleccionadas.set([]);
@@ -88,18 +74,8 @@ export class BusquedaEjerciciosComponent {
     );
   }
 
-  seleccionarEjercicio(evento: MouseEvent, ejercicioId: string): void {
-    this.ejercicioSeleccionadoId.set(ejercicioId);
-    if (this.esEscritorio()) evento.preventDefault();
-  }
-
   nombresCategorias(ejercicio: Ejercicio): string[] {
     const nombresPorId = new Map(this.categorias().map((categoria) => [categoria.id, categoria.nombre]));
     return ejercicio.categoriaIds.map((id) => nombresPorId.get(id) ?? 'Sin categoría');
   }
-
-}
-
-function esPantallaEscritorio(): boolean {
-  return typeof window !== 'undefined' && window.matchMedia?.('(min-width: 1280px)').matches === true;
 }

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { BusquedaEjerciciosComponent } from '../../../src/app/presentation/busqueda-ejercicios/busqueda-ejercicios.component';
 import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejercicio-repository.port';
@@ -24,7 +24,7 @@ describe('BusquedaEjerciciosComponent', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideRouter([]),
+        provideRouter([{ path: 'ejercicios/:id', children: [] }]),
         provideNoopAnimations(),
         { provide: EjercicioRepositoryPort, useValue: { listarTodos: vi.fn().mockResolvedValue(opciones.ejercicios) } },
         { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue(opciones.categorias) } },
@@ -98,11 +98,9 @@ describe('BusquedaEjerciciosComponent', () => {
     expect(buscar).toHaveBeenCalledWith('', []);
   });
 
-  it('muestra categorías y miniaturas en los resultados y fija los filtros al recorrer la lista', async () => {
-    const ejercicioConMedios = ejercicio('ej-media', 'Peso muerto');
-    ejercicioConMedios.imagenes = [{ id: 'img-1', tipo: 'url', valorUrl: 'https://example.com/peso.jpg' }];
+  it('muestra categorías en los resultados y fija los filtros al recorrer la lista', async () => {
     configurar({
-      ejercicios: [ejercicioConMedios],
+      ejercicios: [ejercicio('ej-media', 'Peso muerto')],
       categorias: [categoria('cat-1', 'Fuerza')],
     });
     const fixture = await crearComponente();
@@ -112,7 +110,6 @@ describe('BusquedaEjerciciosComponent', () => {
     expect(filtros).toBeTruthy();
     expect(filtros && getComputedStyle(filtros).position).toBe('sticky');
     expect(raiz.querySelector('.busqueda-ejercicios__tarjeta')?.textContent).toContain('Fuerza');
-    expect(raiz.querySelector<HTMLImageElement>('.busqueda-ejercicios__miniatura')?.src).toContain('peso.jpg');
   });
 
   it('mantiene los filtros de categoría en una sola fila desplazable horizontalmente', async () => {
@@ -144,28 +141,28 @@ describe('BusquedaEjerciciosComponent', () => {
     );
   });
 
-  it('incluye la opción Todas y permite abrir una ficha junto a los resultados en escritorio', async () => {
+  it('incluye la opción Todas y permite abrir una ficha desde los resultados en escritorio', async () => {
     const buscar = configurar({
       ejercicios: [ejercicio('1', 'Sentadilla')],
       categorias: [categoria('cat-1', 'Piernas')],
     });
     const fixture = await crearComponente();
     const componente = fixture.componentInstance;
-    componente.esEscritorio.set(true);
     componente.categoriaIdsSeleccionadas.set(['cat-1']);
     await fixture.whenStable();
     fixture.detectChanges();
 
     expect((fixture.nativeElement as HTMLElement).querySelector('[data-todas-categorias]')).toBeTruthy();
-    const evento = new MouseEvent('click', { cancelable: true });
-    componente.seleccionarEjercicio(evento, '1');
-    fixture.detectChanges();
+    const enlace = (fixture.nativeElement as HTMLElement).querySelector<HTMLAnchorElement>(
+      '.busqueda-ejercicios__tarjeta'
+    );
+    expect(enlace?.getAttribute('href')).toBe('/ejercicios/1');
+    enlace?.click();
+    await fixture.whenStable();
 
-    expect(evento.defaultPrevented).toBe(true);
-    expect((fixture.nativeElement as HTMLElement).querySelector('.busqueda-ejercicios__detalle')?.textContent)
-      .toContain('Sentadilla');
+    expect(TestBed.inject(Router).url).toBe('/ejercicios/1');
     expect(componente.categoriaIdsSeleccionadas()).toEqual(['cat-1']);
-    expect(buscar).toHaveBeenCalledWith('', []);
+    expect(buscar).toHaveBeenCalledWith('', ['cat-1']);
   });
 
   it('expone un estado accesible mientras carga resultados', () => {
@@ -173,7 +170,7 @@ describe('BusquedaEjerciciosComponent', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideRouter([]),
+        provideRouter([{ path: 'ejercicios/:id', children: [] }]),
         provideNoopAnimations(),
         { provide: EjercicioRepositoryPort, useValue: { listarTodos: () => new Promise<Ejercicio[]>((resolve) => (resolver = resolve)) } },
         { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue([]) } },

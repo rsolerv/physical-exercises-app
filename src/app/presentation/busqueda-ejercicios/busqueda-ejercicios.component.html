@@ -45,8 +45,6 @@
             mat-list-item
             class="busqueda-ejercicios__tarjeta"
             [routerLink]="['/ejercicios', ejercicio.id]"
-            [attr.aria-current]="ejercicioSeleccionadoId() === ejercicio.id ? 'true' : null"
-            (click)="seleccionarEjercicio($event, ejercicio.id)"
           >
             <span matListItemTitle>{{ ejercicio.nombre }}</span>
             <span matListItemLine class="busqueda-ejercicios__descripcion">{{ ejercicio.descripcion }}</span>
