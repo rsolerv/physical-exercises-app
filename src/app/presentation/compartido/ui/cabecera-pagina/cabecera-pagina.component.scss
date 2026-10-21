@@ -7,6 +7,10 @@
   gap: $espaciado-2;
   padding: $espaciado-4 0;
 
+  @include movil {
+    padding: $espaciado-2 0;
+  }
+
   @include tablet {
     flex-direction: row;
     align-items: center;

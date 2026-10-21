@@ -6,6 +6,10 @@
   flex-wrap: wrap;
   align-items: center;
   gap: $espaciado-2;
+
+  @include movil {
+    margin-top: $espaciado-2;
+  }
 }
 
 .calendario-semanal__selector-plan {

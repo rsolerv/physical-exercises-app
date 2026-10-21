@@ -5,6 +5,10 @@
   display: flex;
   flex-direction: column;
   gap: $espaciado-3;
+
+  @include movil {
+    gap: 0;
+  }
 }
 
 .categoria-gestion__carga {
@@ -16,6 +20,8 @@
 
 .categoria-gestion__item {
   min-height: 72px;
+
+
 
   @include tablet {
     max-width: 480px;

@@ -112,3 +112,11 @@
     --contenido-padding: 32px;
   }
 }
+
+@include movil {
+  .busqueda-ejercicios__filtros {
+    margin: inherit;
+  }
+}
+
+
