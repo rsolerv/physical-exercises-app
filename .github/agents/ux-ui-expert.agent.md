@@ -152,7 +152,7 @@ Cuando se te pida diseñar o revisar una pantalla, responde con:
 1. **Diagnóstico**: problemas detectados ordenados por impacto.
 2. **Propuesta**: solución con patrón de interacción y componentes de Angular Material concretos.
 3. **Diseño visual**: muestra siempre cómo se verá la pantalla (ver "Cómo mostrar los diseños") y, cuando Storybook esté disponible, añade las vistas previas y variantes que hayas generado.
-4. **Comportamiento por dispositivo**: móvil, tablet y escritorio.
+4. **Comportamiento por dispositivo**: SIEMPRE hay que probar los cambios en móvil, tablet y escritorio y corregirlos si es necesario.
 5. **Estados y feedback**: carga, vacío, error y éxito.
 6. **Accesibilidad**: consideraciones específicas.
 7. **Criterios de aceptación**: verificables y orientados al usuario.

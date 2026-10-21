@@ -98,10 +98,6 @@ export class BusquedaEjerciciosComponent {
     return ejercicio.categoriaIds.map((id) => nombresPorId.get(id) ?? 'Sin categoría');
   }
 
-  imagenSrc(imagen: ImagenEjercicio): string {
-    if (imagen.tipo === 'url') return imagen.valorUrl ?? '';
-    return `data:${imagen.tipoMime ?? 'application/octet-stream'};base64,${imagen.contenidoBase64 ?? ''}`;
-  }
 }
 
 function esPantallaEscritorio(): boolean {

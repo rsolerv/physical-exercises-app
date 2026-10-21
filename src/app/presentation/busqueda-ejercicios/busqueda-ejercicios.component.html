@@ -48,41 +48,17 @@
             [attr.aria-current]="ejercicioSeleccionadoId() === ejercicio.id ? 'true' : null"
             (click)="seleccionarEjercicio($event, ejercicio.id)"
           >
-            @if (ejercicio.imagenes[0]; as imagen) {
-              <img
-                matListItemAvatar
-                class="busqueda-ejercicios__miniatura"
-                [src]="imagenSrc(imagen)"
-                alt=""
-                aria-hidden="true"
-              />
-            }
             <span matListItemTitle>{{ ejercicio.nombre }}</span>
             <span matListItemLine class="busqueda-ejercicios__descripcion">{{ ejercicio.descripcion }}</span>
             <span matListItemLine class="busqueda-ejercicios__etiquetas">
               @for (nombre of nombresCategorias(ejercicio); track nombre) {
-                <span>{{ nombre }}</span>
+                <mat-chip>{{ nombre }}</mat-chip>
               }
             </span>
           </a>
         }
       </mat-nav-list>
 
-      @if (esEscritorio()) {
-        <aside class="busqueda-ejercicios__detalle" aria-label="Ficha del ejercicio seleccionado">
-          @if (ejercicioSeleccionado(); as ejercicio) {
-            @if (ejercicio.imagenes[0]; as imagen) {
-              <img class="busqueda-ejercicios__detalle-imagen" [src]="imagenSrc(imagen)" alt="" />
-            }
-            <h2>{{ ejercicio.nombre }}</h2>
-            <p>{{ ejercicio.descripcion }}</p>
-            <p>{{ nombresCategorias(ejercicio).join(', ') }}</p>
-            <a mat-stroked-button [routerLink]="['/ejercicios', ejercicio.id]">Abrir ficha completa</a>
-          } @else {
-            <p>Selecciona un ejercicio para ver su ficha sin perder los resultados.</p>
-          }
-        </aside>
-      }
     </div>
   }
 </section>
