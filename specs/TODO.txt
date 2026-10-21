@@ -1,11 +1,19 @@
 Modificaciones a realizar en Ejercicios Fisicos
 ------------------------------------------------
+- No usar en el buscador el Todas las categorias, que siempre exista una por defecto. Sin categoria no tiene sentido, eliminar también.
 - Scroll infinito en listados de ejercicios
 Todos los listados de ejercicios deberán tener el scroll infinito a los 20 ejercicios. Para ello quiero probar el IntersectionObserver o algo asi que detecta visualmente un componente oculto, y cuando lo detecta carga los siguientes 20 ejercicios.
+Para ello:
+  Modificar la usecase de buscarejerciciosUseCase y los ficheros necesarios para que busque de forma paginada los ejercicios, esto es pasandole el numero de
+   pagina y el numero de registros por pagina. Que sea opcional. 
+   Una vez lo tengas cambiar la presentación de busqueda-ejercicios para que inicialmente obtenga los 20 primeros registros y que cuando se ejecute loadMore 
+   agregará los 20 siguientes, y si vuelve a ejecutarse loadMore cargará los otros 20. Como siempre estará cargada una categoria no tendremos demasiados registros.
 - Selección de ejercicio en editor de planificación semanal.
-Eliminar la búsqueda horrible que hay y dejar un botón de agregar ejercicio.
-  - Movil: Ver como queda con un bottom sheet o de lado, y si no que sea nueva pantalla. No debe ocultar el menú inferior. 
-  - Comun: Botón de agergar ejercicio que en una pantalla nueva busque tranquilamente el ejercicio y lo selecciones. Que permita selección múltiple. La pantalla de búsqueda deberá mostrar la categoría, el nombre y la descripción del ejercicio. Contendrá un buscador parcial en la parte de arriba.
+Eliminar la búsqueda horrible que hay y dejar un botón de agregar ejercicio. El botón abre una nueva pantalla donde se busca y seleccionan los ejercicios.
+  - Movil: Ver como queda con un bottom sheet o de lado, no debe ocultar el menú inferior y aportar usabilidad. Si no, que sea nueva pantalla.
+  - Comun: Botón de agergar ejercicio que en una pantalla nueva busque tranquilamente el ejercicio y lo selecciones. 
+  Que permita selección múltiple. La pantalla de búsqueda deberá permitir buscar por la categoría y el nombre. Y debe visualizar los dos más la descripción del ejercicio. 
+  Contendrá un buscador parcial en la parte de arriba para la búsqueda por nombre o descripción. 
 - Formulario ejercicio - Volver: Que vuelva a la pantalla de donde venga, no siempre va a buscar, porque puede ir a planificación, a Hoy o al semanal.
 - En la planificación de hoy cabe perfectamente la descripción de cada ejercicio debajo. Que quepa completamente. En lugar de consultar pondria la palabra Ver detalle o Detalle.
 - No me gusta que en movil, el boton + para agregar ejercicio tape el contenido de debajo. A veces es imposible verlo. Una solución sería en movil dar siempre un margen inferior a todaas las pantallas o a la padre con la misma altura de ese botón.
@@ -23,4 +31,5 @@ Copilot hará:
 
 Hecho
 -------
-- La categoria que sale en el buscador que se veacomo un chip. Y que no este tan pegada a la descripción.
+- La categoria que sale en el buscador que se vea como un chip. Y que no este tan pegada a la descripción. Eliminada vista previa y miniatura.
+- Corregidos espacio superior muy grande para moviles en cabecera de pantallas.
