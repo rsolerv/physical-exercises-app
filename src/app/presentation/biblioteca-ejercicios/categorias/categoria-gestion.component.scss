@@ -72,6 +72,10 @@
   flex-direction: column;
   gap: $espaciado-2;
 
+  @include movil {
+    gap: 0;
+  }  
+
   @include tablet {
     flex-direction: row;
     align-items: flex-start;
