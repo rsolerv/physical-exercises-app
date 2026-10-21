@@ -12,7 +12,7 @@ import { BuscarEjerciciosUseCase } from '../../application/casos-uso/buscar-ejer
 import { EjercicioRepositoryPort } from '../../application/ports/ejercicio-repository.port';
 import { CategoriaRepositoryPort } from '../../application/ports/categoria-repository.port';
 import type { Categoria } from '../../domain/categoria/categoria.entity';
-import type { Ejercicio, ImagenEjercicio } from '../../domain/ejercicio/ejercicio.entity';
+import type { Ejercicio } from '../../domain/ejercicio/ejercicio.entity';
 import { CabeceraPaginaComponent } from '../compartido/ui/cabecera-pagina/cabecera-pagina.component';
 import { EstadoVacioComponent } from '../compartido/ui/estado-vacio/estado-vacio.component';
 import { EstadoCargaComponent } from '../compartido/ui/estado-carga/estado-carga.component';
