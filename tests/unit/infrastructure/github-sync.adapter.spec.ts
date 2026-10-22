@@ -63,14 +63,22 @@ describe('GithubSyncAdapter', () => {
     expect(resultado).toEqual({ existe: false });
   });
 
-  it('escribirRemoto() sube cada imagen como imagenes/<id>.json y después datos.json con el SHA esperado', async () => {
+  it('escribirRemoto() usa el SHA remoto al actualizar una imagen y después escribe datos.json con su SHA esperado', async () => {
     const imagen: ImagenArchivoJSON = { id: 'img-1', nombreArchivo: 'foto.png', tipoMime: 'image/png', contenidoBase64: 'QUJD' };
     const promesa = adapter.escribirRemoto(CREDENCIALES, DATOS_VACIOS, [imagen], 'sha-anterior');
+
+    const lecturaImagen = httpMock.expectOne(
+      'https://api.github.com/repos/owner/data-physical-exercises/contents/imagenes/img-1.json'
+    );
+    expect(lecturaImagen.request.method).toBe('GET');
+    lecturaImagen.flush({ sha: 'sha-imagen-anterior' });
+    await flushMicrotareas();
 
     const peticionImagen = httpMock.expectOne(
       'https://api.github.com/repos/owner/data-physical-exercises/contents/imagenes/img-1.json'
     );
     expect(peticionImagen.request.method).toBe('PUT');
+    expect(peticionImagen.request.body.sha).toBe('sha-imagen-anterior');
     peticionImagen.flush({ content: { sha: 'sha-imagen' } });
     await flushMicrotareas();
 
@@ -81,6 +89,30 @@ describe('GithubSyncAdapter', () => {
 
     const resultado = await promesa;
     expect(resultado).toEqual({ shaNuevo: 'sha-nuevo' });
+  });
+
+  it('escribirRemoto() crea una imagen nueva sin SHA cuando todavía no existe en GitHub', async () => {
+    const imagen: ImagenArchivoJSON = { id: 'img-nueva', nombreArchivo: 'foto.png', tipoMime: 'image/png', contenidoBase64: 'QUJD' };
+    const promesa = adapter.escribirRemoto(CREDENCIALES, DATOS_VACIOS, [imagen], null);
+
+    const lecturaImagen = httpMock.expectOne(
+      'https://api.github.com/repos/owner/data-physical-exercises/contents/imagenes/img-nueva.json'
+    );
+    expect(lecturaImagen.request.method).toBe('GET');
+    lecturaImagen.flush({ message: 'Not Found' }, { status: 404, statusText: 'Not Found' });
+    await flushMicrotareas();
+
+    const peticionImagen = httpMock.expectOne(
+      'https://api.github.com/repos/owner/data-physical-exercises/contents/imagenes/img-nueva.json'
+    );
+    expect(peticionImagen.request.method).toBe('PUT');
+    expect(peticionImagen.request.body.sha).toBeUndefined();
+    peticionImagen.flush({ content: { sha: 'sha-imagen-nueva' } });
+    await flushMicrotareas();
+
+    const peticionDatos = httpMock.expectOne('https://api.github.com/repos/owner/data-physical-exercises/contents/datos.json');
+    peticionDatos.flush({ content: { sha: 'sha-nuevo' } });
+    await expect(promesa).resolves.toEqual({ shaNuevo: 'sha-nuevo' });
   });
 
   it('leerImagen() descarga y parsea un documento imagenes/<id>.json', async () => {

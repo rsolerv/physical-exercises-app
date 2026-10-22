@@ -69,7 +69,9 @@ export class GithubSyncAdapter implements GitHubSyncPort {
     shaEsperado: string | null
   ): Promise<{ shaNuevo: string }> {
     for (const imagen of imagenes) {
-      await this.subirArchivo(credenciales, `imagenes/${imagen.id}.json`, JSON.stringify(imagen), null);
+      const ruta = `imagenes/${imagen.id}.json`;
+      const shaImagen = await this.obtenerShaRemoto(credenciales, ruta);
+      await this.subirArchivo(credenciales, ruta, JSON.stringify(imagen), shaImagen);
     }
     const resultado = await this.subirArchivo(credenciales, 'datos.json', JSON.stringify(datos), shaEsperado);
     return { shaNuevo: resultado.sha };
@@ -82,6 +84,22 @@ export class GithubSyncAdapter implements GitHubSyncPort {
       );
       return JSON.parse(desdeBase64(respuesta.content)) as ImagenArchivoJSON;
     } catch (error) {
+      throw this.traducirError(error);
+    }
+  }
+
+  private async obtenerShaRemoto(credenciales: CredencialesGitHub, ruta: string): Promise<string | null> {
+    try {
+      const respuesta = await firstValueFrom(
+        this.http.get<Pick<ContenidoGitHub, 'sha'>>(this.urlContenido(credenciales, ruta), {
+          headers: this.cabeceras(credenciales),
+        })
+      );
+      return respuesta.sha;
+    } catch (error) {
+      if (error instanceof HttpErrorResponse && error.status === 404) {
+        return null;
+      }
       throw this.traducirError(error);
     }
   }

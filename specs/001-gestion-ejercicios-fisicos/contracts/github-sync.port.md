@@ -20,7 +20,9 @@ interface GitHubSyncPort {
   ): Promise<{ shaNuevo: string }>;
   // Sube cada imagen de archivo como un documento JSON independiente `imagenes/<id>.json`
   // y después datos.json. Usa shaEsperado como control de concurrencia optimista: si GitHub
-  // ya tiene otro SHA, lanza ErrorConflictoRemoto sin sobrescribir nada.
+  // ya tiene otro SHA, lanza ErrorConflictoRemoto sin sobrescribir nada. Para cada imagen,
+  // consulta primero su SHA remoto: lo envía al actualizar un documento existente y lo omite
+  // al crear uno nuevo.
 
   leerImagen(credenciales: CredencialesGitHub, ruta: string): Promise<ImagenArchivoJSON>;
   // Descarga y parsea un documento imagenes/<id>.json (formato "raw" de la API;
