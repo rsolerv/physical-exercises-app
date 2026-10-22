@@ -5,6 +5,8 @@ import { ActivatedRoute, provideRouter, Router } from '@angular/router';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { PlanificacionConstructorComponent } from '../../../src/app/presentation/planificacion-semanal/constructor/planificacion-constructor.component';
 import { GestionarPlanificacionUseCase } from '../../../src/app/application/casos-uso/gestionar-planificacion.use-case';
+import { BuscarEjerciciosUseCase } from '../../../src/app/application/casos-uso/buscar-ejercicios.use-case';
+import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
 import { PlanificacionRepositoryPort } from '../../../src/app/application/ports/planificacion-repository.port';
 import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejercicio-repository.port';
 import { crearDiasVacios } from '../../../src/app/domain/planificacion/planificacion.entity';
@@ -40,6 +42,11 @@ describe('PlanificacionConstructorComponent', () => {
         {
           provide: EjercicioRepositoryPort,
           useValue: { listarTodos: opciones.listarEjercicios ?? vi.fn().mockResolvedValue(opciones.ejercicios ?? []) },
+        },
+        { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue([]) } },
+        {
+          provide: BuscarEjerciciosUseCase,
+          useValue: { buscar: vi.fn().mockResolvedValue(opciones.ejercicios ?? []) },
         },
         {
           provide: GestionarPlanificacionUseCase,
@@ -85,17 +92,34 @@ describe('PlanificacionConstructorComponent', () => {
     expect(componente.errorFecha()).toBeNull();
   });
 
-  it('impide añadir el mismo ejercicio dos veces al mismo día (FR-021)', async () => {
-    configurar({ ejercicios: [ejercicio('ej-1', 'Sentadilla')] });
+  it('abre el selector, añade el ejercicio al día elegido y vuelve al formulario sin guardar', async () => {
+    const crear = vi.fn().mockResolvedValue({ id: 'plan-nuevo' });
+    configurar({ ejercicios: [ejercicio('ej-1', 'Sentadilla')], crear });
     const fixture = await crearComponente();
-    const componente = fixture.componentInstance;
+    const raiz = fixture.nativeElement as HTMLElement;
 
-    componente.anadirEjercicioADia('lunes', 'ej-1');
-    componente.anadirEjercicioADia('lunes', 'ej-1');
+    raiz.querySelector<HTMLButtonElement>('section[aria-label="Martes"] button')?.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(componente.ejerciciosPorDia().lunes).toEqual(['ej-1']);
-    expect(componente.errorDia()).toContain('ya está asignado');
+    expect((fixture.nativeElement as HTMLElement).querySelector('mat-selection-list')).toBeTruthy();
+    expect((fixture.nativeElement as HTMLElement).querySelector('form')).toBeNull();
+
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('mat-list-option')?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.ejerciciosPorDia().martes).toEqual(['ej-1']);
+    expect(crear).not.toHaveBeenCalled();
+
+    const botonVolver = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('button'))
+      .find((boton) => boton.textContent?.includes('Volver'));
+    botonVolver?.click();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('form')).toBeTruthy();
+    expect(fixture.componentInstance.ejerciciosPorDia().martes).toEqual(['ej-1']);
   });
 
   it('duplica la planificación cuando está en modo edición', async () => {
@@ -187,16 +211,30 @@ describe('PlanificacionConstructorComponent', () => {
     expect(texto).not.toContain(idEjercicio);
   });
 
-  it('filtra ejercicios en el selector contextual de cada día', async () => {
-    configurar({ ejercicios: [ejercicio('ej-1', 'Sentadilla'), ejercicio('ej-2', 'Plancha')] });
+  it('revierte la selección y muestra un error si falla la asignación persistida desde el selector', async () => {
+    const asignarEjercicioADia = vi.fn().mockRejectedValue(new Error('No se pudo asignar.'));
+    const planificacionExistente: Planificacion = { id: 'plan-1', nombre: 'Semana', dias: crearDiasVacios() };
+    configurar({
+      idRuta: 'plan-1',
+      planificacionExistente,
+      ejercicios: [ejercicio('ej-1', 'Sentadilla')],
+      asignarEjercicioADia,
+    });
     const fixture = await crearComponente();
-    const componente = fixture.componentInstance;
+    const raiz = fixture.nativeElement as HTMLElement;
 
-    componente.establecerBusquedaEjercicio('lunes', 'plan');
+    raiz.querySelector<HTMLButtonElement>('section[aria-label="Lunes"] button')?.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(componente.ejerciciosDisponiblesParaDia('lunes').map((item) => item.nombre)).toEqual(['Plancha']);
-    expect((fixture.nativeElement as HTMLElement).querySelector('input[aria-label="Buscar ejercicios del lunes"]')).toBeTruthy();
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('mat-list-option')?.click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    expect(asignarEjercicioADia).toHaveBeenCalledWith('plan-1', 'lunes', 'ej-1');
+    expect(fixture.componentInstance.ejerciciosPorDia().lunes).toEqual([]);
+    expect(fixture.componentInstance.errorDia()).toContain('No se pudo asignar');
   });
 
   it('identifica la plantilla o la planificación activa desde el formulario', async () => {
@@ -212,19 +250,6 @@ describe('PlanificacionConstructorComponent', () => {
 
     expect(componente.etiquetaTipoPlan()).toBe('Activa');
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Activa');
-  });
-
-  it('revierte la selección local y presenta un error si falla la asignación persistida', async () => {
-    const asignarEjercicioADia = vi.fn().mockRejectedValue(new Error('No se pudo asignar.'));
-    const planificacionExistente: Planificacion = { id: 'plan-1', nombre: 'Semana', dias: crearDiasVacios() };
-    configurar({ idRuta: 'plan-1', planificacionExistente, ejercicios: [ejercicio('ej-1', 'Sentadilla')], asignarEjercicioADia });
-    const fixture = await crearComponente();
-
-    await fixture.componentInstance.anadirEjercicioADia('lunes', 'ej-1');
-    fixture.detectChanges();
-
-    expect(fixture.componentInstance.ejerciciosPorDia().lunes).toEqual([]);
-    expect(fixture.componentInstance.errorDia()).toContain('No se pudo asignar');
   });
 
   it('informa si no se pueden cargar los nombres de los ejercicios', async () => {
