@@ -21,9 +21,8 @@ Copilot hará:
 - Edición de ejercicio: Aparece un Guardado en el menú inferior feo y desalineado. 
 Además para que vale? No aporta información relevante porque al editar no se ha guardado nada. 
 Si es para indicar que hay cambios sin guardar que no salga el Guardado, pero sí el Cambios sin guardar, mejor puesto, como warning.
-- El botón de cerrado del mas del menú inferior que se suele ver en movil no hace nada. Al pulsarlo debe ocultarse el menú que ha salido pulsando el más.
 - El formulario nuevo ejercicio podria tener una opción que sea: Agregar a los ejercicios de hoy, que lo que hace es editar el planificador de la semana activa y 
-agregar a hoy el ejercicio creado.
+agregar a hoy el ejercicio creado. Eliminar el boton + en Hoy.
 
 Hecho
 -------
@@ -40,3 +39,4 @@ Eliminar la búsqueda horrible que hay y dejar un botón de agregar ejercicio. E
   Contendrá un buscador parcial en la parte de arriba para la búsqueda por nombre.
 - Quitar el Hoy de la planificación semanal en movil porque se ve todo apretado. Ademas ya esta seleccionado asi que no lo veo necesario.
 - La edición del formulario de ejercicio y de la planificación tienen un máximo de ancho en escritorio. Eso no es optimo porque no aprovecha la pantalla. Eliminar ese máximo.
+- El botón de cerrado del mas del menú inferior que se suele ver en movil no hace nada. Al pulsarlo debe ocultarse el menú que ha salido pulsando el más.
