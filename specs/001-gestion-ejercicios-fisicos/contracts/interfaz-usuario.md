@@ -1,8 +1,9 @@
 # Contrato de interfaz de usuario
 
 
+
 **Ámbito**: Interacción visible de la aplicación de gestión de ejercicios.  
-**Especificación normativa**: [spec.md](../spec.md), en especial FR-038–FR-078.  
+**Especificación normativa**: [spec.md](../spec.md), en especial FR-038–FR-079.  
 **Plan**: [plan.md](../plan.md).
 
 Este contrato resume las respuestas observables de la aplicación. La especificación es la fuente normativa para los detalles y criterios de aceptación; este documento no añade reglas de negocio.
@@ -57,6 +58,8 @@ Los anchos entre rangos y menores de 360 px siguen siendo utilizables. Ninguna v
 ### Formularios de ejercicio
 
 - Los campos obligatorios y opcionales se identifican antes de guardar; los errores aparecen junto al campo afectado.
+- Al crear un ejercicio, si existe una planificación activa para esta semana, se ofrece antes de las acciones la casilla "Agregar a los ejercicios de hoy". Si se marca, el ejercicio se asigna al día actual al guardarse; la casilla no aparece al editar ni cuando no existe planificación activa.
+- Si la asignación a la planificación falla tras guardar el ejercicio, se informa del guardado y del fallo de asignación por separado.
 - El guardado distingue los cambios pendientes, el guardado en curso y el guardado completado.
 - En escritorio, la edición presenta el formulario y la vista previa de la ficha en dos columnas, con "Guardar" y "Cancelar" visibles y accesibles sin desplazamiento vertical.
 - El tipo de enlace se reconoce a partir de la URL. Una vista previa disponible se muestra antes de abrir el enlace o reproducir el vídeo.

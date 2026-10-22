@@ -1,6 +1,5 @@
 Modificaciones a realizar en Ejercicios Fisicos
 ------------------------------------------------
-- No usar en el buscador el Todas las categorias, que siempre exista una por defecto.
 - Scroll infinito en listados de ejercicios
 Todos los listados de ejercicios deberán tener el scroll infinito a los 20 ejercicios. Para ello quiero usar el IntersectionObserver o algo asi que detecta visualmente un componente oculto, y cuando lo detecta carga los siguientes 20 ejercicios.
 Para ello:
@@ -10,7 +9,6 @@ Para ello:
    agregará los 20 siguientes, y si vuelve a ejecutarse loadMore cargará los otros 20. Como siempre estará cargada una categoria no tendremos demasiados registros.
 - Formulario ejercicio - Volver: Que vuelva a la pantalla de donde venga, no siempre va a buscar, porque puede ir a planificación, a Hoy o al semanal.
 - En la planificación de hoy cabe perfectamente la descripción de cada ejercicio debajo. Que quepa completamente. En lugar de consultar pondria la palabra Ver detalle o Detalle.
-- No me gusta que en movil, el boton + para agregar ejercicio tape el contenido de debajo. A veces es imposible verlo. Una solución sería en movil dar siempre un margen inferior a todaas las pantallas o a la padre con la misma altura de ese botón.
 - En la sincronización, Configuracion de Github no parece un link o algo pulsable, arreglar para que se entienda que se puede pulsar.
 
 
@@ -18,11 +16,8 @@ Para ello:
 Copilot hará:
 --------------
 - Formulario ejercicio: Las series y repeticiones en campos separados no obligatorios.
-- Edición de ejercicio: Aparece un Guardado en el menú inferior feo y desalineado. 
-Además para que vale? No aporta información relevante porque al editar no se ha guardado nada. 
-Si es para indicar que hay cambios sin guardar que no salga el Guardado, pero sí el Cambios sin guardar, mejor puesto, como warning.
-- El formulario nuevo ejercicio podria tener una opción que sea: Agregar a los ejercicios de hoy, que lo que hace es editar el planificador de la semana activa y 
-agregar a hoy el ejercicio creado. Eliminar el boton + en Hoy.
+- Si es un nuevo ejercicio tener una opción que sea: Agregar a los ejercicios de hoy, el cual agrega al dia actual del planificador de la semana activa el ejercicio creado. No será un boton, se puede usar un radiobutton o algo similar y estara al final del formulario antes de la barra de acciones. 
+Si no hay planificación esta semana que no aparezca.
 
 Hecho
 -------
@@ -40,3 +35,5 @@ Eliminar la búsqueda horrible que hay y dejar un botón de agregar ejercicio. E
 - Quitar el Hoy de la planificación semanal en movil porque se ve todo apretado. Ademas ya esta seleccionado asi que no lo veo necesario.
 - La edición del formulario de ejercicio y de la planificación tienen un máximo de ancho en escritorio. Eso no es optimo porque no aprovecha la pantalla. Eliminar ese máximo.
 - El botón de cerrado del mas del menú inferior que se suele ver en movil no hace nada. Al pulsarlo debe ocultarse el menú que ha salido pulsando el más.
+- Boton de + se sube arriba asi no tapa contenido
+- Para movil se elimina la información de si está guardado o tiene cambios en el formulario de ejercicio.

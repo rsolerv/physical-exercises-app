@@ -1,12 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { ActivatedRoute, provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { EjercicioFormularioComponent } from '../../../src/app/presentation/biblioteca-ejercicios/ejercicio-formulario.component';
 import { GestionarEjercicioUseCase } from '../../../src/app/application/casos-uso/gestionar-ejercicio.use-case';
+import { ConsultarPlanificacionUseCase } from '../../../src/app/application/casos-uso/consultar-planificacion.use-case';
+import { GestionarPlanificacionUseCase } from '../../../src/app/application/casos-uso/gestionar-planificacion.use-case';
 import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
 import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejercicio-repository.port';
+import { diaSemanaDeFecha } from '../../../src/app/domain/planificacion/fecha-semana';
 import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
 import type { Categoria } from '../../../src/app/domain/categoria/categoria.entity';
 
@@ -14,10 +17,14 @@ describe('EjercicioFormularioComponent', () => {
   const categorias: Categoria[] = [{ id: 'cat-1', nombre: 'Rodilla' }];
   let mostrarExito: ReturnType<typeof vi.fn>;
   let mostrarError: ReturnType<typeof vi.fn>;
+  let asignarEjercicioADia: ReturnType<typeof vi.fn>;
+  let obtenerDeHoy: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     mostrarExito = vi.fn();
     mostrarError = vi.fn();
+    asignarEjercicioADia = vi.fn().mockResolvedValue(undefined);
+    obtenerDeHoy = vi.fn().mockResolvedValue(null);
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
@@ -29,6 +36,8 @@ describe('EjercicioFormularioComponent', () => {
           provide: GestionarEjercicioUseCase,
           useValue: { crear: vi.fn().mockResolvedValue({}), actualizar: vi.fn().mockResolvedValue({}) },
         },
+        { provide: ConsultarPlanificacionUseCase, useValue: { obtenerDeHoy } },
+        { provide: GestionarPlanificacionUseCase, useValue: { asignarEjercicioADia } },
         { provide: MensajeFeedbackService, useValue: { mostrarExito, mostrarError } },
       ],
     });
@@ -246,6 +255,8 @@ describe('EjercicioFormularioComponent', () => {
         },
         { provide: EjercicioRepositoryPort, useValue: { obtenerPorId: vi.fn().mockResolvedValue(null) } },
         { provide: GestionarEjercicioUseCase, useValue: { crear: vi.fn(), actualizar: vi.fn() } },
+        { provide: ConsultarPlanificacionUseCase, useValue: { obtenerDeHoy } },
+        { provide: GestionarPlanificacionUseCase, useValue: { asignarEjercicioADia } },
         { provide: MensajeFeedbackService, useValue: { mostrarExito, mostrarError } },
       ],
     });
@@ -334,6 +345,8 @@ describe('EjercicioFormularioComponent', () => {
         { provide: CategoriaRepositoryPort, useValue: { listarTodas: () => Promise.resolve(categorias) } },
         { provide: EjercicioRepositoryPort, useValue: { obtenerPorId: vi.fn().mockResolvedValue(null) } },
         { provide: GestionarEjercicioUseCase, useValue: { crear: () => Promise.reject(new Error('fallo simulado')) } },
+        { provide: ConsultarPlanificacionUseCase, useValue: { obtenerDeHoy } },
+        { provide: GestionarPlanificacionUseCase, useValue: { asignarEjercicioADia } },
         { provide: MensajeFeedbackService, useValue: { mostrarExito, mostrarError } },
       ],
     });
@@ -420,6 +433,95 @@ describe('EjercicioFormularioComponent', () => {
     expect(componente.estadoGuardado()).toBe('guardado');
   });
 
+  it('solo ofrece agregar a hoy cuando hay planificación activa esta semana', async () => {
+    obtenerDeHoy.mockResolvedValue({
+      id: 'plan-1',
+      nombre: 'Semana actual',
+      fechaInicio: '2026-10-19',
+      dias: [],
+    });
+    const fixture = crearComponente();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Agregar a los ejercicios de hoy');
+
+    obtenerDeHoy.mockResolvedValue(null);
+    const sinPlanificacion = crearComponente();
+    await sinPlanificacion.whenStable();
+    sinPlanificacion.detectChanges();
+
+    expect((sinPlanificacion.nativeElement as HTMLElement).textContent).not.toContain('Agregar a los ejercicios de hoy');
+  });
+
+  it('asigna el ejercicio nuevo al día actual de la planificación activa si se marca la opción', async () => {
+    obtenerDeHoy.mockResolvedValue({
+      id: 'plan-1',
+      nombre: 'Semana actual',
+      fechaInicio: '2026-10-19',
+      dias: [],
+    });
+    const gestionarEjercicio = TestBed.inject(GestionarEjercicioUseCase);
+    vi.mocked(gestionarEjercicio.crear).mockResolvedValue({
+      id: 'ej-1',
+      nombre: 'Sentadilla',
+      descripcion: 'Flexionar rodillas',
+      categoriaIds: ['cat-1'],
+      enlaces: [],
+      imagenes: [],
+    });
+    const fixture = crearComponente();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const raiz = fixture.nativeElement as HTMLElement;
+    const casilla = raiz.querySelector('mat-checkbox input') as HTMLInputElement;
+    expect(casilla).not.toBeNull();
+    casilla.click();
+    fixture.detectChanges();
+
+    const componente = fixture.componentInstance;
+    componente.formulario.nombre().value.set('Sentadilla');
+    componente.formulario.descripcion().value.set('Flexionar rodillas');
+    componente.alternarCategoria('cat-1');
+    await componente.guardar();
+
+    expect(asignarEjercicioADia).toHaveBeenCalledWith('plan-1', diaSemanaDeFecha(new Date()), 'ej-1');
+  });
+
+  it('informa que el ejercicio se guardó si falla su asignación a hoy', async () => {
+    obtenerDeHoy.mockResolvedValue({
+      id: 'plan-1',
+      nombre: 'Semana actual',
+      fechaInicio: '2026-10-19',
+      dias: [],
+    });
+    asignarEjercicioADia.mockRejectedValue(new Error('fallo de asignación'));
+    const gestionarEjercicio = TestBed.inject(GestionarEjercicioUseCase);
+    vi.mocked(gestionarEjercicio.crear).mockResolvedValue({
+      id: 'ej-1',
+      nombre: 'Sentadilla',
+      descripcion: 'Flexionar rodillas',
+      categoriaIds: ['cat-1'],
+      enlaces: [],
+      imagenes: [],
+    });
+    const fixture = crearComponente();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    fixture.componentInstance.formulario.nombre().value.set('Sentadilla');
+    fixture.componentInstance.formulario.descripcion().value.set('Flexionar rodillas');
+    fixture.componentInstance.alternarCategoria('cat-1');
+    fixture.componentInstance.agregarAEjerciciosHoy.set(true);
+
+    await fixture.componentInstance.guardar();
+
+    expect(fixture.componentInstance.errorAlGuardar()).toContain('El ejercicio se ha guardado');
+    expect(fixture.componentInstance.errorAlGuardar()).toContain('fallo de asignación');
+    expect(mostrarError).toHaveBeenCalled();
+  });
+
   describe('modo edición', () => {
     function configurarEdicion(ejercicioExistente: {
       id: string;
@@ -443,6 +545,8 @@ describe('EjercicioFormularioComponent', () => {
             provide: GestionarEjercicioUseCase,
             useValue: { crear: vi.fn().mockResolvedValue({}), actualizar: vi.fn().mockResolvedValue({ id: ejercicioExistente.id }) },
           },
+          { provide: ConsultarPlanificacionUseCase, useValue: { obtenerDeHoy: vi.fn().mockResolvedValue(null) } },
+          { provide: GestionarPlanificacionUseCase, useValue: { asignarEjercicioADia: vi.fn() } },
           { provide: MensajeFeedbackService, useValue: { mostrarExito, mostrarError } },
         ],
       });
@@ -484,6 +588,7 @@ describe('EjercicioFormularioComponent', () => {
       const raiz = fixture.nativeElement as HTMLElement;
       expect(raiz.querySelector('.ejercicio-formulario__disposicion--edicion')).not.toBeNull();
       expect(raiz.querySelector('.ejercicio-formulario__previsualizacion')?.textContent).toContain('Sentadilla');
+      expect(raiz.querySelector('mat-checkbox')).toBeNull();
       expect(raiz.querySelector('.ejercicio-formulario__acciones')?.textContent).toContain('Guardar');
       expect(raiz.querySelector('.ejercicio-formulario__acciones')?.textContent).toContain('Cancelar');
     });

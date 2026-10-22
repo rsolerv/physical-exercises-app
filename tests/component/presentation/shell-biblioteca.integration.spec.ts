@@ -9,6 +9,8 @@ import { routes } from '../../../src/app/app.routes';
 import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejercicio-repository.port';
 import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
 import { GestionarEjercicioUseCase } from '../../../src/app/application/casos-uso/gestionar-ejercicio.use-case';
+import { ConsultarPlanificacionUseCase } from '../../../src/app/application/casos-uso/consultar-planificacion.use-case';
+import { GestionarPlanificacionUseCase } from '../../../src/app/application/casos-uso/gestionar-planificacion.use-case';
 import { GestionarCategoriaUseCase } from '../../../src/app/application/casos-uso/gestionar-categoria.use-case';
 import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
 
@@ -35,6 +37,8 @@ describe('Integración de rutas de biblioteca (US1)', () => {
         },
         { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue([]) } },
         { provide: GestionarEjercicioUseCase, useValue: { crear: vi.fn(), actualizar: vi.fn(), eliminar: vi.fn() } },
+        { provide: ConsultarPlanificacionUseCase, useValue: { obtenerDeHoy: vi.fn().mockResolvedValue(null) } },
+        { provide: GestionarPlanificacionUseCase, useValue: { asignarEjercicioADia: vi.fn() } },
         { provide: GestionarCategoriaUseCase, useValue: { crear: vi.fn(), actualizar: vi.fn(), eliminar: vi.fn() } },
         { provide: MensajeFeedbackService, useValue: { mostrarExito: vi.fn(), mostrarError: vi.fn() } },
       ],

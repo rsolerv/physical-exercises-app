@@ -9,13 +9,18 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { from } from 'rxjs';
 import { GestionarEjercicioUseCase } from '../../application/casos-uso/gestionar-ejercicio.use-case';
+import { ConsultarPlanificacionUseCase } from '../../application/casos-uso/consultar-planificacion.use-case';
+import { GestionarPlanificacionUseCase } from '../../application/casos-uso/gestionar-planificacion.use-case';
 import { CategoriaRepositoryPort } from '../../application/ports/categoria-repository.port';
 import { EjercicioRepositoryPort } from '../../application/ports/ejercicio-repository.port';
 import type { Categoria } from '../../domain/categoria/categoria.entity';
 import type { EnlaceEjercicio, ImagenEjercicio, TipoEnlaceEjercicio } from '../../domain/ejercicio/ejercicio.entity';
+import { diaSemanaDeFecha } from '../../domain/planificacion/fecha-semana';
+import type { Planificacion } from '../../domain/planificacion/planificacion.entity';
 import { MensajeFeedbackService } from '../compartido/ui/mensaje-feedback.service';
 import { CabeceraPaginaComponent } from '../compartido/ui/cabecera-pagina/cabecera-pagina.component';
 
@@ -47,6 +52,7 @@ interface ModeloFormularioEjercicio {
     MatChipsModule,
     MatListModule,
     MatProgressSpinnerModule,
+    MatCheckboxModule,
     CabeceraPaginaComponent,
   ],
   templateUrl: './ejercicio-formulario.component.html',
@@ -54,6 +60,8 @@ interface ModeloFormularioEjercicio {
 })
 export class EjercicioFormularioComponent {
   private readonly gestionarEjercicio = inject(GestionarEjercicioUseCase);
+  private readonly consultarPlanificacion = inject(ConsultarPlanificacionUseCase);
+  private readonly gestionarPlanificacion = inject(GestionarPlanificacionUseCase);
   private readonly categoriaRepository = inject(CategoriaRepositoryPort);
   private readonly ejercicioRepository = inject(EjercicioRepositoryPort);
   private readonly mensajeFeedback = inject(MensajeFeedbackService);
@@ -73,6 +81,10 @@ export class EjercicioFormularioComponent {
   readonly categoriasCargando = signal(true);
   readonly errorCargaCategorias = signal<string | null>(null);
   readonly categorias = toSignal(from(this.cargarCategorias()), { initialValue: [] as Categoria[] });
+  readonly planificacionActiva = signal<Planificacion | null>(null);
+  readonly cargandoPlanificacion = signal(!this.modoEdicion);
+  readonly errorCargaPlanificacion = signal<string | null>(null);
+  readonly agregarAEjerciciosHoy = signal(false);
   readonly categoriaIdsSeleccionadas = signal<string[]>([]);
   readonly categoriasPrevisualizacion = computed(() =>
     this.categorias().filter((categoria) => this.categoriaIdsSeleccionadas().includes(categoria.id))
@@ -107,6 +119,8 @@ export class EjercicioFormularioComponent {
     if (this.ejercicioId) {
       this.cargandoEjercicio.set(true);
       void this.cargarParaEdicion(this.ejercicioId);
+    } else {
+      void this.cargarPlanificacionActiva();
     }
   }
 
@@ -118,6 +132,20 @@ export class EjercicioFormularioComponent {
       return [];
     } finally {
       this.categoriasCargando.set(false);
+    }
+  }
+
+  private async cargarPlanificacionActiva(): Promise<void> {
+    try {
+      this.planificacionActiva.set(await this.consultarPlanificacion.obtenerDeHoy());
+    } catch (error) {
+      this.errorCargaPlanificacion.set(
+        error instanceof Error
+          ? `No se ha podido consultar la planificación de esta semana: ${error.message}`
+          : 'No se ha podido consultar la planificación de esta semana.'
+      );
+    } finally {
+      this.cargandoPlanificacion.set(false);
     }
   }
 
@@ -243,6 +271,31 @@ export class EjercicioFormularioComponent {
           ? await this.gestionarEjercicio.actualizar(this.ejercicioId, datos)
           : await this.gestionarEjercicio.crear(datos);
       this.ultimoGuardado.set(JSON.stringify(datos));
+      if (!this.modoEdicion && this.agregarAEjerciciosHoy()) {
+        const planificacion = this.planificacionActiva();
+        if (!planificacion || !guardado?.id) {
+          const mensaje =
+            'El ejercicio se ha guardado, pero no se ha podido agregar a los ejercicios de hoy porque falta la planificación activa.';
+          this.errorAlGuardar.set(mensaje);
+          this.mensajeFeedback.mostrarError(mensaje);
+          await this.router.navigate(guardado?.id ? ['/ejercicios', guardado.id] : ['/ejercicios']);
+          return;
+        }
+        try {
+          await this.gestionarPlanificacion.asignarEjercicioADia(
+            planificacion.id,
+            diaSemanaDeFecha(new Date()),
+            guardado.id
+          );
+        } catch (error) {
+          const detalle = error instanceof Error ? `: ${error.message}` : '.';
+          const mensaje = `El ejercicio se ha guardado, pero no se ha podido agregar a los ejercicios de hoy${detalle}`;
+          this.errorAlGuardar.set(mensaje);
+          this.mensajeFeedback.mostrarError(mensaje);
+          await this.router.navigate(['/ejercicios', guardado.id]);
+          return;
+        }
+      }
       this.mensajeFeedback.mostrarExito('Ejercicio guardado.');
       await this.router.navigate(guardado?.id ? ['/ejercicios', guardado.id] : ['/ejercicios']);
     } catch (error) {

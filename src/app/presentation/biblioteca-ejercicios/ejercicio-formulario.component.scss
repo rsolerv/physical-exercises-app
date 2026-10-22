@@ -135,6 +135,13 @@
   color: var(--mat-sys-error);
 }
 
+.ejercicio-formulario__opcion-hoy {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 $espaciado-2;
+}
+
 .ejercicio-formulario__carga {
   display: flex;
   align-items: center;

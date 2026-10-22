@@ -56,7 +56,7 @@ La investigación técnica previa de Angular, SQLite WASM, Signal Forms, Vitest 
 ### Estrategia de diseño
 
 1. **Fundación visual y shell**: centralizar tokens de color, tipografía, espaciado y radios en los estilos globales existentes; servir la fuente localmente; adaptar el shell a barra inferior y panel "Más" en móvil, riel lateral en tablet y menú agrupado en escritorio.
-2. **Biblioteca y categorías**: rediseñar la ficha y los formularios de ejercicio; tratar imágenes y vistas previas de enlaces según la spec; permitir edición de categoría en línea, informar el recuento de ejercicios y restaurar borrados desde una instantánea temporal.
+2. **Biblioteca y categorías**: rediseñar la ficha y los formularios de ejercicio; tratar imágenes y vistas previas de enlaces según la spec; permitir edición de categoría en línea, informar el recuento de ejercicios y restaurar borrados desde una instantánea temporal. En el alta, ofrecer agregar el ejercicio al día actual solo si hay una planificación activa esta semana.
 3. **Búsqueda**: compactar los filtros y resultados para móvil y añadir una vista maestro-detalle en escritorio sin perder búsqueda ni selección. Mantener una ficha de pantalla completa en móvil.
 4. **Planificación semanal**: usar la tira de días en móvil y la cuadrícula de siete columnas en escritorio, seleccionar planes desde la cabecera e incorporar búsqueda de ejercicios al selector del día.
 5. **Hoy y progreso**: priorizar sesión actual, mostrar estados inicial/parcial/completo y permitir marcar/deshacer también desde la ficha cuando el ejercicio esté planificado hoy.

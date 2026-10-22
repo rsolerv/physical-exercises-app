@@ -216,6 +216,23 @@
     }
   </div>
 
+  @if (!modoEdicion) {
+    @if (cargandoPlanificacion()) {
+      <div class="ejercicio-formulario__carga" role="status">
+        <mat-spinner diameter="24" />
+        <span>Comprobando la planificación de esta semana…</span>
+      </div>
+    } @else if (errorCargaPlanificacion()) {
+      <p class="ejercicio-formulario__error" role="alert">{{ errorCargaPlanificacion() }}</p>
+    } @else if (planificacionActiva()) {
+      <section class="ejercicio-formulario__opcion-hoy">
+        <mat-checkbox [checked]="agregarAEjerciciosHoy()" (change)="agregarAEjerciciosHoy.set($event.checked)">
+          Agregar a los ejercicios de hoy
+        </mat-checkbox>
+      </section>
+    }
+  }
+
   @if (errorAlGuardar()) {
     <p class="ejercicio-formulario__error" role="alert">{{ errorAlGuardar() }}</p>
   }
@@ -228,7 +245,9 @@
         @default { Cambios sin guardar }
       }
     </span>
-    <button mat-flat-button color="primary" type="submit" [disabled]="guardando()">Guardar ejercicio</button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="guardando() || cargandoPlanificacion()">
+      Guardar ejercicio
+    </button>
     <button mat-button type="button" [disabled]="guardando()" (click)="cancelar()">Cancelar</button>
   </div>
 </form>

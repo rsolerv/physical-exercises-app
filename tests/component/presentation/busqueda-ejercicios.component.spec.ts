@@ -126,7 +126,7 @@ describe('BusquedaEjerciciosComponent', () => {
     const raiz = fixture.nativeElement as HTMLElement;
     const filtros = raiz.querySelector<HTMLElement>('.busqueda-ejercicios__filtros--fijados');
     expect(filtros).toBeTruthy();
-    expect(filtros && getComputedStyle(filtros).position).toBe('sticky');
+    expect(filtros && getComputedStyle(filtros).position).toBe('fixed');
     expect(raiz.querySelector('.busqueda-ejercicios__tarjeta')?.textContent).toContain('Fuerza');
   });
 

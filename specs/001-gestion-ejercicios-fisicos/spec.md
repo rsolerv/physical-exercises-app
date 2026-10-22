@@ -3,6 +3,7 @@
 
 
 
+
 **Feature Branch**: `001-gestion-ejercicios-fisicos`
 
 **Created**: 2026-10-14
@@ -67,6 +68,7 @@ Como usuario quiero crear, modificar y organizar por categorías mis ejercicios 
 20. **Given** que el usuario elimina una categoría con ejercicios asociados, **When** aparece la confirmación de la operación, **Then** puede deshacerla y restaurar la categoría y sus asociaciones.
 21. **Given** que se muestra una lista de categorías, **When** el usuario la consulta, **Then** cada categoría indica cuántos ejercicios tiene asociados y todas se comportan como categorías normales, sin una categoría del sistema no eliminable.
 22. **Given** que el usuario elimina un ejercicio asociado a categorías o planificaciones, **When** aparece la notificación de confirmación, **Then** puede deshacer la eliminación y restaurar el ejercicio y sus asociaciones.
+23. **Given** que el usuario crea un ejercicio y existe una planificación activa para la semana actual, **When** activa la opción "Agregar a los ejercicios de hoy" y guarda, **Then** el ejercicio se añade al día actual de esa planificación; la opción no aparece al editar ni cuando no hay planificación activa esta semana.
 
 ---
 
@@ -311,6 +313,7 @@ Como usuario quiero reconocer rápidamente dónde estoy, encontrar las acciones 
 - **FR-076**: Los campos de formulario DEBEN presentar un solo borde visual y el autorrelleno del navegador DEBE conservar los colores de la paleta de la aplicación, sin introducir un color ajeno que perjudique la legibilidad.
 - **FR-077**: La ficha de ejercicio DEBE ofrecer una acción para volver, una acción para editar y la eliminación dentro de un menú secundario identificado como destructivo. Si el ejercicio está planificado para hoy, DEBE mantener disponible la acción de progreso definida en FR-067.
 - **FR-078**: En escritorio, la edición de un ejercicio DEBE mostrar el formulario y la vista previa de la ficha en dos columnas. Las acciones "Guardar" y "Cancelar" DEBEN permanecer visibles y accesibles durante la edición, sin requerir desplazamiento vertical para alcanzarlas.
+- **FR-079**: Al crear un ejercicio, si existe una planificación activa para la semana actual, el formulario DEBE ofrecer al final del formulario y antes de las acciones una opción seleccionable, no un botón, denominada "Agregar a los ejercicios de hoy". Si se selecciona, al guardar el ejercicio el sistema DEBE asignarlo al día actual de esa planificación. La opción NO DEBE aparecer al editar un ejercicio ni cuando no exista planificación activa esta semana. Si falla la asignación después de guardar el ejercicio, el sistema DEBE informar claramente que el ejercicio se guardó pero no se pudo agregar a la planificación.
 
 
 ### Key Entities *(include if feature involves data)*
