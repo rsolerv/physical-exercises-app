@@ -174,11 +174,16 @@
   button {
     min-height: 48px;
   }
+
+  @include movil{
+    flex-direction: column;
+  }
 }
 
 .ejercicio-formulario__estado {
   flex: 1 1 auto;
   color: var(--mat-sys-on-surface-variant);
+  margin-left: $espaciado-2;
 }
 
 @include escritorio {
