@@ -8,11 +8,10 @@ import { Categoria } from '../../../../domain/categoria/categoria.entity';
 import { Ejercicio } from '../../../../domain/ejercicio/ejercicio.entity';
 import { MatListModule } from '@angular/material/list';
 import { BusquedaEjerciciosFiltrosComponent } from '../../../compartido/ejercicios/busqueda-ejercicios-filtros.component';
-import { EjercicioListItemComponent } from '../../../compartido/ejercicios/ejercicio-list-item.component';
 import { CabeceraPaginaComponent } from '../../../compartido/ui/cabecera-pagina/cabecera-pagina.component';
 import { EstadoCargaComponent } from '../../../compartido/ui/estado-carga/estado-carga.component';
 import { EstadoVacioComponent } from '../../../compartido/ui/estado-vacio/estado-vacio.component';
-import { MatChip } from '@angular/material/chips';
+
 
 @Component({
   imports: [
