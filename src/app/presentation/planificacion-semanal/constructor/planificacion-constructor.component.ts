@@ -19,6 +19,7 @@ import { CabeceraPaginaComponent } from '../../compartido/ui/cabecera-pagina/cab
 import { MensajeFeedbackService } from '../../compartido/ui/mensaje-feedback.service';
 import { EstadoCargaComponent } from '../../compartido/ui/estado-carga/estado-carga.component';
 import { esActiva } from '../../../domain/planificacion/es-activa';
+import { AgregarEjercicioComponent } from './agregar-ejercicio/agregar-ejercicio.component';
 
 const ETIQUETAS_DIA: Record<DiaSemana, string> = {
   lunes: 'Lunes',
@@ -62,7 +63,8 @@ function diasVaciosRegistro(): EjerciciosPorDia {
     MatProgressSpinnerModule,
     CabeceraPaginaComponent,
     EstadoCargaComponent,
-  ],
+    AgregarEjercicioComponent
+],
   templateUrl: './planificacion-constructor.component.html',
   styleUrl: './planificacion-constructor.component.scss',
 })
@@ -107,6 +109,9 @@ export class PlanificacionConstructorComponent {
   );
 
   protected readonly nombresEjercicios = computed(() => new Map(this.ejercicios().map((e) => [e.id, e.nombre])));
+
+  readonly verSeleccion = signal(false);
+  readonly diaSeleccion = signal<DiaSemana>('lunes');
 
   constructor() {
     if (this.planificacionId) {
@@ -178,6 +183,10 @@ export class PlanificacionConstructorComponent {
     this.fechaInicio.set(valor);
   }
 
+  anyadirEjerciciosADia(ejerciciosIds: string[]){
+    ejerciciosIds.forEach(e => this.anadirEjercicioADia(this.diaSeleccion(), e))
+  }
+
   async anadirEjercicioADia(dia: DiaSemana, ejercicioId: string): Promise<void> {
     if (!ejercicioId) return;
     this.errorDia.set(null);
@@ -217,7 +226,6 @@ export class PlanificacionConstructorComponent {
 
   async guardar(): Promise<void> {
     if (!this.formulario().valid() || this.errorFecha()) return;
-
     this.guardando.set(true);
     this.errorAlGuardar.set(null);
     try {

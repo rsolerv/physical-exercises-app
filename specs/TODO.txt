@@ -14,6 +14,7 @@ Eliminar la búsqueda horrible que hay y dejar un botón de agregar ejercicio. E
   - Comun: Botón de agergar ejercicio que en una pantalla nueva busque tranquilamente el ejercicio y lo selecciones. 
   Que permita selección múltiple. La pantalla de búsqueda deberá permitir buscar por la categoría y el nombre. Y debe visualizar los dos más la descripción del ejercicio. 
   Contendrá un buscador parcial en la parte de arriba para la búsqueda por nombre o descripción. 
+  La pantalla de búsqueda es la misma que la de Buscar sólo que tiene selector multiple en la lista.
 - Formulario ejercicio - Volver: Que vuelva a la pantalla de donde venga, no siempre va a buscar, porque puede ir a planificación, a Hoy o al semanal.
 - En la planificación de hoy cabe perfectamente la descripción de cada ejercicio debajo. Que quepa completamente. En lugar de consultar pondria la palabra Ver detalle o Detalle.
 - No me gusta que en movil, el boton + para agregar ejercicio tape el contenido de debajo. A veces es imposible verlo. Una solución sería en movil dar siempre un margen inferior a todaas las pantallas o a la padre con la misma altura de ese botón.

@@ -1,44 +1,5 @@
-@use '../../../styles/espaciado' as *;
-@use '../../../styles/breakpoints' as *;
-@use '@angular/material' as mat;
-
 .busqueda-ejercicios {
   overflow-x: clip;
-}
-
-.busqueda-ejercicios__filtros {
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  display: flex;
-  flex-direction: column;
-  gap: $espaciado-2;
-  margin: 0 calc(-1 * var(--contenido-padding, 16px)) $espaciado-3;
-  padding: $espaciado-2 var(--contenido-padding, 16px);
-  background: var(--mat-sys-surface);
-  border-bottom: 1px solid var(--mat-sys-outline-variant);
-}
-
-.busqueda-ejercicios__campo-texto {
-  width: 100%;
-  margin-bottom: -$espaciado-2;
-}
-
-.busqueda-ejercicios__categorias {
-  display: flex;
-  max-width: 100%;
-  overflow-x: auto;
-  white-space: nowrap;
-}
-
-:host ::ng-deep .busqueda-ejercicios__categorias > .mdc-evolution-chip-set__chips {
-  flex-wrap: nowrap;
-  width: max-content;
-  min-width: 100%;
-}
-
-:host ::ng-deep .busqueda-ejercicios__categorias mat-chip-option {
-  min-height: 48px;
 }
 
 .busqueda-ejercicios__disposicion {
@@ -49,74 +10,6 @@
   min-width: 0;
 }
 
-.busqueda-ejercicios__tarjeta {
-  height: auto;
-  margin-bottom: $espaciado-3;
-  border-radius: 8px;
-  margin: $espaciado-1;
-
-  &.mdc-list-item--with-three-lines {
-    height: auto;
-    overflow: visible;
-  }
-
-  &[aria-current='true'] {
-    background: var(--mat-sys-secondary-container);
-  }
-}
-
-:host ::ng-deep .busqueda-ejercicios__tarjeta .mdc-list-item__content {
-  height: auto;
-  min-width: 0;
-  overflow: visible;
-}
-
-.busqueda-ejercicios__descripcion {
-  display: -webkit-box;
-  overflow: hidden;
-  margin-top: $espaciado-1;
-  white-space: normal;
-  min-width: 0;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-}
-
-:host ::ng-deep .busqueda-ejercicios__tarjeta.mdc-list-item--with-three-lines
-  .mat-mdc-list-item-line.busqueda-ejercicios__descripcion {
-  white-space: normal;
-}
-
-.busqueda-ejercicios__etiquetas {
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: $espaciado-1;
-  gap: $espaciado-1;
-
-  span {
-    color: var(--mat-sys-on-surface-variant);
-  }
-  
-  @include mat.chips-overrides((
-    elevated-container-color: var(--color-primario-suave),
-    label-text-color: var(--color-texto)
-  ));
-}
-
 .busqueda-ejercicios__error {
   color: var(--mat-sys-error);
 }
-
-@include escritorio {
-  .busqueda-ejercicios__filtros {
-    --contenido-padding: 32px;
-  }
-}
-
-@include movil {
-  .busqueda-ejercicios__filtros {
-    margin: inherit;
-  }
-}
-
-

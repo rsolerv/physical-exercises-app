@@ -46,18 +46,36 @@ describe('BusquedaEjerciciosComponent', () => {
     const buscar = configurar({ ejercicios: [ejercicio('1', 'Sentadilla')], categorias: [categoria('cat-1', 'Piernas')] });
     const fixture = await crearComponente();
 
-    fixture.componentInstance.alternarCategoria('cat-1');
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('mat-chip-option:not([data-todas-categorias])')?.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
     expect(buscar).toHaveBeenCalledWith('', ['cat-1']);
   });
 
+  it('la opción Todas limpia las categorías seleccionadas', async () => {
+    const buscar = configurar({ ejercicios: [ejercicio('1', 'Sentadilla')], categorias: [categoria('cat-1', 'Piernas')] });
+    const fixture = await crearComponente();
+
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('mat-chip-option:not([data-todas-categorias])')?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('[data-todas-categorias]')?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.categoriaIdsSeleccionadas()).toEqual([]);
+    expect(buscar).toHaveBeenLastCalledWith('', []);
+  });
+
   it('filtra por texto libre (FR-013)', async () => {
     const buscar = configurar({ ejercicios: [ejercicio('1', 'Sentadilla')], categorias: [] });
     const fixture = await crearComponente();
 
-    fixture.componentInstance.texto.set('senta');
+    const entrada = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>('input');
+    if (!entrada) throw new Error('Debe mostrarse el campo de búsqueda.');
+    entrada.value = 'senta';
+    entrada.dispatchEvent(new Event('input', { bubbles: true }));
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -77,7 +95,7 @@ describe('BusquedaEjerciciosComponent', () => {
     configurar({ ejercicios: [ejercicio('1', 'Sentadilla')], categorias: [categoria('cat-2', 'Espalda')], buscar });
     const fixture = await crearComponente();
 
-    fixture.componentInstance.alternarCategoria('cat-2');
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('mat-chip-option:not([data-todas-categorias])')?.click();
     await fixture.whenStable();
     fixture.detectChanges();
 

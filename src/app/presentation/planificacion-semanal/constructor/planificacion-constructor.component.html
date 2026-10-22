@@ -3,10 +3,17 @@
     <mat-chip-set aria-label="Tipo de planificación">
       <mat-chip>{{ etiquetaTipoPlan() }}</mat-chip>
     </mat-chip-set>
-    <a mat-stroked-button routerLink="/planificacion">
-      <mat-icon>arrow_back</mat-icon>
-      Volver
-    </a>
+    @if (verSeleccion()) {
+      <button mat-stroked-button type="button" (click)="verSeleccion.set(false)">
+        <mat-icon>arrow_back</mat-icon>
+        Volver
+      </button>
+    } @else {
+      <a mat-stroked-button routerLink="/planificacion">
+        <mat-icon>arrow_back</mat-icon>
+        Volver
+      </a>
+    }
     @if (modoEdicion) {
       <button mat-stroked-button type="button" (click)="duplicar()">
         <mat-icon>content_copy</mat-icon>
@@ -16,6 +23,7 @@
   </div>
 </app-cabecera-pagina>
 
+@if(!verSeleccion()){
 <form class="planificacion-constructor" (submit)="$event.preventDefault(); guardar()">
   @if (cargandoPlanificacion()) {
     <app-estado-carga mensaje="Cargando planificación" [cantidad]="3" />
@@ -78,27 +86,12 @@
               <p class="planificacion-constructor__descanso">Descanso</p>
             }
           </div>
-          <mat-form-field appearance="outline" class="planificacion-constructor__busqueda">
-            <mat-label>Buscar ejercicios</mat-label>
-            <input
-              matInput
-              [value]="busquedaEjercicios()[dia]"
-              [attr.aria-label]="'Buscar ejercicios del ' + etiquetasDia[dia].toLowerCase()"
-              (input)="establecerBusquedaEjercicio(dia, $any($event.target).value)"
-            />
-          </mat-form-field>
-          <mat-form-field appearance="outline" class="planificacion-constructor__selector">
-            <mat-label>Añadir ejercicio</mat-label>
-            <mat-select
-              #selector
-              [disabled]="!recursoEjercicios.hasValue()"
-              (selectionChange)="anadirEjercicioADia(dia, selector.value); selector.value = null"
-            >
-              @for (ejercicio of ejerciciosDisponiblesParaDia(dia); track ejercicio.id) {
-                <mat-option [value]="ejercicio.id">{{ ejercicio.nombre }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
+
+          <button mat-stroked-button type="button" (click)="diaSeleccion.set(dia);verSeleccion.set(true)">
+            <mat-icon>add</mat-icon>
+            Añadir ejercicio
+          </button>
+
         </section>
       }
     </div>
@@ -110,3 +103,6 @@
 
   <button mat-flat-button color="primary" type="submit" [disabled]="guardando()">Guardar planificación</button>
 </form>
+} @else {
+  <app-agregar-ejercicio (seleccionados)="anyadirEjerciciosADia($event)"/>
+}

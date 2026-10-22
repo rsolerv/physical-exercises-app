@@ -1,0 +1,27 @@
+<div class="busqueda-ejercicios__filtros busqueda-ejercicios__filtros--fijados">
+  <mat-form-field appearance="outline" class="busqueda-ejercicios__campo-texto">
+    <mat-label>Buscar por nombre o descripción</mat-label>
+    <input matInput [value]="texto()" (input)="texto.set($any($event.target).value)" />
+    <mat-icon matPrefix>search</mat-icon>
+  </mat-form-field>
+
+  @if (categorias().length > 0) {
+    <mat-chip-listbox class="busqueda-ejercicios__categorias" multiple aria-label="Filtrar por categoría">
+      <mat-chip-option
+        data-todas-categorias
+        [selected]="categoriaIdsSeleccionadas().length === 0"
+        (click)="limpiarCategorias()"
+      >
+        Todas
+      </mat-chip-option>
+      @for (categoria of categorias(); track categoria.id) {
+        <mat-chip-option
+          [selected]="categoriaIdsSeleccionadas().includes(categoria.id)"
+          (click)="alternarCategoria(categoria.id)"
+        >
+          {{ categoria.nombre }}
+        </mat-chip-option>
+      }
+    </mat-chip-listbox>
+  }
+</div>

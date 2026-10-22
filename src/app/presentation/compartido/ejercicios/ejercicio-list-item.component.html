@@ -1,0 +1,13 @@
+<a
+  mat-list-item
+  class="busqueda-ejercicios__tarjeta"
+  [routerLink]="['/ejercicios', ejercicio().id]"
+>
+  <span matListItemTitle>{{ ejercicio().nombre }}</span>
+  <span matListItemLine class="busqueda-ejercicios__descripcion">{{ ejercicio().descripcion }}</span>
+  <span matListItemLine class="busqueda-ejercicios__etiquetas">
+    @for (nombre of nombresCategorias(); track nombre) {
+      <mat-chip>{{ nombre }}</mat-chip>
+    }
+  </span>
+</a>

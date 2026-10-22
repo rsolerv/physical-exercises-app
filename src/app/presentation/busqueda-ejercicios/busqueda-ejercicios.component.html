@@ -1,33 +1,11 @@
 <section class="busqueda-ejercicios">
   <app-cabecera-pagina titulo="Buscar ejercicios" descripcion="Filtra por categoría o por texto libre." />
 
-  <div class="busqueda-ejercicios__filtros busqueda-ejercicios__filtros--fijados">
-    <mat-form-field appearance="outline" class="busqueda-ejercicios__campo-texto">
-      <mat-label>Buscar por nombre o descripción</mat-label>
-      <input matInput [value]="texto()" (input)="texto.set($any($event.target).value)" />
-      <mat-icon matPrefix>search</mat-icon>
-    </mat-form-field>
-
-    @if (categorias().length > 0) {
-      <mat-chip-listbox class="busqueda-ejercicios__categorias" multiple aria-label="Filtrar por categoría">
-        <mat-chip-option
-          data-todas-categorias
-          [selected]="categoriaIdsSeleccionadas().length === 0"
-          (click)="limpiarCategorias()"
-        >
-          Todas
-        </mat-chip-option>
-        @for (categoria of categorias(); track categoria.id) {
-          <mat-chip-option
-            [selected]="categoriaIdsSeleccionadas().includes(categoria.id)"
-            (click)="alternarCategoria(categoria.id)"
-          >
-            {{ categoria.nombre }}
-          </mat-chip-option>
-        }
-      </mat-chip-listbox>
-    }
-  </div>
+  <app-busqueda-ejercicios-filtros
+    [categorias]="categorias()"
+    [(texto)]="texto"
+    [(categoriaIdsSeleccionadas)]="categoriaIdsSeleccionadas"
+  />
 
   @if (errorCarga()) {
     <p class="busqueda-ejercicios__error" role="alert">{{ errorCarga() }}</p>
@@ -41,19 +19,7 @@
     <div class="busqueda-ejercicios__disposicion">
       <mat-nav-list class="busqueda-ejercicios__resultados" aria-label="Resultados de ejercicios">
         @for (ejercicio of recursoResultados.value(); track ejercicio.id) {
-          <a
-            mat-list-item
-            class="busqueda-ejercicios__tarjeta"
-            [routerLink]="['/ejercicios', ejercicio.id]"
-          >
-            <span matListItemTitle>{{ ejercicio.nombre }}</span>
-            <span matListItemLine class="busqueda-ejercicios__descripcion">{{ ejercicio.descripcion }}</span>
-            <span matListItemLine class="busqueda-ejercicios__etiquetas">
-              @for (nombre of nombresCategorias(ejercicio); track nombre) {
-                <mat-chip>{{ nombre }}</mat-chip>
-              }
-            </span>
-          </a>
+          <app-ejercicio-list-item [ejercicio]="ejercicio" [nombresCategorias]="nombresCategorias(ejercicio)" />
         }
       </mat-nav-list>
 

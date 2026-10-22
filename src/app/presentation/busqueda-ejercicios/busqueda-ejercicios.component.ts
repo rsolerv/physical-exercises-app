@@ -1,13 +1,7 @@
 import { Component, computed, inject, resource, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { from } from 'rxjs';
-import { RouterLink } from '@angular/router';
 import { MatListModule } from '@angular/material/list';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
 import { BuscarEjerciciosUseCase } from '../../application/casos-uso/buscar-ejercicios.use-case';
 import { EjercicioRepositoryPort } from '../../application/ports/ejercicio-repository.port';
 import { CategoriaRepositoryPort } from '../../application/ports/categoria-repository.port';
@@ -16,6 +10,8 @@ import type { Ejercicio } from '../../domain/ejercicio/ejercicio.entity';
 import { CabeceraPaginaComponent } from '../compartido/ui/cabecera-pagina/cabecera-pagina.component';
 import { EstadoVacioComponent } from '../compartido/ui/estado-vacio/estado-vacio.component';
 import { EstadoCargaComponent } from '../compartido/ui/estado-carga/estado-carga.component';
+import { BusquedaEjerciciosFiltrosComponent } from '../compartido/ejercicios/busqueda-ejercicios-filtros.component';
+import { EjercicioListItemComponent } from '../compartido/ejercicios/ejercicio-list-item.component';
 
 /**
  * Búsqueda de ejercicios por texto libre y/o categoría (Historia de Usuario
@@ -26,16 +22,12 @@ import { EstadoCargaComponent } from '../compartido/ui/estado-carga/estado-carga
   selector: 'app-busqueda-ejercicios',
   standalone: true,
   imports: [
-    RouterLink,
     MatListModule,
-    MatChipsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatIconModule,
-    MatButtonModule,
     CabeceraPaginaComponent,
     EstadoVacioComponent,
     EstadoCargaComponent,
+    BusquedaEjerciciosFiltrosComponent,
+    EjercicioListItemComponent,
   ],
   templateUrl: './busqueda-ejercicios.component.html',
   styleUrl: './busqueda-ejercicios.component.scss',
@@ -63,16 +55,6 @@ export class BusquedaEjerciciosComponent {
     params: () => ({ texto: this.texto(), categoriaIds: this.categoriaIdsSeleccionadas() }),
     loader: ({ params }) => this.buscarEjercicios.buscar(params.texto, params.categoriaIds),
   });
-
-  limpiarCategorias(): void {
-    this.categoriaIdsSeleccionadas.set([]);
-  }
-
-  alternarCategoria(categoriaId: string): void {
-    this.categoriaIdsSeleccionadas.update((actuales) =>
-      actuales.includes(categoriaId) ? actuales.filter((id) => id !== categoriaId) : [...actuales, categoriaId]
-    );
-  }
 
   nombresCategorias(ejercicio: Ejercicio): string[] {
     const nombresPorId = new Map(this.categorias().map((categoria) => [categoria.id, categoria.nombre]));

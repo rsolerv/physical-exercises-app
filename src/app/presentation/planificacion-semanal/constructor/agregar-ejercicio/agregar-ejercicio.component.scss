@@ -1,0 +1,15 @@
+.busqueda-ejercicios {
+  overflow-x: clip;
+}
+
+.busqueda-ejercicios__disposicion {
+  min-width: 0;
+}
+
+.busqueda-ejercicios__resultados {
+  min-width: 0;
+}
+
+.busqueda-ejercicios__error {
+  color: var(--mat-sys-error);
+}
