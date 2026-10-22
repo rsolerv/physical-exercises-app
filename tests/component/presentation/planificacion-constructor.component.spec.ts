@@ -75,7 +75,7 @@ describe('PlanificacionConstructorComponent', () => {
     const fixture = await crearComponente();
     const componente = fixture.componentInstance;
 
-    componente.establecerFechaInicio('2026-10-13'); // martes
+    componente.establecerFechaInicio(new Date(2026, 9, 13)); // martes
     fixture.detectChanges();
 
     expect(componente.errorFecha()).toContain('lunes');
@@ -86,10 +86,11 @@ describe('PlanificacionConstructorComponent', () => {
     const fixture = await crearComponente();
     const componente = fixture.componentInstance;
 
-    componente.establecerFechaInicio('2026-10-12'); // lunes
+    componente.establecerFechaInicio(new Date(2026, 9, 12)); // lunes
     fixture.detectChanges();
 
     expect(componente.errorFecha()).toBeNull();
+    expect(componente.fechaInicio()).toBe('2026-10-12');
   });
 
   it('abre el selector, añade el ejercicio al día elegido y vuelve al formulario sin guardar', async () => {
@@ -245,7 +246,7 @@ describe('PlanificacionConstructorComponent', () => {
     expect(componente.etiquetaTipoPlan()).toBe('Plantilla');
     const lunes = new Date();
     lunes.setDate(lunes.getDate() - ((lunes.getDay() + 6) % 7));
-    componente.establecerFechaInicio(lunes.toISOString().slice(0, 10));
+    componente.establecerFechaInicio(lunes);
     fixture.detectChanges();
 
     expect(componente.etiquetaTipoPlan()).toBe('Activa');
