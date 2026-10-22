@@ -2,8 +2,10 @@
 @use '../../../../styles/breakpoints' as *;
 
 .busqueda-ejercicios__filtros {
-  position: sticky;
-  top: 0;
+  position: fixed;
+  top: 60px;
+  left: 260px;
+  width: 100%;  
   z-index: 3;
   display: flex;
   flex-direction: column;
@@ -12,6 +14,14 @@
   padding: $espaciado-2 var(--contenido-padding, 16px);
   background: var(--mat-sys-surface);
   border-bottom: 1px solid var(--mat-sys-outline-variant);
+  @include movil {
+    top: 80px;
+    left: 0px;
+  }
+  @include tablet {
+    top: 60px;
+    left: 78px;
+  }  
 }
 
 .busqueda-ejercicios__campo-texto {

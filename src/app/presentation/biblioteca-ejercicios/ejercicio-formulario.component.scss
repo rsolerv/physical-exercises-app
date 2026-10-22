@@ -5,7 +5,6 @@
   display: flex;
   flex-direction: column;
   gap: $espaciado-3;
-  max-width: 1184px;
   margin-inline: auto;
   padding-bottom: $espaciado-2;
 }
@@ -176,14 +175,18 @@
   }
 
   @include movil{
-    flex-direction: column;
+    justify-content: space-around; 
   }
+
 }
 
 .ejercicio-formulario__estado {
   flex: 1 1 auto;
   color: var(--mat-sys-on-surface-variant);
   margin-left: $espaciado-2;
+  @include movil{
+    display:none;    
+  }
 }
 
 @include escritorio {
