@@ -48,7 +48,7 @@ describe('Integración de la pantalla de inicio y de las rutas de planificación
     await harness.fixture.whenStable();
 
     expect(harness.routeNativeElement?.querySelector('.dia-actual')).toBeTruthy();
-    expect(harness.routeNativeElement?.querySelector('app-cabecera-pagina h1')?.textContent).toContain('Hoy');
+    expect(harness.routeNativeElement?.querySelector('app-cabecera-pagina h1')?.textContent).toContain('Ejercicios para hoy');
     expect(harness.routeNativeElement?.textContent).toContain('Ver planificación semanal');
   });
 
