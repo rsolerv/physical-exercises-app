@@ -3,6 +3,7 @@
 
 :host {
   display: block;
+  border-bottom: 1px solid #2969966b;
 }
 
 .busqueda-ejercicios__tarjeta {
@@ -25,6 +26,7 @@
   height: auto;
   min-width: 0;
   overflow: visible;
+  margin: $espaciado-1 0;
 }
 
 .busqueda-ejercicios__descripcion {

@@ -8,7 +8,7 @@
   display: flex;
   flex-direction: column;
   gap: $espaciado-2;
-  margin: 0 calc(-1 * var(--contenido-padding, 16px)) $espaciado-3;
+  margin: inherit;
   padding: $espaciado-2 var(--contenido-padding, 16px);
   background: var(--mat-sys-surface);
   border-bottom: 1px solid var(--mat-sys-outline-variant);
