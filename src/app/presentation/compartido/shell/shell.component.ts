@@ -22,7 +22,7 @@ const VERSION_APLICACION = '0.0.0';
     <section class="panel-mas" aria-labelledby="panel-mas-titulo">
       <header class="panel-mas__cabecera">
         <h2 id="panel-mas-titulo">Más opciones</h2>
-        <button mat-icon-button matBottomSheetClose aria-label="Cerrar Más">
+        <button mat-icon-button aria-label="Cerrar Más" (click)="cerrar()">
           <mat-icon>close</mat-icon>
         </button>
       </header>

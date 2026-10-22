@@ -18,8 +18,12 @@ Para ello:
 Copilot hará:
 --------------
 - Formulario ejercicio: Las series y repeticiones en campos separados no obligatorios.
-- Edición de ejercicio: Aparece un Guardado en el menú inferior feo y desalineado. Además para que vale? No aporta información relevante porque al editar no se ha guardado nada. Si es para indicar que hay cambios sin guardar que no salga el Guardado, pero sí el Cambios sin guardar, mejor puesto, como warning.
-- El botón de cerrado del mas del menú infierior que se suele ver en movil no va. Debería volver al menú inicial inferior.
+- Edición de ejercicio: Aparece un Guardado en el menú inferior feo y desalineado. 
+Además para que vale? No aporta información relevante porque al editar no se ha guardado nada. 
+Si es para indicar que hay cambios sin guardar que no salga el Guardado, pero sí el Cambios sin guardar, mejor puesto, como warning.
+- El botón de cerrado del mas del menú inferior que se suele ver en movil no hace nada. Al pulsarlo debe ocultarse el menú que ha salido pulsando el más.
+- El formulario nuevo ejercicio podria tener una opción que sea: Agregar a los ejercicios de hoy, que lo que hace es editar el planificador de la semana activa y 
+agregar a hoy el ejercicio creado.
 
 Hecho
 -------
