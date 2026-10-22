@@ -145,6 +145,7 @@
 @include movil {
   .shell__barra-superior {
     padding-inline: $espaciado-2;
+    height: 80px;
   }
 
   .shell__contenido {
@@ -196,6 +197,6 @@
   .shell__nuevo-ejercicio {
     position: fixed;
     right: $espaciado-2;
-    bottom: calc(88px + env(safe-area-inset-bottom));
+    top: $espaciado-1;
   }
 }
