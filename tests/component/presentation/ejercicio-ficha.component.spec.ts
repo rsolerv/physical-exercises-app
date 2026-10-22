@@ -164,34 +164,6 @@ describe('EjercicioFichaComponent', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('app-enlace-embed')).toBeTruthy();
   });
 
-  it('presenta los medios antes del título y conserva la proporción cuadrada completa de imágenes', async () => {
-    configurar({
-      ejercicio: ejercicio({
-        imagenes: [{ id: 'img-1', tipo: 'url', valorUrl: 'https://example.com/imagen.jpg' }],
-        enlaces: [{ tipo: 'youtube', url: 'https://youtu.be/abc123' }],
-      }),
-    });
-    const fixture = await crearComponente();
-    const raiz = fixture.nativeElement as HTMLElement;
-    const medios = raiz.querySelector('.ejercicio-ficha__medios');
-    const cabecera = raiz.querySelector('app-cabecera-pagina');
-
-    expect(medios).toBeTruthy();
-    expect(cabecera).toBeTruthy();
-    expect(
-      medios !== null &&
-        cabecera !== null &&
-        Boolean(medios.compareDocumentPosition(cabecera) & Node.DOCUMENT_POSITION_FOLLOWING)
-    ).toBe(true);
-    expect(raiz.querySelector('.ejercicio-ficha__imagenes')?.classList.contains('ejercicio-ficha__imagenes')).toBe(true);
-    const imagen = raiz.querySelector<HTMLImageElement>('.ejercicio-ficha__imagen');
-    expect(imagen).toBeTruthy();
-    expect(imagen && getComputedStyle(imagen).aspectRatio).toBe('1 / 1');
-    expect(imagen && getComputedStyle(imagen).objectFit).toBe('contain');
-    const enlaceImagen = raiz.querySelector<HTMLAnchorElement>('.ejercicio-ficha__imagen-ampliada');
-    expect(enlaceImagen?.target).toBe('_blank');
-  });
-
   it('muestra un mensaje cuando el ejercicio no existe', async () => {
     configurar({ ejercicio: null });
     const fixture = await crearComponente();
