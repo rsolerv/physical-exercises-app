@@ -1,3 +1,5 @@
+@use '../../../styles/breakpoints' as *;
+
 .busqueda-ejercicios {
   overflow-x: clip;
 }
@@ -8,6 +10,12 @@
 
 .busqueda-ejercicios__resultados {
   min-width: 0;
+  @include movil {
+    padding-top: 210px;
+  }
+  @include tablet{
+    padding-top: 255px;
+  }
 }
 
 .busqueda-ejercicios__error {

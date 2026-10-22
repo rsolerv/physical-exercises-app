@@ -4,11 +4,12 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import type { Categoria } from '../../../domain/categoria/categoria.entity';
+import { CabeceraPaginaComponent } from '../ui/cabecera-pagina/cabecera-pagina.component';
 
 @Component({
   selector: 'app-busqueda-ejercicios-filtros',
   standalone: true,
-  imports: [MatChipsModule, MatFormFieldModule, MatIconModule, MatInputModule],
+  imports: [MatChipsModule, MatFormFieldModule, MatIconModule, MatInputModule, CabeceraPaginaComponent],
   templateUrl: './busqueda-ejercicios-filtros.component.html',
   styleUrl: './busqueda-ejercicios-filtros.component.scss',
 })

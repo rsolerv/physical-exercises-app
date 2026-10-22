@@ -4,12 +4,42 @@
   } @else if (errorCarga()) {
     <p class="ejercicio-ficha__error-operacion" role="alert">{{ errorCarga() }}</p>
   } @else if (recursoEjercicio.value(); as ejercicio) {
+
+    <app-cabecera-pagina [titulo]="ejercicio.nombre">
+      <div acciones class="ejercicio-ficha__acciones">
+        <a mat-button routerLink="/buscar">
+          <mat-icon>arrow_back</mat-icon>
+          Volver a Buscar
+        </a>
+        <a mat-stroked-button routerLink="editar">
+          <mat-icon>edit</mat-icon>
+          Editar
+        </a>
+        <button
+          mat-icon-button
+          type="button"
+          aria-label="Más acciones del ejercicio"
+          [matMenuTriggerFor]="menuAcciones"
+        >
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #menuAcciones="matMenu">
+          <button mat-menu-item class="ejercicio-ficha__accion-destructiva" type="button" (click)="eliminar()">
+            <mat-icon>delete</mat-icon>
+            Eliminar
+          </button>
+        </mat-menu>
+      </div>
+    </app-cabecera-pagina>
+
+    <p class="ejercicio-ficha__descripcion">{{ ejercicio.descripcion }}</p>
+
     @if (enlacesYoutube().length > 0 || enlacesWeb().length > 0 || ejercicio.imagenes.length > 0) {
       <section class="ejercicio-ficha__medios" aria-label="Medios del ejercicio">
         @if (enlacesYoutube().length > 0) {
           <div class="ejercicio-ficha__videos">
             @for (enlace of enlacesYoutube(); track enlace.url) {
-              <app-youtube-embed [url]="enlace.url" [titulo]="ejercicio.nombre" />
+              <app-youtube-embed [url]="enlace.url" [titulo]="'YouTube: '+ ejercicio.nombre" />
             }
           </div>
         }
@@ -46,33 +76,6 @@
         }
       </section>
     }
-
-    <app-cabecera-pagina [titulo]="ejercicio.nombre">
-      <div acciones class="ejercicio-ficha__acciones">
-        <a mat-button routerLink="/buscar">
-          <mat-icon>arrow_back</mat-icon>
-          Volver a Buscar
-        </a>
-        <a mat-stroked-button routerLink="editar">
-          <mat-icon>edit</mat-icon>
-          Editar
-        </a>
-        <button
-          mat-icon-button
-          type="button"
-          aria-label="Más acciones del ejercicio"
-          [matMenuTriggerFor]="menuAcciones"
-        >
-          <mat-icon>more_vert</mat-icon>
-        </button>
-        <mat-menu #menuAcciones="matMenu">
-          <button mat-menu-item class="ejercicio-ficha__accion-destructiva" type="button" (click)="eliminar()">
-            <mat-icon>delete</mat-icon>
-            Eliminar
-          </button>
-        </mat-menu>
-      </div>
-    </app-cabecera-pagina>
 
     @if (errorAlEliminar(); as error) {
       <p class="ejercicio-ficha__error-operacion" role="alert">{{ error }}</p>
@@ -126,7 +129,6 @@
       }
     </mat-chip-set>
 
-    <p class="ejercicio-ficha__descripcion">{{ ejercicio.descripcion }}</p>
   } @else {
     <app-estado-vacio icono="error_outline" mensaje="El ejercicio solicitado no se ha encontrado." />
   }

@@ -17,6 +17,7 @@
   @include movil {
     top: 80px;
     left: 0px;
+    gap: 0;
   }
   @include tablet {
     top: 60px;
@@ -27,6 +28,7 @@
 .busqueda-ejercicios__campo-texto {
   width: 100%;
   margin-bottom: -$espaciado-2;
+
 }
 
 .busqueda-ejercicios__categorias {
