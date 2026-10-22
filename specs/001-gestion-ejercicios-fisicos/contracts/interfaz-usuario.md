@@ -43,6 +43,7 @@ Los anchos entre rangos y menores de 360 px siguen siendo utilizables. Ninguna v
 - En móvil, la tira de siete días permite seleccionar un día e identifica actividad, día actual y descanso; el contenido muestra los ejercicios del día seleccionado.
 - Con los datos cargados, cambiar el día seleccionado actualiza el contenido visible en menos de 1 segundo (SC-031).
 - En escritorio, la cuadrícula permite comparar los siete días.
+- En el constructor, el selector de fecha ofrece un calendario que puede abrirse mediante un control visible tanto en móvil como en escritorio, y solo permite seleccionar lunes; dejar la fecha vacía crea una plantilla.
 - El selector de ejercicios se abre desde el día y permite buscar por texto. No se admiten duplicados en el mismo día.
 - Los ejercicios de la planificación llevan a su ficha sin sustituir el control de selección o edición.
 

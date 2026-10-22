@@ -12,7 +12,7 @@ Para ello:
 - En la planificación de hoy cabe perfectamente la descripción de cada ejercicio debajo. Que quepa completamente. En lugar de consultar pondria la palabra Ver detalle o Detalle.
 - No me gusta que en movil, el boton + para agregar ejercicio tape el contenido de debajo. A veces es imposible verlo. Una solución sería en movil dar siempre un margen inferior a todaas las pantallas o a la padre con la misma altura de ese botón.
 - En la sincronización, Configuracion de Github no parece un link o algo pulsable, arreglar para que se entienda que se puede pulsar.
-- En movil, en la edición de planificación no sale el calendario de fecha.
+
 
 
 Copilot hará:
@@ -20,7 +20,6 @@ Copilot hará:
 - Formulario ejercicio: Las series y repeticiones en campos separados no obligatorios.
 - Edición de ejercicio: Aparece un Guardado en el menú inferior feo y desalineado. Además para que vale? No aporta información relevante porque al editar no se ha guardado nada. Si es para indicar que hay cambios sin guardar que no salga el Guardado, pero sí el Cambios sin guardar, mejor puesto, como warning.
 - El botón de cerrado del mas del menú infierior que se suele ver en movil no va. Debería volver al menú inicial inferior.
-
 
 Hecho
 -------
@@ -30,6 +29,7 @@ Hecho
 - Eliminar la ayuda cutre que se muestra a la derecha en el Buscar de: Selecciona un ejercicio para ver su ficha...
 - Eliminar imagen de item de buscador
 - Selección de ejercicio en editor de planificación semanal.
+- Calendario de fecha de inicio accesible en móvil durante la edición de planificación.
 Eliminar la búsqueda horrible que hay y dejar un botón de agregar ejercicio. El botón abre una nueva pantalla donde se busca y seleccionan los ejercicios.
   - Comun: Botón de agregar ejercicio que en una pantalla nueva busque tranquilamente el ejercicio y lo selecciones. 
   Que permita selección múltiple. La pantalla de búsqueda deberá permitir buscar por la categoría y el nombre. Y debe nombre y descripción del ejercicio en la lista. 

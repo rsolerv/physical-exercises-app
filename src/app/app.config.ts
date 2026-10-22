@@ -2,6 +2,7 @@ import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessC
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { MAT_DATE_LOCALE } from '@angular/material/core';
 import { routes } from './app.routes';
 import { AjustesRepositoryPort } from './application/ports/ajustes-repository.port';
 import { AjustesRepositorySqlite } from './infrastructure/persistencia-sqlite/ajustes-repository.sqlite';
@@ -26,6 +27,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(),
     provideAnimationsAsync(),
+    { provide: MAT_DATE_LOCALE, useValue: 'es-ES' },
     // Cableado de los puertos de Application con sus adaptadores concretos de Infrastructure.
     { provide: AjustesRepositoryPort, useExisting: AjustesRepositorySqlite },
     { provide: EjercicioRepositoryPort, useExisting: EjercicioRepositorySqlite },

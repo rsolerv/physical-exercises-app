@@ -249,7 +249,7 @@ Como usuario quiero reconocer rápidamente dónde estoy, encontrar las acciones 
 - **FR-014**: Cada ejercicio DEBE poder almacenar: nombre, descripción, una o varias categorías, enlaces web, enlaces de YouTube, imágenes y observaciones opcionales.
 - **FR-015**: El sistema DEBE mostrar una previsualización integrada (reproductor embebido) de los vídeos de YouTube asociados a un ejercicio, siempre que el vídeo esté disponible.
 - **FR-016**: El sistema DEBE permitir visualizar enlaces web externos dentro de la propia aplicación, siempre que el sitio de destino lo permita.
-- **FR-017**: El sistema DEBE permitir crear planificaciones semanales con una fecha de inicio asociada, que siempre corresponde a un lunes; no pueden existir dos planificaciones concretas con la misma fecha de inicio.
+- **FR-017**: El sistema DEBE permitir crear y editar planificaciones semanales con una fecha de inicio asociada, que siempre corresponde a un lunes; el selector de fecha DEBE permitir elegirla mediante un calendario accesible en móvil y escritorio. No pueden existir dos planificaciones concretas con la misma fecha de inicio.
 - **FR-018**: El sistema DEBE permitir crear plantillas de planificación reutilizables, sin fecha de inicio asociada.
 - **FR-019**: El sistema DEBE permitir duplicar cualquier planificación o plantilla existente para crear una nueva a partir de ella, conservando sus ejercicios y días asociados.
 - **FR-020**: Un mismo ejercicio DEBE poder asociarse a varias planificaciones distintas, y a varios días de la semana dentro de una misma planificación.

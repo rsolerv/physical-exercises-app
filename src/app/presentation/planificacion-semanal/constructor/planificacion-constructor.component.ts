@@ -3,6 +3,8 @@ import { form, required, FormField } from '@angular/forms/signals';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
@@ -56,6 +58,8 @@ function diasVaciosRegistro(): EjerciciosPorDia {
     FormField,
     MatFormFieldModule,
     MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     MatButtonModule,
     MatSelectModule,
     MatIconModule,
@@ -89,7 +93,14 @@ export class PlanificacionConstructorComponent {
   });
 
   readonly fechaInicio = signal<string | undefined>(undefined);
+  readonly fechaInicioCalendario = computed(() => {
+    const fecha = this.fechaInicio();
+    if (!fecha) return null;
+    const [anio, mes, dia] = fecha.split('-').map(Number);
+    return new Date(anio, mes - 1, dia);
+  });
   readonly errorFecha = signal<string | null>(null);
+  protected readonly soloLunes = (fecha: Date | null): boolean => fecha === null || fecha.getDay() === 1;
 
   readonly ejerciciosPorDia = signal<EjerciciosPorDia>(diasVaciosRegistro());
   readonly errorDia = signal<string | null>(null);
@@ -169,12 +180,13 @@ export class PlanificacionConstructorComponent {
     );
   }
 
-  establecerFechaInicio(valor: string): void {
-    if (!valor) {
+  establecerFechaInicio(fecha: Date | null): void {
+    if (!fecha) {
       this.fechaInicio.set(undefined);
       this.errorFecha.set(null);
       return;
     }
+    const valor = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
     if (diaSemanaDeFechaIso(valor) !== 'lunes') {
       this.errorFecha.set('La fecha de inicio debe ser un lunes.');
       return;
