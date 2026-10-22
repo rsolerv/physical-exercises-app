@@ -14,8 +14,8 @@ import { MensajeFeedbackService } from '../../compartido/ui/mensaje-feedback.ser
 
 /**
  * Gestión de categorías (Historia de Usuario 1): listado alfabético, alta y
- * eliminación con aviso de retirada automática a "Sin categoría" (FR-009,
- * FR-010, FR-011).
+ * eliminación con comprobación de que cada ejercicio conserve alguna
+ * categoría (FR-009, FR-010, FR-011).
  */
 @Component({
   selector: 'app-categoria-gestion',
@@ -87,11 +87,6 @@ export class CategoriaGestionComponent {
   async eliminarCategoria(id: string): Promise<void> {
     this.errorEliminacion.set(null);
     this.confirmacionEliminacion.set(null);
-    const categoria = this.categorias().find((c) => c.id === id);
-    if (categoria?.esGenerica) {
-      this.errorEliminacion.set('La categoría "Sin categoría" no se puede eliminar.');
-      return;
-    }
     try {
       const snapshot = await this.gestionarCategoria.eliminar(id);
       this.recursoCategorias.reload();
@@ -123,7 +118,7 @@ export class CategoriaGestionComponent {
 
   iniciarEdicionCategoria(id: string): void {
     const categoria = this.categorias().find((item) => item.id === id);
-    if (!categoria || categoria.esGenerica) return;
+    if (!categoria) return;
     this.errorEdicion.set(null);
     this.confirmacionCategoria.set(null);
     this.categoriaEnEdicion.set(id);

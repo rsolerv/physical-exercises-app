@@ -1,6 +1,7 @@
 # Propuesta de rediseño completa
 
 
+
 Este documento reúne en un solo sitio todas las soluciones que hemos ido proponiendo. Cuando alguna se contradecía, aplico la versión más reciente.
 
 ## 0. Dirección visual
@@ -199,11 +200,10 @@ Hay solo **tres radios de esquina:**
 
 ### 2.7 Categorías
 
-- **Cabecera:** «Categorías» con el contador «8 categorías». Justo debajo, el campo «Nueva categoría» con el botón **Añadir** en la misma línea, que también se activa con Enter.
+- **Cabecera:** «Categorías» con el recuento actualizado de categorías. Justo debajo, el campo «Nueva categoría» con el botón **Añadir** en la misma línea, que también se activa con Enter.
 - **Lista en una tarjeta** de 640 px como máximo. Cada fila muestra el nombre y el número de ejercicios («12 ejercicios»).
 - **Edición en línea:** el nombre se convierte en un campo dentro de la misma fila, con ✓ y ✕. Enter guarda y Esc cancela.
-- **Borrado:** aviso *«Lumbar eliminada · 3 ejercicios pasan a Sin categoría · Deshacer»*.
-- **«Sin categoría»** va en la última fila, separada por una línea, con 🔒 y el texto «Categoría del sistema».
+- **Borrado:** si todos los ejercicios afectados conservan otra categoría, se elimina y se ofrece «Deshacer»; si alguno perdería su última categoría, se bloquea la operación y se indican los ejercicios que deben reasignarse.
 
 ### 2.8 Sincronización
 

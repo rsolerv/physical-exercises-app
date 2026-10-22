@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { SqliteConexionService } from '../../../src/app/infrastructure/persistencia-sqlite/sqlite-conexion.service';
 import { CategoriaRepositorySqlite } from '../../../src/app/infrastructure/persistencia-sqlite/categoria-repository.sqlite';
-import { ErrorNombreDuplicado, ErrorOperacionNoPermitida, ErrorNoEncontrado } from '../../../src/app/domain/errores/errores-dominio';
+import { ErrorNombreDuplicado, ErrorNoEncontrado } from '../../../src/app/domain/errores/errores-dominio';
 
 describe('CategoriaRepositorySqlite', () => {
   let conexion: SqliteConexionService;
@@ -18,7 +18,6 @@ describe('CategoriaRepositorySqlite', () => {
   it('crea una categoría y la recupera por id', async () => {
     const creada = await repositorio.crear('Rodilla', 'Fortalecimiento de rodilla');
     expect(creada.id).toBeTruthy();
-    expect(creada.esGenerica).toBe(false);
 
     const leida = await repositorio.obtenerPorId(creada.id);
     expect(leida?.nombre).toBe('Rodilla');
@@ -39,22 +38,6 @@ describe('CategoriaRepositorySqlite', () => {
     expect(todas.map((c) => c.nombre)).toEqual(['Abdomen', 'Cadera', 'Rodilla']);
   });
 
-  it('obtenerGenerica() devuelve la categoría de fábrica "Sin categoría"', async () => {
-    await conexion.ejecutarSinResultado("INSERT INTO categoria (id, nombre, es_generica) VALUES ('cat-generica', 'Sin categoría', 1)");
-    const generica = await repositorio.obtenerGenerica();
-    expect(generica.id).toBe('cat-generica');
-    expect(generica.esGenerica).toBe(true);
-  });
-
-  it('crearGenerica() crea la categoría de fábrica "Sin categoría" con esGenerica = true', async () => {
-    const creada = await repositorio.crearGenerica('Sin categoría');
-    expect(creada.esGenerica).toBe(true);
-    expect(creada.nombre).toBe('Sin categoría');
-
-    const generica = await repositorio.obtenerGenerica();
-    expect(generica.id).toBe(creada.id);
-  });
-
   it('actualiza el nombre y la descripción de una categoría', async () => {
     const creada = await repositorio.crear('Rodilla');
     const actualizada = await repositorio.actualizar(creada.id, { nombre: 'Rodillas', descripcion: 'Nueva desc' });
@@ -72,9 +55,10 @@ describe('CategoriaRepositorySqlite', () => {
     await expect(repositorio.actualizar(otra.id, { nombre: 'Rodilla' })).rejects.toThrow(ErrorNombreDuplicado);
   });
 
-  it('impide renombrar la categoría genérica (FR-011)', async () => {
-    await conexion.ejecutarSinResultado("INSERT INTO categoria (id, nombre, es_generica) VALUES ('cat-generica', 'Sin categoría', 1)");
-    await expect(repositorio.actualizar('cat-generica', { nombre: 'Otro nombre' })).rejects.toThrow(ErrorOperacionNoPermitida);
+  it('trata una categoría llamada "Sin categoría" como una categoría normal', async () => {
+    await conexion.ejecutarSinResultado("INSERT INTO categoria (id, nombre) VALUES ('cat-antigua', 'Sin categoría')");
+    const actualizada = await repositorio.actualizar('cat-antigua', { nombre: 'General' });
+    expect(actualizada.nombre).toBe('General');
   });
 
   it('elimina una categoría (incluso con ejercicios asociados, FR-011)', async () => {
@@ -92,8 +76,4 @@ describe('CategoriaRepositorySqlite', () => {
     expect(await repositorio.obtenerPorId(original.id)).toEqual(original);
   });
 
-  it('impide eliminar la categoría genérica (FR-011)', async () => {
-    await conexion.ejecutarSinResultado("INSERT INTO categoria (id, nombre, es_generica) VALUES ('cat-generica', 'Sin categoría', 1)");
-    await expect(repositorio.eliminar('cat-generica')).rejects.toThrow(ErrorOperacionNoPermitida);
-  });
 });

@@ -7,7 +7,7 @@ import { GestionarCategoriaUseCase } from '../../../src/app/application/casos-us
 import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
 import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejercicio-repository.port';
 import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
-import { ErrorNombreDuplicado } from '../../../src/app/domain/errores/errores-dominio';
+import { ErrorNombreDuplicado, ErrorOperacionNoPermitida } from '../../../src/app/domain/errores/errores-dominio';
 import type { Categoria } from '../../../src/app/domain/categoria/categoria.entity';
 
 describe('CategoriaGestionComponent', () => {
@@ -49,9 +49,8 @@ describe('CategoriaGestionComponent', () => {
 
   beforeEach(() => {
     configurar([
-      { id: 'cat-2', nombre: 'Rodilla', esGenerica: false },
-      { id: 'cat-1', nombre: 'Abdomen', esGenerica: false },
-      { id: 'cat-generica', nombre: 'Sin categoría', esGenerica: true },
+      { id: 'cat-2', nombre: 'Rodilla' },
+      { id: 'cat-1', nombre: 'Abdomen' },
     ]);
   });
 
@@ -65,7 +64,7 @@ describe('CategoriaGestionComponent', () => {
 
   it('lista las categorías en orden alfabético', async () => {
     const fixture = await crearComponente();
-    expect(fixture.componentInstance.categorias().map((c) => c.nombre)).toEqual(['Abdomen', 'Rodilla', 'Sin categoría']);
+    expect(fixture.componentInstance.categorias().map((c) => c.nombre)).toEqual(['Abdomen', 'Rodilla']);
   });
 
   it('muestra el recuento de ejercicios asociados a cada categoría', async () => {
@@ -92,7 +91,7 @@ describe('CategoriaGestionComponent', () => {
   });
 
   it('crea una categoría nueva', async () => {
-    crear.mockResolvedValue({ id: 'cat-3', nombre: 'Cadera', esGenerica: false });
+    crear.mockResolvedValue({ id: 'cat-3', nombre: 'Cadera' });
     const fixture = await crearComponente();
     await fixture.componentInstance.crearCategoria('Cadera');
 
@@ -110,18 +109,25 @@ describe('CategoriaGestionComponent', () => {
       .toContain('Rodilla');
   });
 
-  it('elimina una categoría con aviso de retirada automática', async () => {
+  it('solicita la eliminación de una categoría y muestra la acción para deshacer', async () => {
     const fixture = await crearComponente();
     await fixture.componentInstance.eliminarCategoria('cat-1');
 
     expect(eliminar).toHaveBeenCalledWith('cat-1');
+    expect(mostrarExitoConAccion).toHaveBeenCalledWith('Categoría eliminada.', 'Deshacer', expect.any(Function));
   });
 
-  it('impide eliminar la categoría genérica desde la interfaz', async () => {
+  it('muestra los ejercicios que deben reasignarse si no se puede eliminar una categoría', async () => {
+    eliminar.mockRejectedValue(
+      new ErrorOperacionNoPermitida(
+        'No se puede eliminar la categoría porque estos ejercicios solo la tienen asignada: «Sentadilla». Asigna otra categoría a esos ejercicios antes de eliminarla.'
+      )
+    );
     const fixture = await crearComponente();
-    await fixture.componentInstance.eliminarCategoria('cat-generica');
+    await fixture.componentInstance.eliminarCategoria('cat-1');
 
-    expect(eliminar).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.errorEliminacion()).toContain('«Sentadilla»');
+    expect(mostrarError).toHaveBeenCalledWith(expect.stringContaining('Asigna otra categoría'));
   });
 
   it('renderiza app-cabecera-pagina con el título "Categorías" (FR-001)', async () => {
@@ -133,7 +139,7 @@ describe('CategoriaGestionComponent', () => {
   });
 
   it('invoca MensajeFeedbackService.mostrarExito al crear una categoría (FR-008)', async () => {
-    crear.mockResolvedValue({ id: 'cat-3', nombre: 'Cadera', esGenerica: false });
+    crear.mockResolvedValue({ id: 'cat-3', nombre: 'Cadera' });
     const fixture = await crearComponente();
     await fixture.componentInstance.crearCategoria('Cadera');
 
@@ -164,7 +170,7 @@ describe('CategoriaGestionComponent', () => {
   });
 
   it('permite editar una categoría y muestra la confirmación junto al elemento', async () => {
-    actualizar.mockResolvedValue({ id: 'cat-1', nombre: 'Core', esGenerica: false });
+    actualizar.mockResolvedValue({ id: 'cat-1', nombre: 'Core' });
     const fixture = await crearComponente();
 
     const botonEditar = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
@@ -208,7 +214,7 @@ describe('CategoriaGestionComponent', () => {
   });
 
   it('confirma la edición en línea con Enter', async () => {
-    actualizar.mockResolvedValue({ id: 'cat-1', nombre: 'Core', esGenerica: false });
+    actualizar.mockResolvedValue({ id: 'cat-1', nombre: 'Core' });
     const fixture = await crearComponente();
     (fixture.nativeElement as HTMLElement)
       .querySelector<HTMLButtonElement>('[aria-label="Editar categoría Abdomen"]')
@@ -228,7 +234,7 @@ describe('CategoriaGestionComponent', () => {
   });
 
   it('ofrece deshacer y restaura una categoría eliminada', async () => {
-    const snapshot = { categoria: { id: 'cat-1', nombre: 'Abdomen', esGenerica: false }, ejercicios: [] };
+    const snapshot = { categoria: { id: 'cat-1', nombre: 'Abdomen' }, ejercicios: [] };
     eliminar.mockResolvedValue(snapshot);
     const fixture = await crearComponente();
     await fixture.componentInstance.eliminarCategoria('cat-1');
@@ -248,7 +254,7 @@ describe('CategoriaGestionComponent', () => {
     fixture.detectChanges();
 
     expect((fixture.nativeElement as HTMLElement).querySelector('.categoria-gestion__carga')).toBeTruthy();
-    resolver([{ id: 'cat-generica', nombre: 'Sin categoría', esGenerica: true }]);
+    resolver([{ id: 'cat-1', nombre: 'Rodilla' }]);
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -274,7 +280,7 @@ describe('CategoriaGestionComponent', () => {
   });
 
   it('muestra el feedback de éxito de creación junto al formulario', async () => {
-    crear.mockResolvedValue({ id: 'cat-3', nombre: 'Cadera', esGenerica: false });
+    crear.mockResolvedValue({ id: 'cat-3', nombre: 'Cadera' });
     const fixture = await crearComponente();
     await fixture.componentInstance.crearCategoria('Cadera');
     fixture.detectChanges();

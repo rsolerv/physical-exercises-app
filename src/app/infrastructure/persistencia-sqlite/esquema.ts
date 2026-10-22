@@ -14,8 +14,7 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE IF NOT EXISTS categoria (
   id TEXT PRIMARY KEY,
   nombre TEXT NOT NULL UNIQUE,
-  descripcion TEXT,
-  es_generica INTEGER NOT NULL DEFAULT 0
+  descripcion TEXT
 );
 
 CREATE TABLE IF NOT EXISTS ejercicio (

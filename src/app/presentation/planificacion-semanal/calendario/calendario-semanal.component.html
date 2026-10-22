@@ -59,9 +59,7 @@
             (click)="seleccionarDia(dia)"
           >
             <span>{{ etiquetasDia[dia] }}</span>
-            @if (esHoy(dia)) {
-              <small>Hoy</small>
-            }
+
             <mat-icon aria-hidden="true">{{ diaPlan.ejercicioIds.length > 0 ? 'fitness_center' : 'bed' }}</mat-icon>
           </button>
         }

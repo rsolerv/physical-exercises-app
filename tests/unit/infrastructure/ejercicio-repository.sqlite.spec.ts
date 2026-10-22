@@ -12,8 +12,7 @@ describe('EjercicioRepositorySqlite', () => {
   beforeEach(async () => {
     conexion = new SqliteConexionService();
     await conexion.inicializar({ forzarEnMemoria: true });
-    await conexion.ejecutarSinResultado("INSERT INTO categoria (id, nombre, es_generica) VALUES ('cat-rodilla', 'Rodilla', 0)");
-    await conexion.ejecutarSinResultado("INSERT INTO categoria (id, nombre, es_generica) VALUES ('cat-generica', 'Sin categoría', 1)");
+    await conexion.ejecutarSinResultado("INSERT INTO categoria (id, nombre) VALUES ('cat-rodilla', 'Rodilla')");
 
     TestBed.configureTestingModule({ providers: [{ provide: SqliteConexionService, useValue: conexion }] });
     repositorio = TestBed.inject(EjercicioRepositorySqlite);
@@ -126,7 +125,7 @@ describe('EjercicioRepositorySqlite', () => {
   });
 
   it('buscarPorCategorias devuelve los ejercicios de una o varias categorías (FR-012)', async () => {
-    await conexion.ejecutarSinResultado("INSERT INTO categoria (id, nombre, es_generica) VALUES ('cat-cadera', 'Cadera', 0)");
+    await conexion.ejecutarSinResultado("INSERT INTO categoria (id, nombre) VALUES ('cat-cadera', 'Cadera')");
 
     await repositorio.crear(datos({ nombre: 'Ejercicio rodilla', categoriaIds: ['cat-rodilla'] }));
     await repositorio.crear(datos({ nombre: 'Ejercicio cadera', categoriaIds: ['cat-cadera'] }));
@@ -135,17 +134,14 @@ describe('EjercicioRepositorySqlite', () => {
     expect(resultado.map((e) => e.nombre)).toEqual(['Ejercicio cadera']);
   });
 
-  it('quitarCategoriaDeTodos retira la categoría y asigna la genérica si no queda ninguna (FR-011)', async () => {
-    await conexion.ejecutarSinResultado("INSERT INTO categoria (id, nombre, es_generica) VALUES ('cat-cadera', 'Cadera', 0)");
+  it('quitarCategoriaDeTodos retira la categoría de los ejercicios asociados (FR-011)', async () => {
+    await conexion.ejecutarSinResultado("INSERT INTO categoria (id, nombre) VALUES ('cat-cadera', 'Cadera')");
 
     const conDosCategorias = await repositorio.crear(datos({ categoriaIds: ['cat-rodilla', 'cat-cadera'] }));
-    const conUnaCategoria = await repositorio.crear(datos({ nombre: 'Otro', categoriaIds: ['cat-rodilla'] }));
 
-    await repositorio.quitarCategoriaDeTodos('cat-rodilla', 'cat-generica');
+    await repositorio.quitarCategoriaDeTodos('cat-rodilla');
 
     const ej1 = await repositorio.obtenerPorId(conDosCategorias.id);
-    const ej2 = await repositorio.obtenerPorId(conUnaCategoria.id);
     expect(ej1?.categoriaIds).toEqual(['cat-cadera']);
-    expect(ej2?.categoriaIds).toEqual(['cat-generica']);
   });
 });

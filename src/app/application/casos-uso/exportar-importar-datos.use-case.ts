@@ -6,6 +6,7 @@ import { EjercicioRepositoryPort } from '../ports/ejercicio-repository.port';
 import { CategoriaRepositoryPort } from '../ports/categoria-repository.port';
 import { PlanificacionRepositoryPort } from '../ports/planificacion-repository.port';
 import { ProgresoDiarioRepositoryPort } from '../ports/progreso-diario-repository.port';
+import { ErrorValidacion } from '../../domain/errores/errores-dominio';
 import {
   GitHubSyncPort,
   type CredencialesGitHub,
@@ -73,7 +74,6 @@ export class ExportarImportarDatosUseCase {
         id: categoria.id,
         nombre: categoria.nombre,
         descripcion: categoria.descripcion,
-        esGenerica: categoria.esGenerica,
       })),
       planificaciones: planificaciones.map((planificacion) => ({
         id: planificacion.id,
@@ -109,6 +109,22 @@ export class ExportarImportarDatosUseCase {
    * identificadores locales, remapeando las referencias cruzadas.
    */
   async importar(datos: ExportacionJSON, credenciales: CredencialesGitHub): Promise<void> {
+    if (!Array.isArray(datos.categorias) || !Array.isArray(datos.ejercicios)) {
+      throw new ErrorValidacion('Los datos importados deben incluir una lista de ejercicios y otra de categorías.');
+    }
+    const categoriaIdsDisponibles = new Set(datos.categorias.map((categoria) => categoria.id));
+    for (const ejercicio of datos.ejercicios) {
+      if (!Array.isArray(ejercicio.categoriaIds) || ejercicio.categoriaIds.length === 0) {
+        throw new ErrorValidacion(`El ejercicio «${ejercicio.nombre}» debe tener al menos una categoría para importarse.`);
+      }
+      const categoriaInexistente = ejercicio.categoriaIds.find((id) => !categoriaIdsDisponibles.has(id));
+      if (categoriaInexistente) {
+        throw new ErrorValidacion(
+          `El ejercicio «${ejercicio.nombre}» hace referencia a la categoría «${categoriaInexistente}», que no está en los datos importados.`
+        );
+      }
+    }
+
     const ejerciciosActuales = await this.ejercicioRepository.listarTodos();
     for (const ejercicio of ejerciciosActuales) {
       await this.ejercicioRepository.eliminar(ejercicio.id);
@@ -119,16 +135,11 @@ export class ExportarImportarDatosUseCase {
     }
     const categoriasActuales = await this.categoriaRepository.listarTodas();
     for (const categoria of categoriasActuales) {
-      if (!categoria.esGenerica) await this.categoriaRepository.eliminar(categoria.id);
+      await this.categoriaRepository.eliminar(categoria.id);
     }
 
-    const categoriaGenericaLocal = await this.categoriaRepository.obtenerGenerica();
     const idsCategorias = new Map<string, string>();
     for (const categoria of datos.categorias) {
-      if (categoria.esGenerica) {
-        idsCategorias.set(categoria.id, categoriaGenericaLocal.id);
-        continue;
-      }
       const creada = await this.categoriaRepository.crear(categoria.nombre, categoria.descripcion);
       idsCategorias.set(categoria.id, creada.id);
     }

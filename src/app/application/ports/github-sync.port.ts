@@ -24,7 +24,6 @@ export interface CategoriaExportada {
   id: string;
   nombre: string;
   descripcion?: string;
-  esGenerica: boolean;
 }
 
 export interface PlanificacionExportada {

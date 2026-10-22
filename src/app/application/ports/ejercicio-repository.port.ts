@@ -27,8 +27,8 @@ export abstract class EjercicioRepositoryPort {
 
   /**
    * Usado al eliminar una Categoría: retira `categoriaId` de todos los
-   * ejercicios que la tengan; si algún ejercicio queda sin ninguna categoría,
-   * le añade `categoriaGenericaId` (FR-011).
+   * ejercicios que la tengan. Application garantiza antes que todos conservan
+   * al menos otra categoría (FR-011).
    */
-  abstract quitarCategoriaDeTodos(categoriaId: string, categoriaGenericaId: string): Promise<void>;
+  abstract quitarCategoriaDeTodos(categoriaId: string): Promise<void>;
 }

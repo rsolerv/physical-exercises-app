@@ -31,7 +31,7 @@ export class ErrorNombreDuplicado extends ErrorDominio {
   }
 }
 
-/** La operación solicitada no está permitida (p. ej. eliminar la categoría genérica). */
+/** La operación solicitada no está permitida (p. ej. eliminar la última categoría de un ejercicio). */
 export class ErrorOperacionNoPermitida extends ErrorDominio {
   constructor(mensaje: string) {
     super(mensaje, 'ErrorOperacionNoPermitida');

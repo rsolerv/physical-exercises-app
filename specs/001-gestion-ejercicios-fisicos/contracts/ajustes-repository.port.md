@@ -32,10 +32,10 @@ interface AjustesRepositoryPort {
 
   marcarCatalogoPredefinidoCargado(): Promise<void>;
   // Invocado una única vez, tras insertar con éxito el catálogo de ejercicios predefinidos
-  // y la categoría genérica "Sin categoría" en el primer arranque (FR-034, FR-011).
+  // y sus categorías en el primer arranque (FR-034).
 }
 ```
 
-**Uso esperado en el arranque de la aplicación** (FR-001): el caso de uso de arranque comprueba `estaCatalogoPredefinidoCargado()`; si es `false`, inserta la categoría genérica y el catálogo de ejercicios predefinidos (datos semilla en `src/assets/catalogo-predefinido/`) y después llama a `marcarCatalogoPredefinidoCargado()`, de modo que en arranques posteriores no se repite la inserción ni se sobrescriben ediciones del usuario sobre esos ejercicios. La siembra del catálogo NO marca `cambiosLocalesPendientes`, para que un dispositivo nuevo no se considere "con cambios locales" en su primera sincronización.
+**Uso esperado en el arranque de la aplicación** (FR-001): el caso de uso de arranque comprueba `estaCatalogoPredefinidoCargado()`; si es `false`, inserta el catálogo de ejercicios y sus categorías predefinidas (datos semilla en `src/assets/catalogo-predefinido/`) y después llama a `marcarCatalogoPredefinidoCargado()`, de modo que en arranques posteriores no se repite la inserción ni se sobrescriben ediciones del usuario sobre esos ejercicios. La siembra del catálogo NO marca `cambiosLocalesPendientes`, para que un dispositivo nuevo no se considere "con cambios locales" en su primera sincronización.
 
 **Uso esperado en los casos de uso de escritura**: todo caso de uso de Application que cree, modifique o borre datos de usuario (ejercicios, categorías, planificaciones, progreso) DEBE llamar a `marcarCambiosLocalesPendientes(true)` tras guardar con éxito.

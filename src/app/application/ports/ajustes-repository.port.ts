@@ -42,8 +42,7 @@ export abstract class AjustesRepositoryPort {
 
   /**
    * Invocado una única vez, tras insertar con éxito el catálogo de ejercicios
-   * predefinidos y la categoría genérica "Sin categoría" en el primer arranque
-   * (FR-034, FR-011).
+   * predefinidos y sus categorías en el primer arranque (FR-034).
    */
   abstract marcarCatalogoPredefinidoCargado(): Promise<void>;
 }

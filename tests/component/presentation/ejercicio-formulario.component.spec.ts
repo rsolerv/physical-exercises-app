@@ -11,7 +11,7 @@ import { MensajeFeedbackService } from '../../../src/app/presentation/compartido
 import type { Categoria } from '../../../src/app/domain/categoria/categoria.entity';
 
 describe('EjercicioFormularioComponent', () => {
-  const categorias: Categoria[] = [{ id: 'cat-1', nombre: 'Rodilla', esGenerica: false }];
+  const categorias: Categoria[] = [{ id: 'cat-1', nombre: 'Rodilla' }];
   let mostrarExito: ReturnType<typeof vi.fn>;
   let mostrarError: ReturnType<typeof vi.fn>;
 

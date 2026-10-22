@@ -102,6 +102,19 @@ describe('Conexión y esquema SQLite (en memoria)', () => {
     await motor.cerrar();
   });
 
+  it('elimina de instalaciones antiguas la categoría especial sin ejercicios asociados', async () => {
+    const motor = await crearMotorSqliteEnMemoria();
+    await motor.ejecutarSinResultado(
+      'CREATE TABLE categoria (id TEXT PRIMARY KEY, nombre TEXT NOT NULL UNIQUE, descripcion TEXT, es_generica INTEGER NOT NULL DEFAULT 0)'
+    );
+    await motor.ejecutarSinResultado("INSERT INTO categoria (id, nombre, es_generica) VALUES ('cat-antigua', 'Sin categoría', 1)");
+
+    await motor.aplicarEsquema();
+
+    expect(await motor.ejecutar("SELECT * FROM categoria WHERE id = 'cat-antigua'")).toHaveLength(0);
+    await motor.cerrar();
+  });
+
   it('activa PRAGMA foreign_keys', async () => {
     const motor = await crearMotorSqliteEnMemoria();
     await motor.aplicarEsquema();
@@ -116,7 +129,7 @@ describe('Conexión y esquema SQLite (en memoria)', () => {
     const motor = await crearMotorSqliteEnMemoria();
     await motor.aplicarEsquema();
 
-    await motor.ejecutarSinResultado("INSERT INTO categoria (id, nombre, es_generica) VALUES ('cat-1', 'Rodilla', 0)");
+    await motor.ejecutarSinResultado("INSERT INTO categoria (id, nombre) VALUES ('cat-1', 'Rodilla')");
     await motor.ejecutarSinResultado(
       "INSERT INTO ejercicio (id, nombre, descripcion) VALUES ('ej-1', 'Sentadilla', 'desc')"
     );
@@ -172,7 +185,7 @@ describe('SqliteConexionService', () => {
     const resultado = await servicio.inicializar({ forzarEnMemoria: true });
 
     expect(resultado.opfsDisponible).toBe(false);
-    await servicio.ejecutarSinResultado("INSERT INTO categoria (id, nombre, es_generica) VALUES ('c1', 'Rodilla', 0)");
+    await servicio.ejecutarSinResultado("INSERT INTO categoria (id, nombre) VALUES ('c1', 'Rodilla')");
     const filas = await servicio.ejecutar<{ nombre: string }>('SELECT nombre FROM categoria');
     expect(filas).toEqual([{ nombre: 'Rodilla' }]);
   });
@@ -182,7 +195,7 @@ describe('SqliteConexionService', () => {
     const resultado = await servicio.inicializar({ fabricaWorker: crearWorkerDeMemoriaParaPruebas });
 
     expect(resultado.opfsDisponible).toBe(true);
-    await servicio.ejecutarSinResultado("INSERT INTO categoria (id, nombre, es_generica) VALUES ('c1', 'Glúteo', 0)");
+    await servicio.ejecutarSinResultado("INSERT INTO categoria (id, nombre) VALUES ('c1', 'Glúteo')");
     const filas = await servicio.ejecutar<{ nombre: string }>('SELECT nombre FROM categoria');
     expect(filas).toEqual([{ nombre: 'Glúteo' }]);
   });

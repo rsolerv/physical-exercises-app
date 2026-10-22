@@ -99,7 +99,7 @@ describe('Integración del progreso diario dentro de la vista "hoy" (US4)', () =
             obtenerPorId: vi.fn().mockResolvedValue(sentadilla),
           },
         },
-        { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue([{ id: 'cat-1', nombre: 'Piernas', esGenerica: false }]) } },
+        { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue([{ id: 'cat-1', nombre: 'Piernas' }]) } },
         { provide: ProgresoDiarioRepositoryPort, useValue: { obtenerPorFecha: vi.fn().mockResolvedValue([]) } },
         {
           provide: GestionarProgresoDiarioUseCase,

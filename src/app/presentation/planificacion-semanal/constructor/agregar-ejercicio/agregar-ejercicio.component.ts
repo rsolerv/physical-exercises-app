@@ -54,7 +54,9 @@ readonly seleccionados = output<string[]>();
 
   nombresCategorias(ejercicio: Ejercicio): string[] {
     const nombresPorId = new Map(this.categorias().map((categoria) => [categoria.id, categoria.nombre]));
-    return ejercicio.categoriaIds.map((id) => nombresPorId.get(id) ?? 'Sin categoría');
+    return ejercicio.categoriaIds
+      .map((id) => nombresPorId.get(id))
+      .filter((nombre): nombre is string => nombre !== undefined);
   }
 
 }

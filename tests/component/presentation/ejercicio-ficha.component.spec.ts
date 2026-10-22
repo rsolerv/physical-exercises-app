@@ -61,7 +61,7 @@ describe('EjercicioFichaComponent', () => {
         },
         {
           provide: CategoriaRepositoryPort,
-          useValue: { listarTodas: vi.fn().mockResolvedValue([{ id: 'cat-1', nombre: 'Piernas', esGenerica: false }]) },
+          useValue: { listarTodas: vi.fn().mockResolvedValue([{ id: 'cat-1', nombre: 'Piernas' }]) },
         },
         {
           provide: ConsultarPlanificacionUseCase,

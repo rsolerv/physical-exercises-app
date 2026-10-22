@@ -34,9 +34,9 @@ interface EjercicioRepositoryPort {
   // Application restaura las asociaciones con los días mediante PlanificacionRepositoryPort
   // antes de informar que "Deshacer" se completó.
 
-  quitarCategoriaDeTodos(categoriaId: string, categoriaGenericaId: string): Promise<void>;
-  // Usado al eliminar una Categoría: retira categoriaId de todos los ejercicios que la tengan;
-  // si algún ejercicio queda sin ninguna categoría, le añade categoriaGenericaId (FR-011).
+  quitarCategoriaDeTodos(categoriaId: string): Promise<void>;
+  // Retira categoriaId después de comprobar que todos los ejercicios afectados
+  // conservan otra categoría; no crea categorías de reserva (FR-011).
 }
 ```
 

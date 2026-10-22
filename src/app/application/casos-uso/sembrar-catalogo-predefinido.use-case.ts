@@ -7,9 +7,8 @@ import type { EnlaceEjercicio } from '../../domain/ejercicio/ejercicio.entity';
 import catalogoPredefinido from '../../../assets/catalogo-predefinido/catalogo.json';
 
 /**
- * Siembra el catálogo de ejercicios predefinidos (FR-034) y la categoría
- * genérica "Sin categoría" (FR-011) la primera vez que arranca la
- * aplicación. El contenido del catálogo está aprobado en
+ * Siembra el catálogo de ejercicios y sus categorías predefinidas (FR-034)
+ * la primera vez que arranca la aplicación. El contenido del catálogo está aprobado en
  * specs/001-gestion-ejercicios-fisicos/catalogo-predefinido.json y se copia
  * tal cual a `src/assets/catalogo-predefinido/catalogo.json`.
  *
@@ -26,8 +25,6 @@ export class SembrarCatalogoPredefinidoUseCase implements SembrarCatalogoPredefi
   async sembrarSiNecesario(): Promise<void> {
     const yaCargado = await this.ajustesRepository.estaCatalogoPredefinidoCargado();
     if (yaCargado) return;
-
-    await this.categoriaRepository.crearGenerica('Sin categoría');
 
     const idsPorNombreCategoria = new Map<string, string>();
     for (const categoria of catalogoPredefinido.categorias) {

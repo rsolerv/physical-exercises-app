@@ -20,9 +20,8 @@ import { ConflictoSincronizacionEstadoService } from '../app/presentation/sincro
 import { MensajeFeedbackService } from '../app/presentation/compartido/ui/mensaje-feedback.service';
 
 export const CATEGORIAS_DEMO: Categoria[] = [
-  { id: 'fuerza', nombre: 'Fuerza', descripcion: 'Ejercicios de fuerza', esGenerica: false },
-  { id: 'movilidad', nombre: 'Movilidad', descripcion: 'Movilidad y flexibilidad', esGenerica: false },
-  { id: 'sin-categoria', nombre: 'Sin categoría', esGenerica: true },
+  { id: 'fuerza', nombre: 'Fuerza', descripcion: 'Ejercicios de fuerza' },
+  { id: 'movilidad', nombre: 'Movilidad', descripcion: 'Movilidad y flexibilidad' },
 ];
 
 export const EJERCICIOS_DEMO: Ejercicio[] = [
@@ -124,9 +123,7 @@ export const DEMO_PROVIDERS: Provider[] = [
     useValue: {
       listarTodas: async () => CATEGORIAS_DEMO,
       obtenerPorId: async (id: string) => CATEGORIAS_DEMO.find((categoria) => categoria.id === id) ?? null,
-      obtenerGenerica: async () => CATEGORIAS_DEMO[2],
-      crear: async (nombre: string) => ({ id: 'nueva-categoria', nombre, esGenerica: false }),
-      crearGenerica: async (nombre: string) => ({ id: 'sin-categoria', nombre, esGenerica: true }),
+      crear: async (nombre: string) => ({ id: 'nueva-categoria', nombre }),
       actualizar: async (id: string, cambios: { nombre?: string }) => ({
         ...CATEGORIAS_DEMO.find((categoria) => categoria.id === id)!,
         ...cambios,
@@ -181,7 +178,7 @@ export const DEMO_PROVIDERS: Provider[] = [
   {
     provide: GestionarCategoriaUseCase,
     useValue: {
-      crear: async (nombre: string) => ({ id: 'nueva-categoria', nombre, esGenerica: false }),
+      crear: async (nombre: string) => ({ id: 'nueva-categoria', nombre }),
       actualizar: async (id: string, cambios: { nombre?: string }) => ({
         ...CATEGORIAS_DEMO.find((categoria) => categoria.id === id)!,
         ...cambios,

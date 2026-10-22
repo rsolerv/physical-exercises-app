@@ -13,16 +13,12 @@ describe('GestionarCategoriaUseCase', () => {
   let ajustesRepo: AjustesRepositoryPort;
   let caso: GestionarCategoriaUseCase;
 
-  const generica: Categoria = { id: 'cat-generica', nombre: 'Sin categoría', esGenerica: true };
-
   beforeEach(() => {
     categoriaRepo = {
       listarTodas: vi.fn(),
-      obtenerPorId: vi.fn().mockResolvedValue({ id: 'cat-1', nombre: 'Abdomen', esGenerica: false }),
-      obtenerGenerica: vi.fn().mockResolvedValue(generica),
-      crear: vi.fn().mockResolvedValue({ id: 'cat-nueva', nombre: 'Rodilla', esGenerica: false }),
-      crearGenerica: vi.fn(),
-      actualizar: vi.fn().mockResolvedValue({ id: 'cat-1', nombre: 'Rodillas', esGenerica: false }),
+      obtenerPorId: vi.fn().mockResolvedValue({ id: 'cat-1', nombre: 'Abdomen' }),
+      crear: vi.fn().mockResolvedValue({ id: 'cat-nueva', nombre: 'Rodilla' }),
+      actualizar: vi.fn().mockResolvedValue({ id: 'cat-1', nombre: 'Rodillas' }),
       eliminar: vi.fn(),
       restaurar: vi.fn().mockResolvedValue(undefined),
     };
@@ -70,8 +66,11 @@ describe('GestionarCategoriaUseCase', () => {
     expect(ajustesRepo.marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
   });
 
-  it('eliminar retira la categoría de los ejercicios (con reasignación a la genérica) antes de borrarla (FR-011)', async () => {
+  it('eliminar retira la categoría de ejercicios con otras categorías antes de borrarla (FR-011)', async () => {
     const orden: string[] = [];
+    (ejercicioRepo.listarTodos as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: 'ej-1', nombre: 'Plancha', categoriaIds: ['cat-1', 'cat-2'] },
+    ]);
     (ejercicioRepo.quitarCategoriaDeTodos as ReturnType<typeof vi.fn>).mockImplementation(async () => {
       orden.push('quitarCategoriaDeTodos');
     });
@@ -81,11 +80,22 @@ describe('GestionarCategoriaUseCase', () => {
 
     await caso.eliminar('cat-1');
 
-    expect(categoriaRepo.obtenerGenerica).toHaveBeenCalled();
-    expect(ejercicioRepo.quitarCategoriaDeTodos).toHaveBeenCalledWith('cat-1', 'cat-generica');
+    expect(ejercicioRepo.quitarCategoriaDeTodos).toHaveBeenCalledWith('cat-1');
     expect(categoriaRepo.eliminar).toHaveBeenCalledWith('cat-1');
     expect(orden).toEqual(['quitarCategoriaDeTodos', 'eliminar']);
     expect(ajustesRepo.marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
+  });
+
+  it('impide eliminar una categoría que es la única asignada y explica qué ejercicios reasignar', async () => {
+    (ejercicioRepo.listarTodos as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: 'ej-1', nombre: 'Sentadilla', categoriaIds: ['cat-1'] },
+    ]);
+
+    await expect(caso.eliminar('cat-1')).rejects.toThrow(/Sentadilla.*Asigna otra categoría/);
+
+    expect(ejercicioRepo.quitarCategoriaDeTodos).not.toHaveBeenCalled();
+    expect(categoriaRepo.eliminar).not.toHaveBeenCalled();
+    expect(ajustesRepo.marcarCambiosLocalesPendientes).not.toHaveBeenCalled();
   });
 
   it('captura la categoría y las asignaciones antes de eliminar para poder restaurarlas', async () => {
@@ -102,14 +112,14 @@ describe('GestionarCategoriaUseCase', () => {
     const snapshot = await caso.eliminar('cat-1');
 
     expect(snapshot).toEqual({
-      categoria: { id: 'cat-1', nombre: 'Abdomen', esGenerica: false },
+      categoria: { id: 'cat-1', nombre: 'Abdomen' },
       ejercicios: [{ id: 'ej-1', categoriaIds: ['cat-1', 'cat-2'] }],
     });
   });
 
   it('restaura la categoría con su identificador y las asignaciones anteriores', async () => {
     const snapshot = {
-      categoria: { id: 'cat-1', nombre: 'Abdomen', esGenerica: false },
+      categoria: { id: 'cat-1', nombre: 'Abdomen' },
       ejercicios: [{ id: 'ej-1', categoriaIds: ['cat-1', 'cat-2'] }],
     };
 
@@ -125,7 +135,7 @@ describe('GestionarCategoriaUseCase', () => {
 
     await expect(
       caso.restaurarEliminacion({
-        categoria: { id: 'cat-1', nombre: 'Abdomen', esGenerica: false },
+        categoria: { id: 'cat-1', nombre: 'Abdomen' },
         ejercicios: [],
       })
     ).rejects.toThrow('fallo de restauración');

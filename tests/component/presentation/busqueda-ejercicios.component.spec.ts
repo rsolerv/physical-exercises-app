@@ -15,7 +15,7 @@ function ejercicio(id: string, nombre: string): Ejercicio {
 }
 
 function categoria(id: string, nombre: string): Categoria {
-  return { id, nombre, esGenerica: false };
+  return { id, nombre };
 }
 
 describe('BusquedaEjerciciosComponent', () => {
@@ -141,7 +141,7 @@ describe('BusquedaEjerciciosComponent', () => {
         categoria('cat-5', 'Isquiotibiales'),
         categoria('cat-6', 'Lumbar'),
         categoria('cat-7', 'Rodilla'),
-        categoria('cat-8', 'Sin categoría'),
+        categoria('cat-8', 'Hombros'),
       ],
     });
     const fixture = await crearComponente();

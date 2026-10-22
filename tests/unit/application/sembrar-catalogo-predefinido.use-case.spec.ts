@@ -19,9 +19,7 @@ describe('SembrarCatalogoPredefinidoUseCase', () => {
     categoriaRepo = {
       listarTodas: vi.fn().mockResolvedValue([]),
       obtenerPorId: vi.fn(),
-      obtenerGenerica: vi.fn(),
-      crear: vi.fn().mockImplementation(async (nombre: string) => ({ id: `cat-${nombre}`, nombre, esGenerica: false }) as Categoria),
-      crearGenerica: vi.fn().mockResolvedValue({ id: 'cat-generica', nombre: 'Sin categoría', esGenerica: true }),
+      crear: vi.fn().mockImplementation(async (nombre: string) => ({ id: `cat-${nombre}`, nombre }) as Categoria),
       actualizar: vi.fn(),
       eliminar: vi.fn(),
       restaurar: vi.fn(),
@@ -62,14 +60,16 @@ describe('SembrarCatalogoPredefinidoUseCase', () => {
     (ajustesRepo.estaCatalogoPredefinidoCargado as ReturnType<typeof vi.fn>).mockResolvedValue(true);
     await caso.sembrarSiNecesario();
 
-    expect(categoriaRepo.crearGenerica).not.toHaveBeenCalled();
     expect(categoriaRepo.crear).not.toHaveBeenCalled();
     expect(ejercicioRepo.crear).not.toHaveBeenCalled();
   });
 
-  it('crea la categoría genérica "Sin categoría" si el catálogo no está cargado', async () => {
+  it('no crea una categoría genérica adicional al sembrar el catálogo', async () => {
     await caso.sembrarSiNecesario();
-    expect(categoriaRepo.crearGenerica).toHaveBeenCalledWith('Sin categoría');
+    expect(categoriaRepo.crear).toHaveBeenCalledTimes(catalogoPredefinido.categorias.length);
+    expect((categoriaRepo.crear as ReturnType<typeof vi.fn>).mock.calls.map(([nombre]) => nombre)).not.toContain(
+      'Sin categoría'
+    );
   });
 
   it(`crea las ${catalogoPredefinido.categorias.length} categorías del catálogo`, async () => {

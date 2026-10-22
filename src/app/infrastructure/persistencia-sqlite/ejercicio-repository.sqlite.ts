@@ -104,25 +104,8 @@ export class EjercicioRepositorySqlite implements EjercicioRepositoryPort {
     await this.conexion.ejecutarSinResultado('DELETE FROM ejercicio WHERE id = ?', [id]);
   }
 
-  async quitarCategoriaDeTodos(categoriaId: string, categoriaGenericaId: string): Promise<void> {
-    const afectados = await this.conexion.ejecutar<{ ejercicio_id: string }>(
-      'SELECT ejercicio_id FROM ejercicio_categoria WHERE categoria_id = ?',
-      [categoriaId]
-    );
+  async quitarCategoriaDeTodos(categoriaId: string): Promise<void> {
     await this.conexion.ejecutarSinResultado('DELETE FROM ejercicio_categoria WHERE categoria_id = ?', [categoriaId]);
-
-    for (const fila of afectados) {
-      const restantes = await this.conexion.ejecutar<{ total: number }>(
-        'SELECT COUNT(*) as total FROM ejercicio_categoria WHERE ejercicio_id = ?',
-        [fila.ejercicio_id]
-      );
-      if (restantes[0].total === 0) {
-        await this.conexion.ejecutarSinResultado(
-          'INSERT INTO ejercicio_categoria (ejercicio_id, categoria_id) VALUES (?, ?)',
-          [fila.ejercicio_id, categoriaGenericaId]
-        );
-      }
-    }
   }
 
   private async hidratar(fila: FilaEjercicio): Promise<Ejercicio> {

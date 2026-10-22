@@ -1,9 +1,9 @@
-import { ErrorValidacion, ErrorOperacionNoPermitida, ErrorNombreDuplicado } from '../errores/errores-dominio';
+import { ErrorValidacion, ErrorNombreDuplicado } from '../errores/errores-dominio';
 import type { Categoria } from './categoria.entity';
 
 /**
  * Valida el nombre de una categoría antes de crearla o renombrarla
- * (FR-010, FR-011). Es un caso de uso puro de Domain.
+ * (FR-010). Es un caso de uso puro de Domain.
  *
  * @param nombre nombre propuesto
  * @param existentes todas las categorías ya existentes en el sistema
@@ -13,11 +13,6 @@ import type { Categoria } from './categoria.entity';
 export function validarCategoria(nombre: string, existentes: Categoria[], idPropio?: string): void {
   if (!nombre?.trim()) {
     throw new ErrorValidacion('El nombre de la categoría no puede estar vacío.');
-  }
-
-  const propia = idPropio ? existentes.find((c) => c.id === idPropio) : undefined;
-  if (propia?.esGenerica) {
-    throw new ErrorOperacionNoPermitida('La categoría "Sin categoría" no se puede renombrar.');
   }
 
   const duplicada = existentes.some(

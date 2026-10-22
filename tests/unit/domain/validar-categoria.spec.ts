@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { validarCategoria } from '../../../src/app/domain/categoria/validar-categoria';
-import { ErrorValidacion, ErrorOperacionNoPermitida, ErrorNombreDuplicado } from '../../../src/app/domain/errores/errores-dominio';
+import { ErrorValidacion, ErrorNombreDuplicado } from '../../../src/app/domain/errores/errores-dominio';
 import type { Categoria } from '../../../src/app/domain/categoria/categoria.entity';
 
 function categoria(sobrescribir: Partial<Categoria> = {}): Categoria {
-  return { id: 'cat-1', nombre: 'Rodilla', descripcion: '', esGenerica: false, ...sobrescribir };
+  return { id: 'cat-1', nombre: 'Rodilla', descripcion: '', ...sobrescribir };
 }
 
 describe('validarCategoria', () => {
@@ -30,8 +30,8 @@ describe('validarCategoria', () => {
     expect(() => validarCategoria('Rodilla', [existente], 'cat-1')).not.toThrow();
   });
 
-  it('impide renombrar la categoría genérica "Sin categoría" (FR-011)', () => {
-    const generica = categoria({ id: 'cat-generica', nombre: 'Sin categoría', esGenerica: true });
-    expect(() => validarCategoria('Otro nombre', [generica], 'cat-generica')).toThrow(ErrorOperacionNoPermitida);
+  it('permite renombrar una categoría con el antiguo nombre especial', () => {
+    const existente = categoria({ id: 'cat-antigua', nombre: 'Sin categoría' });
+    expect(() => validarCategoria('General', [existente], 'cat-antigua')).not.toThrow();
   });
 });

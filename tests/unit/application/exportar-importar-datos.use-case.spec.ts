@@ -8,6 +8,7 @@ import { PlanificacionRepositoryPort } from '../../../src/app/application/ports/
 import { ProgresoDiarioRepositoryPort } from '../../../src/app/application/ports/progreso-diario-repository.port';
 import { GitHubSyncPort } from '../../../src/app/application/ports/github-sync.port';
 import { crearDiasVacios } from '../../../src/app/domain/planificacion/planificacion.entity';
+import { ErrorValidacion } from '../../../src/app/domain/errores/errores-dominio';
 import type { Ejercicio } from '../../../src/app/domain/ejercicio/ejercicio.entity';
 import type { Categoria } from '../../../src/app/domain/categoria/categoria.entity';
 import type { Planificacion } from '../../../src/app/domain/planificacion/planificacion.entity';
@@ -51,8 +52,7 @@ describe('ExportarImportarDatosUseCase', () => {
           useValue: {
             listarTodas: vi.fn().mockResolvedValue([]),
             eliminar: vi.fn().mockResolvedValue(undefined),
-            crear: vi.fn().mockResolvedValue({ id: 'cat-nueva', nombre: 'Cat', esGenerica: false }),
-            obtenerGenerica: vi.fn().mockResolvedValue({ id: 'cat-generica-local', nombre: 'Sin categoría', esGenerica: true }),
+            crear: vi.fn().mockResolvedValue({ id: 'cat-nueva', nombre: 'Cat' }),
             ...overrides.categorias,
           },
         },
@@ -99,7 +99,7 @@ describe('ExportarImportarDatosUseCase', () => {
     );
     const caso = configurar({
       ejercicios: { listarTodos: vi.fn().mockResolvedValue([ejercicio()]) },
-      categorias: { listarTodas: vi.fn().mockResolvedValue([{ id: 'cat-1', nombre: 'Piernas', esGenerica: false } as Categoria]) },
+      categorias: { listarTodas: vi.fn().mockResolvedValue([{ id: 'cat-1', nombre: 'Piernas' } as Categoria]) },
       planificaciones: { listarTodas: vi.fn().mockResolvedValue([planificacion]) },
       progreso: { obtenerPorFecha },
     });
@@ -145,7 +145,7 @@ describe('ExportarImportarDatosUseCase', () => {
         crear: crearEjercicio,
       },
       categorias: {
-        listarTodas: vi.fn().mockResolvedValue([{ id: 'cat-vieja', nombre: 'Vieja', esGenerica: false } as Categoria]),
+        listarTodas: vi.fn().mockResolvedValue([{ id: 'cat-vieja', nombre: 'Vieja' } as Categoria]),
         eliminar: eliminarCategoria,
       },
       planificaciones: {
@@ -155,7 +155,7 @@ describe('ExportarImportarDatosUseCase', () => {
     });
 
     await caso.importar(
-      { version: 1, ejercicios: [ejercicio()], categorias: [{ id: 'cat-1', nombre: 'Piernas', esGenerica: false }], planificaciones: [], progresoDiario: [] },
+      { version: 1, ejercicios: [ejercicio()], categorias: [{ id: 'cat-1', nombre: 'Piernas' }], planificaciones: [], progresoDiario: [] },
       CREDENCIALES
     );
 
@@ -163,6 +163,28 @@ describe('ExportarImportarDatosUseCase', () => {
     expect(eliminarPlanificacion).toHaveBeenCalledWith('plan-vieja');
     expect(eliminarCategoria).toHaveBeenCalledWith('cat-vieja');
     expect(crearEjercicio).toHaveBeenCalledWith(expect.objectContaining({ nombre: 'Sentadilla' }));
+  });
+
+  it('importar() rechaza ejercicios sin categoría antes de borrar los datos locales', async () => {
+    const listarTodos = vi.fn().mockResolvedValue([ejercicio({ id: 'ej-local' })]);
+    const eliminar = vi.fn();
+    const caso = configurar({ ejercicios: { listarTodos, eliminar } });
+
+    await expect(
+      caso.importar(
+        {
+          version: 1,
+          ejercicios: [ejercicio({ categoriaIds: [] })],
+          categorias: [],
+          planificaciones: [],
+          progresoDiario: [],
+        },
+        CREDENCIALES
+      )
+    ).rejects.toThrow(ErrorValidacion);
+
+    expect(listarTodos).not.toHaveBeenCalled();
+    expect(eliminar).not.toHaveBeenCalled();
   });
 
   it('importar() descarga vía leerImagen() cada imagen de archivo referenciada y la guarda localmente', async () => {
@@ -176,12 +198,21 @@ describe('ExportarImportarDatosUseCase', () => {
       id: 'ej-1',
       nombre: 'Sentadilla',
       descripcion: 'desc',
-      categoriaIds: [],
+      categoriaIds: ['cat-1'],
       enlaces: [],
       imagenes: [{ id: 'img-1', tipo: 'archivo' as const, ruta: 'imagenes/img-1.json' }],
     };
 
-    await caso.importar({ version: 1, ejercicios: [ejercicioConImagen], categorias: [], planificaciones: [], progresoDiario: [] }, CREDENCIALES);
+    await caso.importar(
+      {
+        version: 1,
+        ejercicios: [ejercicioConImagen],
+        categorias: [{ id: 'cat-1', nombre: 'Piernas' }],
+        planificaciones: [],
+        progresoDiario: [],
+      },
+      CREDENCIALES
+    );
 
     expect(leerImagen).toHaveBeenCalledWith(CREDENCIALES, 'imagenes/img-1.json');
     expect(crearEjercicio).toHaveBeenCalledWith(

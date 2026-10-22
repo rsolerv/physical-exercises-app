@@ -19,13 +19,13 @@ npm run lint
 npm run build
 ```
 
-Abre la URL que muestra `npm start`. El primer arranque debe cargar el catálogo predefinido y la categoría "Sin categoría".
+Abre la URL que muestra `npm start`. El primer arranque debe cargar el catálogo predefinido y sus categorías; no debe aparecer una categoría genérica "Sin categoría".
 
 ## US1 — Biblioteca, ejercicio y categorías
 
 1. Abre "Gestionar categorías". Comprueba el estado de carga, que el campo "Nueva categoría" y "Añadir" están juntos antes de la lista, y que cada categoría muestra su recuento de ejercicios.
-2. Edita una categoría desde su fila. Guarda con Enter y repite cancelando con Escape. Comprueba que no pierdes la posición ni el contexto de la lista. "Sin categoría" debe estar identificada como categoría del sistema y no debe poder eliminarse.
-3. Elimina una categoría que tenga ejercicios. **Esperado**: los ejercicios conservan sus otras categorías o pasan a "Sin categoría" cuando corresponda; la notificación ofrece "Deshacer". Actívalo y comprueba que se restaura la categoría y sus asociaciones.
+2. Edita una categoría desde su fila. Guarda con Enter y repite cancelando con Escape. Comprueba que no pierdes la posición ni el contexto de la lista y que todas las categorías se pueden editar como categorías normales.
+3. Intenta eliminar una categoría que sea la única asignada a un ejercicio. **Esperado**: el borrado se rechaza y se indica qué ejercicio hay que reasignar. Asigna otra categoría y vuelve a borrar la primera; la notificación ofrece "Deshacer". Actívalo y comprueba que se restaura la categoría y sus asociaciones.
 4. Crea o edita un ejercicio. Comprueba que se identifican los campos obligatorios y opcionales, los errores aparecen junto al campo afectado y la interfaz distingue cambios sin guardar, guardado en curso y guardado. En escritorio, comprueba que el formulario y la vista previa aparecen en dos columnas y que "Guardar" y "Cancelar" permanecen visibles sin desplazamiento vertical.
 5. Añade una URL válida de YouTube sin elegir antes un tipo de enlace. Comprueba que se identifica el enlace y que la vista previa muestra título y miniatura cuando estén disponibles. La reproducción no debe iniciarse hasta que la solicites.
 6. Añade una imagen y un vídeo a la ficha. Comprueba las proporciones de miniatura, que las imágenes no se recortan, que las series/repeticiones recomendadas se destacan solo cuando están en las observaciones y que un medio no disponible no oculta el resto de la ficha.

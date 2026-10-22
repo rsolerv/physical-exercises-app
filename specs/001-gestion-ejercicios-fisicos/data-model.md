@@ -25,7 +25,7 @@ Actividad física concreta que el usuario puede consultar, planificar y marcar c
 | id | identificador único | Sí | Generado por el sistema |
 | nombre | texto | Sí | No puede estar vacío (FR-005) |
 | descripción | texto | Sí | No puede estar vacía (FR-005) |
-| categorías | lista de referencias a Categoría | Sí, al menos 1 | Un ejercicio pertenece a 1 o más categorías (FR-006, RN8); si tras eliminar una categoría la lista queda vacía, se añade automáticamente la categoría genérica "Sin categoría" (FR-011) |
+| categorías | lista de referencias a Categoría | Sí, al menos 1 | Un ejercicio pertenece a 1 o más categorías (FR-006, RN8); no se permite eliminar la última categoría que tenga asignada (FR-011) |
 | enlacesWeb | lista de URLs | No | Cada URL debe tener formato válido antes de guardarse (FR-007); se puede visualizar embebida dentro de la app cuando el sitio lo permita (FR-016) |
 | enlacesYoutube | lista de URLs de YouTube | No | Cada URL debe tener formato válido antes de guardarse (FR-007); se previsualiza con reproductor embebido (FR-015); si el vídeo deja de estar disponible, el ejercicio se sigue mostrando indicándolo (FR-033) |
 | imágenes | lista de imágenes, cada una `{ id, tipo: "url" \| "archivo", valor }` (el `id` es único dentro de ese ejercicio, no globalmente) | No | `tipo: "url"` guarda una URL externa; `tipo: "archivo"` guarda el contenido binario de la imagen en el almacenamiento local, con un máximo de 5 MB por imagen (FR-036). Al sincronizar, cada imagen de archivo se sube como un archivo independiente del repositorio y el documento JSON solo guarda su ruta |
@@ -44,11 +44,10 @@ Agrupación temática de ejercicios (p. ej. cuello, espalda, piernas, hombros, g
 | id | identificador único | Sí | Generado por el sistema |
 | nombre | texto | Sí | Único en todo el sistema, no puede repetirse (FR-010) |
 | descripción | texto | No | Campo libre opcional |
-| esGenérica | booleano | Sí (por defecto `false`) | `true` únicamente para la categoría de fábrica "Sin categoría"; impide su eliminación (FR-011) |
 
 **Relaciones**: N:M con Ejercicio.
 
-**Reglas de eliminación**: cualquier categoría con `esGenérica = false` puede eliminarse aunque tenga ejercicios asociados; al eliminarla, se retira de todos los ejercicios que la tuvieran (FR-011). La categoría con `esGenérica = true` ("Sin categoría") no puede eliminarse nunca y se crea una única vez, de fábrica, junto con el catálogo predefinido (ver Ajustes de aplicación).
+**Reglas de eliminación**: una categoría puede eliminarse si cada ejercicio asociado conserva al menos otra categoría. Si algún ejercicio solo tiene la categoría que se intenta eliminar, el borrado se rechaza y se indican los ejercicios que deben reasignarse antes; si se permite el borrado, la categoría se retira de todas sus asociaciones (FR-011). No existe una categoría genérica o de reserva.
 
 ## Planificación
 
@@ -105,7 +104,7 @@ No es una entidad de negocio descrita en el spec, pero es necesaria para impleme
 | últimoShaSincronizado | texto | No | SHA/ETag remoto conocido tras la última sincronización correcta; se usa para detectar conflictos (FR-035) |
 | ultimaSincronizacionCorrecta | fecha-hora ISO 8601 en UTC | No | Se actualiza solo cuando una sincronización termina correctamente; permite mostrar la última sincronización tras cerrar y volver a abrir la aplicación (FR-070). Un error o conflicto no debe sobrescribir la fecha anterior. En instalaciones anteriores a este campo, el valor inicial es nulo |
 | cambiosLocalesPendientes | booleano | Sí (por defecto `false`) | Pasa a `true` tras cualquier alta, modificación o borrado de datos de usuario, y vuelve a `false` tras una sincronización completada. Junto con `últimoShaSincronizado` permite distinguir "solo cambios locales", "solo cambios remotos" y "cambios en ambos lados" (FR-035) |
-| catálogoPredefinidoCargado | booleano | Sí (por defecto `false`) | Pasa a `true` la primera vez que se inserta el catálogo de ejercicios predefinidos y la categoría genérica "Sin categoría"; evita reinsertar el catálogo de fábrica en arranques posteriores (FR-034, FR-011) |
+| catálogoPredefinidoCargado | booleano | Sí (por defecto `false`) | Pasa a `true` la primera vez que se inserta el catálogo de ejercicios predefinidos y sus categorías; evita reinsertar el catálogo de fábrica en arranques posteriores (FR-034) |
 
 ## Catálogo predefinido (datos semilla)
 
@@ -114,7 +113,7 @@ El contenido de fábrica (FR-034) está en el anexo [catalogo-predefinido.json](
 | Campo | Tipo | Regla |
 |---|---|---|
 | version | número | Versión del formato del catálogo (actualmente `1`) |
-| categorias[] | `{ nombre, descripcion }` | Nombres únicos; NO incluye "Sin categoría", que la crea el caso de uso de siembra |
+| categorias[] | `{ nombre, descripcion }` | Nombres únicos; contiene todas las categorías que utiliza el catálogo |
 | ejercicios[] | `{ nombre, descripcion, categorias[], enlacesYoutube[], enlacesWeb[], imagenes[], observaciones }` | Cada ejercicio cumple las reglas de Ejercicio; `categorias` contiene nombres de `categorias[]` (al menos uno); `imagenes` solo admite el tipo `url` |
 
 Los identificadores no vienen en el archivo: el caso de uso de siembra los genera al insertar, resolviendo las categorías de cada ejercicio por su nombre.
@@ -124,7 +123,7 @@ Los identificadores no vienen en el archivo: el caso de uso de siembra los gener
 - Nombre y descripción de Ejercicio: obligatorios, no vacíos (FR-005).
 - Nombre de Categoría: obligatorio y único en todo el sistema (FR-010).
 - Toda URL (enlace web o YouTube): debe superar una validación de formato antes de guardarse (FR-007).
-- Un Ejercicio debe tener siempre al menos una Categoría (FR-006); la categoría genérica "Sin categoría" actúa de red de seguridad para no violar esta regla cuando se borra la última categoría de un ejercicio (FR-011).
+- Un Ejercicio debe tener siempre al menos una Categoría (FR-006); al borrar categorías se bloquea la operación si algún ejercicio se quedaría sin ninguna (FR-011).
 - Un Ejercicio no puede repetirse dos veces en el mismo "Día de planificación" (FR-021).
 - Solo puede existir una Planificación activa (no plantilla) por semana (FR-022), donde "activa" se calcula por fecha, no por marca manual; se garantiza impidiendo dos planificaciones concretas con la misma `fechaInicio`, que siempre es un lunes (FR-017).
 - Imagen de archivo: máximo 5 MB por imagen (FR-036).
@@ -132,6 +131,8 @@ Los identificadores no vienen en el archivo: el caso de uso de siembra los gener
 ## Impacto de la presentación y de "Deshacer"
 
 Los nuevos formatos de búsqueda, navegación, fichas y planificación son estados de presentación y no modifican las entidades de negocio. El estado de sincronización se deriva de los datos existentes y del resultado de la operación actual. La fecha de la última sincronización correcta sí se conserva en Ajustes de aplicación para cumplir FR-070.
+
+En instalaciones anteriores, la base SQLite conserva la columna `es_generica` como dato legado, pero el modelo actual no la utiliza; al inicializar, se elimina la categoría legada marcada como genérica si no tiene ejercicios asociados. Si aún tiene asociaciones, se comporta como una categoría normal y su borrado está sujeto a las reglas de esta entidad.
 
 "Deshacer" es una operación temporal, no una entidad de negocio ni un historial. Mientras la notificación está visible, la capa de Application conserva una instantánea en memoria con los datos eliminados y las relaciones necesarias para cumplir FR-069 y FR-075. En una eliminación de categoría, incluye la categoría original y las asignaciones previas de categoría de los ejercicios afectados; en una eliminación de ejercicio, incluye el ejercicio completo y sus asociaciones con categorías y días de planificación. La restauración conserva los identificadores originales. Al desaparecer la notificación, se libera la instantánea; no se sincroniza y no sobrevive a una recarga.
 

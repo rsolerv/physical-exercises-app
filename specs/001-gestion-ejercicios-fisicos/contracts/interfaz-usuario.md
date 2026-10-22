@@ -50,7 +50,7 @@ Los anchos entre rangos y menores de 360 px siguen siendo utilizables. Ninguna v
 
 - La creación se inicia desde un campo y una acción "Añadir" contiguos a la lista.
 - Cada categoría muestra su número de ejercicios. La edición ocurre en línea y se confirma con Enter o se cancela con Escape.
-- "Sin categoría" se identifica como categoría del sistema no eliminable.
+- Si borrar una categoría deja algún ejercicio sin categoría, la operación se rechaza y se indican los ejercicios que deben reasignarse.
 - Después de eliminar una categoría, el usuario puede deshacer mientras se ve la notificación.
 
 ### Formularios de ejercicio

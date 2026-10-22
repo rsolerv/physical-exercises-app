@@ -39,7 +39,7 @@
             {{ recuentoEjercicios(categoria.id) }}
             {{ recuentoEjercicios(categoria.id) === 1 ? 'ejercicio' : 'ejercicios' }}
           </span>
-          @if (!categoria.esGenerica && categoriaEnEdicion() !== categoria.id) {
+          @if (categoriaEnEdicion() !== categoria.id) {
             <div matListItemMeta class="categoria-gestion__acciones">
               <button
                 mat-icon-button

@@ -98,7 +98,7 @@ export class EjercicioFichaComponent {
     const ejercicio = this.recursoEjercicio.value();
     if (!ejercicio) return [];
     const porId = new Map(this.categorias().map((categoria) => [categoria.id, categoria.nombre]));
-    return ejercicio.categoriaIds.map((id) => porId.get(id) ?? 'Sin categoría');
+    return ejercicio.categoriaIds.map((id) => porId.get(id)).filter((nombre): nombre is string => nombre !== undefined);
   });
 
   protected readonly enlacesYoutube = computed(

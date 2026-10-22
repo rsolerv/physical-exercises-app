@@ -23,6 +23,18 @@ export class MotorSqlite {
     if (!columnasAjustes.some((columna) => columna.name === 'ultima_sincronizacion_correcta')) {
       this.db.exec('ALTER TABLE ajustes_aplicacion ADD COLUMN ultima_sincronizacion_correcta TEXT');
     }
+
+    const columnasCategoria = this.db.exec({
+      sql: 'PRAGMA table_info(categoria)',
+      returnValue: 'resultRows',
+      rowMode: 'object',
+    }) as { name: string }[];
+    if (columnasCategoria.some((columna) => columna.name === 'es_generica')) {
+      this.db.exec(
+        'DELETE FROM categoria WHERE es_generica = 1 AND NOT EXISTS (' +
+          'SELECT 1 FROM ejercicio_categoria WHERE ejercicio_categoria.categoria_id = categoria.id)'
+      );
+    }
   }
 
   /** Ejecuta una consulta y devuelve las filas como objetos. */
