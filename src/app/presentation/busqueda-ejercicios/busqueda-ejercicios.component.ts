@@ -23,7 +23,6 @@ import { EjercicioListItemComponent } from '../compartido/ejercicios/ejercicio-l
   standalone: true,
   imports: [
     MatListModule,
-    CabeceraPaginaComponent,
     EstadoVacioComponent,
     EstadoCargaComponent,
     BusquedaEjerciciosFiltrosComponent,

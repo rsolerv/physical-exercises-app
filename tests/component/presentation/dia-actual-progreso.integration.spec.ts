@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { DiaActualComponent } from '../../../src/app/presentation/planificacion-semanal/dia-actual/dia-actual.component';
@@ -130,5 +130,10 @@ describe('Integración del progreso diario dentro de la vista "hoy" (US4)', () =
     expect(harness.routeNativeElement?.textContent).toContain('Sentadilla');
     expect(harness.routeNativeElement?.textContent).toContain('Flexionar las rodillas.');
     expect(marcar).not.toHaveBeenCalled();
+
+    harness.routeNativeElement?.querySelector<HTMLButtonElement>('.ejercicio-ficha__volver')?.click();
+    await harness.fixture.whenStable();
+
+    expect(TestBed.inject(Router).url).toBe('/inicio');
   });
 });

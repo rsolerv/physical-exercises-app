@@ -26,6 +26,7 @@
             mat-stroked-button
             class="progreso-diario__consulta"
             [routerLink]="['/ejercicios', ejercicio.id]"
+            [state]="{ returnUrl: '/inicio' }"
             [attr.aria-label]="'Consultar ejercicio: ' + ejercicio.nombre"
           >
             Consultar

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
+import { Location } from '@angular/common';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
@@ -19,7 +20,7 @@ describe('CalendarioSemanalComponent', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideRouter([]),
+        provideRouter([{ path: 'ejercicios/:id', children: [] }]),
         provideNoopAnimations(),
         { provide: PlanificacionRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue(planificaciones) } },
         { provide: EjercicioRepositoryPort, useValue: { listarTodos: vi.fn().mockResolvedValue(ejercicios) } },
@@ -124,6 +125,21 @@ describe('CalendarioSemanalComponent', () => {
     expect(raiz.textContent).toContain('Ejercicio no disponible');
     expect(raiz.textContent).not.toContain('ej-inexistente');
     expect(raiz.querySelector('.calendario-semanal__fila-ejercicio mat-chip')).toBeNull();
+  });
+
+  it('conserva la planificación semanal como pantalla de origen al abrir un ejercicio', async () => {
+    const dias = crearDiasVacios();
+    dias[0].ejercicioIds = ['ej-1'];
+    configurar([{ id: 'plan-1', nombre: 'Semana', dias }], [ejercicio('ej-1', 'Sentadilla')]);
+    const fixture = await crearComponente();
+    const enlace = (fixture.nativeElement as HTMLElement).querySelector<HTMLAnchorElement>(
+      '.calendario-semanal__fila-ejercicio'
+    );
+
+    enlace?.click();
+    await fixture.whenStable();
+
+    expect(TestBed.inject(Location).getState()).toMatchObject({ returnUrl: '/planificacion' });
   });
 
   it('expone un estado de carga reconocible mientras llegan los datos del calendario', () => {

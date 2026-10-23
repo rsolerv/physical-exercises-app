@@ -7,10 +7,10 @@
 
     <app-cabecera-pagina [titulo]="ejercicio.nombre">
       <div acciones class="ejercicio-ficha__acciones">
-        <a mat-button routerLink="/buscar">
+        <button mat-button type="button" class="ejercicio-ficha__volver" (click)="volver()">
           <mat-icon>arrow_back</mat-icon>
-          Volver a Buscar
-        </a>
+          Volver
+        </button>
         <a mat-stroked-button routerLink="editar">
           <mat-icon>edit</mat-icon>
           Editar

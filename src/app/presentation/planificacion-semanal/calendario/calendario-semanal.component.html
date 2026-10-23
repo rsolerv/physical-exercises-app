@@ -77,6 +77,7 @@
               mat-button
               class="calendario-semanal__fila-ejercicio"
               [routerLink]="['/ejercicios', ejercicioId]"
+              [state]="{ returnUrl: '/planificacion' }"
               [attr.aria-label]="'Abrir la ficha de ' + nombreEjercicio(ejercicioId)"
             >
               <mat-icon>fitness_center</mat-icon>
@@ -109,6 +110,7 @@
                     mat-button
                     class="calendario-semanal__fila-ejercicio"
                     [routerLink]="['/ejercicios', ejercicioId]"
+                    [state]="{ returnUrl: '/planificacion' }"
                     [attr.aria-label]="'Abrir la ficha de ' + nombreEjercicio(ejercicioId)"
                   >
                     {{ nombreEjercicio(ejercicioId) }}

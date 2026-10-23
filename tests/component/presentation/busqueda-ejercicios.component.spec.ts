@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
+import { Location } from '@angular/common';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, Router } from '@angular/router';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
@@ -179,6 +180,7 @@ describe('BusquedaEjerciciosComponent', () => {
     await fixture.whenStable();
 
     expect(TestBed.inject(Router).url).toBe('/ejercicios/1');
+    expect(TestBed.inject(Location).getState()).toMatchObject({ returnUrl: '/buscar' });
     expect(componente.categoriaIdsSeleccionadas()).toEqual(['cat-1']);
     expect(buscar).toHaveBeenCalledWith('', ['cat-1']);
   });

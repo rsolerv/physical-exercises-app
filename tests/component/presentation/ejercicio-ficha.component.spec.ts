@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
+import { Location } from '@angular/common';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, ActivatedRoute, Router } from '@angular/router';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
@@ -107,6 +108,32 @@ describe('EjercicioFichaComponent', () => {
     expect(texto).toContain('Sentadilla');
     expect(texto).toContain('Flexionar las rodillas.');
     expect(texto).toContain('Piernas');
+  });
+
+  it.each(['/inicio', '/planificacion', '/buscar'])('vuelve a la pantalla de origen: %s', async (returnUrl) => {
+    configurar({ ejercicio: ejercicio() });
+    const location = TestBed.inject(Location);
+    vi.spyOn(location, 'getState').mockReturnValue({ returnUrl });
+    const router = TestBed.inject(Router);
+    const navigateByUrlSpy = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    const fixture = await crearComponente();
+
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('.ejercicio-ficha__volver')?.click();
+    await fixture.whenStable();
+
+    expect(navigateByUrlSpy).toHaveBeenCalledWith(returnUrl);
+  });
+
+  it('vuelve a Buscar si la ficha se abre sin una pantalla de origen', async () => {
+    configurar({ ejercicio: ejercicio() });
+    vi.spyOn(TestBed.inject(Location), 'getState').mockReturnValue({});
+    const navigateByUrlSpy = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    const fixture = await crearComponente();
+
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('.ejercicio-ficha__volver')?.click();
+    await fixture.whenStable();
+
+    expect(navigateByUrlSpy).toHaveBeenCalledWith('/buscar');
   });
 
   it('permite cambiar el progreso de forma independiente cuando está planificado hoy', async () => {

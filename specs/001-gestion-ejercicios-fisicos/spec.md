@@ -93,6 +93,7 @@ Como usuario quiero consultar el catálogo completo, buscar ejercicios por categ
 9. **Given** que el usuario busca ejercicios desde cualquier dispositivo, **When** revisa un resultado, **Then** encuentra su nombre, una descripción legible y las categorías asociadas; en móvil puede abrir la ficha completa desde el resultado.
 10. **Given** que el usuario consulta un ejercicio con imágenes o vídeos, **When** abre su ficha, **Then** los medios se muestran en proporciones coherentes, las imágenes conservan su contenido completo y el vídeo puede iniciarse desde una vista previa identificable.
 11. **Given** que un vídeo asociado no está disponible o una imagen no carga, **When** el usuario consulta la ficha, **Then** se informa de ese medio no disponible sin ocultar el resto de la información del ejercicio.
+12. **Given** que el usuario abre la ficha desde “Hoy”, “Planificación semanal” o “Buscar”, **When** activa “Volver”, **Then** regresa a la pantalla desde la que abrió el ejercicio.
 
 ---
 
@@ -314,6 +315,7 @@ Como usuario quiero reconocer rápidamente dónde estoy, encontrar las acciones 
 - **FR-077**: La ficha de ejercicio DEBE ofrecer una acción para volver, una acción para editar y la eliminación dentro de un menú secundario identificado como destructivo. Si el ejercicio está planificado para hoy, DEBE mantener disponible la acción de progreso definida en FR-067.
 - **FR-078**: En escritorio, la edición de un ejercicio DEBE mostrar el formulario y la vista previa de la ficha en dos columnas. Las acciones "Guardar" y "Cancelar" DEBEN permanecer visibles y accesibles durante la edición, sin requerir desplazamiento vertical para alcanzarlas.
 - **FR-079**: Al crear un ejercicio, si existe una planificación activa para la semana actual, el formulario DEBE ofrecer al final del formulario y antes de las acciones una opción seleccionable, no un botón, denominada "Agregar a los ejercicios de hoy". Si se selecciona, al guardar el ejercicio el sistema DEBE asignarlo al día actual de esa planificación. La opción NO DEBE aparecer al editar un ejercicio ni cuando no exista planificación activa esta semana. Si falla la asignación después de guardar el ejercicio, el sistema DEBE informar claramente que el ejercicio se guardó pero no se pudo agregar a la planificación.
+- **FR-080**: La acción "Volver" de la ficha de ejercicio DEBE regresar a la pantalla desde la que se abrió la ficha ("Hoy", "Planificación semanal" o "Buscar"). Si la ficha se abre sin un contexto de navegación conocido, DEBE regresar a "Buscar".
 
 
 ### Key Entities *(include if feature involves data)*

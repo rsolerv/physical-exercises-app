@@ -1,4 +1,5 @@
 import { Component, computed, inject, resource, signal } from '@angular/core';
+import { Location } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { from } from 'rxjs';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -23,6 +24,8 @@ import { YoutubeEmbedComponent } from '../compartido/embebidos/youtube-embed.com
 import { EnlaceEmbedComponent } from '../compartido/embebidos/enlace-embed.component';
 import { MensajeFeedbackService } from '../compartido/ui/mensaje-feedback.service';
 import { EstadoCargaComponent } from '../compartido/ui/estado-carga/estado-carga.component';
+
+const RUTAS_ORIGEN_EJERCICIO = new Set(['/inicio', '/planificacion', '/buscar']);
 
 /**
  * Ficha de un ejercicio (Historias de Usuario 1 y 2): muestra sus datos
@@ -51,6 +54,7 @@ import { EstadoCargaComponent } from '../compartido/ui/estado-carga/estado-carga
 export class EjercicioFichaComponent {
   private readonly ruta = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly location = inject(Location);
   private readonly ejercicioRepository = inject(EjercicioRepositoryPort);
   private readonly categoriaRepository = inject(CategoriaRepositoryPort);
   private readonly progresoDiarioRepository = inject(ProgresoDiarioRepositoryPort);
@@ -128,6 +132,19 @@ export class EjercicioFichaComponent {
 
   marcarErrorImagen(id: string): void {
     this.imagenesConError.update((actuales) => new Set(actuales).add(id));
+  }
+
+  async volver(): Promise<void> {
+    const state = this.location.getState();
+    const returnUrl =
+      typeof state === 'object' &&
+      state !== null &&
+      'returnUrl' in state &&
+      typeof state.returnUrl === 'string' &&
+      RUTAS_ORIGEN_EJERCICIO.has(state.returnUrl)
+        ? state.returnUrl
+        : '/buscar';
+    await this.router.navigateByUrl(returnUrl);
   }
 
   async eliminar(): Promise<void> {
