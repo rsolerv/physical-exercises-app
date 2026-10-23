@@ -1,4 +1,5 @@
 @use '../../../styles/espaciado' as *;
+@use '../../../styles/breakpoints' as *;
 
 .progreso-diario__resumen {
   display: grid;
@@ -42,20 +43,76 @@
 .progreso-diario__elemento {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: $espaciado-2;
   min-height: 56px;
 
   mat-checkbox {
     min-width: 0;
     flex: 1;
+    max-width: 1200px;
     min-height: 56px;
+    height: auto;
     display: flex;
     align-items: center;
   }
 }
 
+.progreso-diario__contenido {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: $espaciado-1;
+  padding-block: $espaciado-1;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.progreso-diario__nombre {
+  font-weight: 600;
+}
+
+.progreso-diario__descripcion {
+  color: var(--mat-sys-on-surface-variant);
+  line-height: 1.5;
+}
+
+.progreso-diario__categorias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $espaciado-1;
+}
+
+.progreso-diario__categoria {
+  padding: 2px $espaciado-1;
+  border-radius: 999px;
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+:host ::ng-deep .progreso-diario__elemento .mdc-label {
+  min-width: 0;
+  white-space: normal;
+}
+
 .progreso-diario__consulta {
   flex-shrink: 0;
   min-height: 56px;
+}
+
+@include movil {
+  .progreso-diario__elemento {
+    align-items: stretch;
+    flex-direction: column;
+    padding-bottom: $espaciado-1;
+  }
+
+  .progreso-diario__elemento mat-checkbox {
+    width: 100%;
+  }
+
+  .progreso-diario__consulta {
+    margin-inline-start: 40px;
+  }
 }

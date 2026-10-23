@@ -7,6 +7,7 @@ import { ProgresoDiarioRepositoryPort } from '../../application/ports/progreso-d
 import { GestionarProgresoDiarioUseCase } from '../../application/casos-uso/gestionar-progreso-diario.use-case';
 import { calcularPorcentajeDia } from '../../domain/progreso-diario/calcular-porcentaje-dia';
 import { MensajeFeedbackService } from '../compartido/ui/mensaje-feedback.service';
+import type { Categoria } from '../../domain/categoria/categoria.entity';
 import type { Ejercicio } from '../../domain/ejercicio/ejercicio.entity';
 import type { CambioProgreso } from '../../application/casos-uso/gestionar-progreso-diario.use-case';
 
@@ -30,6 +31,7 @@ export class ProgresoDiarioComponent {
 
   readonly fecha = input.required<Date>();
   readonly ejercicios = input.required<Ejercicio[]>();
+  readonly categorias = input<Categoria[]>([]);
 
   protected readonly recursoRegistros = resource({
     params: () => ({ fecha: this.fecha() }),
@@ -53,6 +55,13 @@ export class ProgresoDiarioComponent {
     if (porcentaje === 100) return 'Día completado';
     return 'Buen progreso';
   });
+
+  protected nombresCategorias(ejercicio: Ejercicio): string[] {
+    const nombresPorId = new Map(this.categorias().map((categoria) => [categoria.id, categoria.nombre]));
+    return ejercicio.categoriaIds
+      .map((id) => nombresPorId.get(id))
+      .filter((nombre): nombre is string => nombre !== undefined);
+  }
 
   protected estaRealizado(ejercicioId: string): boolean {
     return this.idsRealizados().has(ejercicioId);

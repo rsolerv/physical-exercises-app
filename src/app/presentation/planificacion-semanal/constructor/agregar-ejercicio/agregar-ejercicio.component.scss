@@ -4,10 +4,78 @@
 
 .busqueda-ejercicios__disposicion {
   min-width: 0;
+  width: 100%;
 }
 
 .busqueda-ejercicios__resultados {
   min-width: 0;
+  width: 100%;
+}
+
+.agregar-ejercicio__opcion {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-height: 0;
+  overflow: visible;
+  width: 100%;
+}
+
+:host ::ng-deep .agregar-ejercicio__opcion.mdc-list-item--with-three-lines {
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+:host ::ng-deep .agregar-ejercicio__opcion .mdc-list-item__content {
+  box-sizing: border-box;
+  display: block;
+  height: auto !important;
+  max-width: 100%;
+  min-width: 0;
+  overflow: visible;
+  padding-block: 8px;
+  width: 100%;
+}
+
+:host ::ng-deep .agregar-ejercicio__opcion .mdc-list-item__primary-text {
+  display: block;
+  height: auto !important;
+  min-height: 0;
+  max-width: 100%;
+  min-width: 0;
+  overflow: visible;
+  white-space: normal !important;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+
+:host ::ng-deep .agregar-ejercicio__opcion .mat-mdc-list-item-line {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  overflow: visible;
+  white-space: normal !important;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+
+.agregar-ejercicio__descripcion {
+  color: var(--mat-sys-on-surface-variant);
+  line-height: 1.5;
+}
+
+:host ::ng-deep .agregar-ejercicio__opcion .agregar-ejercicio__descripcion {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  overflow: visible;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+
+.agregar-ejercicio__categorias {
+  color: var(--mat-sys-primary);
+  font-size: 12px;
 }
 
 .busqueda-ejercicios__error {

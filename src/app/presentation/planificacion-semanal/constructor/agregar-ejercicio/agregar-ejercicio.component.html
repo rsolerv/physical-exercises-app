@@ -19,9 +19,14 @@
     <div class="busqueda-ejercicios__disposicion">
       <mat-selection-list #ejerciciosSeleccionados class="busqueda-ejercicios__resultados" aria-label="Resultados de ejercicios" (selectionChange)="seleccionados.emit(ejerciciosSeleccionados.selectedOptions.selected.map(opcion => opcion.value))">
         @for (ejercicio of recursoResultados.value(); track ejercicio.id) {
-            <mat-list-option [value]="ejercicio.id">
+            <mat-list-option [value]="ejercicio.id" class="agregar-ejercicio__opcion">
                 <span matListItemTitle>{{ ejercicio.nombre }}</span>
-                <span matListItemLine class="busqueda-ejercicios__descripcion">{{ ejercicio.descripcion }}</span>
+                <span matListItemLine class="agregar-ejercicio__descripcion">{{ ejercicio.descripcion }}</span>
+                @if (nombresCategorias(ejercicio).length > 0) {
+                  <span matListItemLine class="agregar-ejercicio__categorias">
+                    Categorías: {{ nombresCategorias(ejercicio).join(', ') }}
+                  </span>
+                }
             </mat-list-option>
         }
       </mat-selection-list>
@@ -29,4 +34,3 @@
     </div>
   }
 </section>
-

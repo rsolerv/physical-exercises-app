@@ -15,6 +15,7 @@ import { CabeceraPaginaComponent } from '../ui/cabecera-pagina/cabecera-pagina.c
 })
 export class BusquedaEjerciciosFiltrosComponent {
   readonly categorias = input<Categoria[]>([]);
+  readonly fijados = input(false);
   readonly texto = model('');
   readonly categoriaIdsSeleccionadas = model<string[]>([]);
 

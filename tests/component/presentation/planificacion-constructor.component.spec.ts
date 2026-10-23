@@ -12,9 +12,10 @@ import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejer
 import { crearDiasVacios } from '../../../src/app/domain/planificacion/planificacion.entity';
 import type { Planificacion } from '../../../src/app/domain/planificacion/planificacion.entity';
 import type { Ejercicio } from '../../../src/app/domain/ejercicio/ejercicio.entity';
+import type { Categoria } from '../../../src/app/domain/categoria/categoria.entity';
 
-function ejercicio(id: string, nombre: string): Ejercicio {
-  return { id, nombre, descripcion: 'desc', categoriaIds: ['cat-1'], enlaces: [], imagenes: [] };
+function ejercicio(id: string, nombre: string, descripcion = 'desc'): Ejercicio {
+  return { id, nombre, descripcion, categoriaIds: ['cat-1'], enlaces: [], imagenes: [] };
 }
 
 describe('PlanificacionConstructorComponent', () => {
@@ -22,6 +23,7 @@ describe('PlanificacionConstructorComponent', () => {
     idRuta?: string | null;
     planificacionExistente?: Planificacion | null;
     ejercicios?: Ejercicio[];
+    categorias?: Categoria[];
     listarEjercicios?: () => Promise<Ejercicio[]>;
     crear?: ReturnType<typeof vi.fn>;
     actualizar?: ReturnType<typeof vi.fn>;
@@ -43,7 +45,7 @@ describe('PlanificacionConstructorComponent', () => {
           provide: EjercicioRepositoryPort,
           useValue: { listarTodos: opciones.listarEjercicios ?? vi.fn().mockResolvedValue(opciones.ejercicios ?? []) },
         },
-        { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue([]) } },
+        { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue(opciones.categorias ?? []) } },
         {
           provide: BuscarEjerciciosUseCase,
           useValue: { buscar: vi.fn().mockResolvedValue(opciones.ejercicios ?? []) },
@@ -121,6 +123,34 @@ describe('PlanificacionConstructorComponent', () => {
 
     expect((fixture.nativeElement as HTMLElement).querySelector('form')).toBeTruthy();
     expect(fixture.componentInstance.ejerciciosPorDia().martes).toEqual(['ej-1']);
+  });
+
+  it('muestra la descripción completa y las categorías al añadir ejercicios en una planificación editada', async () => {
+    const dias = crearDiasVacios();
+    const planificacionExistente: Planificacion = {
+      id: 'plan-1',
+      nombre: 'Semana original',
+      fechaInicio: '2026-10-12',
+      dias,
+    };
+    const descripcion = 'Mantén la espalda recta y baja lentamente hasta completar el movimiento.';
+    configurar({
+      idRuta: 'plan-1',
+      planificacionExistente,
+      ejercicios: [ejercicio('ej-1', 'Sentadilla', descripcion)],
+      categorias: [{ id: 'cat-1', nombre: 'Piernas' }],
+    });
+    const fixture = await crearComponente();
+    const raiz = fixture.nativeElement as HTMLElement;
+
+    raiz.querySelector<HTMLButtonElement>('section[aria-label="Lunes"] button')?.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const opcion = raiz.querySelector<HTMLElement>('.agregar-ejercicio__opcion');
+    expect(opcion?.textContent).toContain(descripcion);
+    expect(opcion?.textContent).toContain('Piernas');
   });
 
   it('duplica la planificación cuando está en modo edición', async () => {

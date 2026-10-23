@@ -1,5 +1,5 @@
 
-<div class="busqueda-ejercicios__filtros busqueda-ejercicios__filtros--fijados">
+<div class="busqueda-ejercicios__filtros" [class.busqueda-ejercicios__filtros--fijados]="fijados()">
   <app-cabecera-pagina titulo="Buscar ejercicios"/>  
   <mat-form-field appearance="outline" class="busqueda-ejercicios__campo-texto">
     <mat-label>Buscar por nombre o descripción</mat-label>

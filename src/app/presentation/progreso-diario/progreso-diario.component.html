@@ -20,7 +20,17 @@
       @for (ejercicio of ejercicios(); track ejercicio.id) {
         <li class="progreso-diario__elemento">
           <mat-checkbox [checked]="estaRealizado(ejercicio.id)" (change)="alternar(ejercicio.id)">
-            {{ ejercicio.nombre }}
+            <span class="progreso-diario__contenido">
+              <span class="progreso-diario__nombre">{{ ejercicio.nombre }}</span>
+              <span class="progreso-diario__descripcion">{{ ejercicio.descripcion }}</span>
+              @if (nombresCategorias(ejercicio).length > 0) {
+                <span class="progreso-diario__categorias" aria-label="Categorías">
+                  @for (nombre of nombresCategorias(ejercicio); track nombre) {
+                    <span class="progreso-diario__categoria">{{ nombre }}</span>
+                  }
+                </span>
+              }
+            </span>
           </mat-checkbox>
           <a
             mat-stroked-button

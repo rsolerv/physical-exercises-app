@@ -14,7 +14,7 @@
     </div>
   } @else if (errorCarga()) {
     <div class="dia-actual__error" role="alert">
-      <p>No se pudo cargar la planificación de hoy.</p>
+      <p>No se pudo cargar la planificación o los datos de sus ejercicios.</p>
       <button mat-stroked-button type="button" (click)="reintentarCarga()">Reintentar</button>
     </div>
   } @else {
@@ -42,7 +42,7 @@
         </section>
       }
     } @else {
-      <app-progreso-diario [fecha]="hoy" [ejercicios]="ejerciciosDeHoy()" />
+      <app-progreso-diario [fecha]="hoy" [ejercicios]="ejerciciosDeHoy()" [categorias]="categorias()" />
     }
   }
 </section>

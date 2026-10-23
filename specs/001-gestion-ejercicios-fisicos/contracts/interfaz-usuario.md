@@ -25,6 +25,7 @@ Los anchos entre rangos y menores de 360 px siguen siendo utilizables. Ninguna v
 - La pantalla prioriza la fecha, el plan, los ejercicios y el progreso del día.
 - Cada ejercicio permite abrir su ficha y marcarlo como realizado con controles independientes.
 - La ficha también permite marcar o desmarcar el ejercicio cuando está planificado para hoy.
+- Cada ejercicio de "Hoy" muestra su nombre, descripción completa y categorías; el contenido se ajusta a la altura necesaria y no se trunca.
 - El progreso distingue inicio, avance parcial y finalización. El usuario puede deshacer un cambio mientras su notificación siga visible.
 - Si el día está vacío, se comunica el descanso y, cuando existe, se muestra la próxima sesión.
 
@@ -46,6 +47,7 @@ Los anchos entre rangos y menores de 360 px siguen siendo utilizables. Ninguna v
 - En escritorio, la cuadrícula permite comparar los siete días.
 - En el constructor, el selector de fecha ofrece un calendario que puede abrirse mediante un control visible tanto en móvil como en escritorio, y solo permite seleccionar lunes; dejar la fecha vacía crea una plantilla.
 - El selector de ejercicios se abre desde el día y permite buscar por texto. No se admiten duplicados en el mismo día.
+- Los resultados del selector muestran la descripción completa y las categorías de cada ejercicio, sin recortarlas.
 - Los ejercicios de la planificación llevan a su ficha sin sustituir el control de selección o edición.
 
 ### Categorías

@@ -43,6 +43,7 @@ describe('Integración del progreso diario dentro de la vista "hoy" (US4)', () =
         provideRouter([]),
         provideNoopAnimations(),
         { provide: ConsultarPlanificacionUseCase, useValue: { obtenerDeHoy: vi.fn().mockResolvedValue(planificacion) } },
+        { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue([]) } },
         {
           provide: EjercicioRepositoryPort,
           useValue: { listarTodos: vi.fn().mockResolvedValue([ejercicio('ej-1', 'Sentadilla'), ejercicio('ej-2', 'Plancha')]) },

@@ -10,11 +10,10 @@
 
 .busqueda-ejercicios__resultados {
   min-width: 0;
+  padding-top: 255px;
+
   @include movil {
     padding-top: 210px;
-  }
-  @include tablet{
-    padding-top: 255px;
   }
 }
 

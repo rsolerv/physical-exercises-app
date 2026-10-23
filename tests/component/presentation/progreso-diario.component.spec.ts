@@ -8,6 +8,7 @@ import { ProgresoDiarioRepositoryPort } from '../../../src/app/application/ports
 import { GestionarProgresoDiarioUseCase } from '../../../src/app/application/casos-uso/gestionar-progreso-diario.use-case';
 import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
 import type { Ejercicio } from '../../../src/app/domain/ejercicio/ejercicio.entity';
+import type { Categoria } from '../../../src/app/domain/categoria/categoria.entity';
 import type { ProgresoDiario } from '../../../src/app/domain/progreso-diario/progreso-diario.entity';
 
 function ejercicio(id: string, nombre: string): Ejercicio {
@@ -41,10 +42,11 @@ describe('ProgresoDiarioComponent', () => {
     });
   }
 
-  async function crearComponente(ejercicios: Ejercicio[]) {
+  async function crearComponente(ejercicios: Ejercicio[], categorias: Categoria[] = []) {
     const fixture = TestBed.createComponent(ProgresoDiarioComponent);
     fixture.componentRef.setInput('fecha', new Date('2026-10-15'));
     fixture.componentRef.setInput('ejercicios', ejercicios);
+    fixture.componentRef.setInput('categorias', categorias);
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -79,6 +81,19 @@ describe('ProgresoDiarioComponent', () => {
 
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('100%');
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Día completado');
+  });
+
+  it('muestra la descripción completa y las categorías asociadas a cada ejercicio', async () => {
+    configurar([]);
+    const descripcion = 'Mantén la espalda recta y baja lentamente hasta completar el movimiento.';
+    const fixture = await crearComponente(
+      [{ ...ejercicio('ej-1', 'Sentadilla'), descripcion }],
+      [{ id: 'cat-1', nombre: 'Piernas' }]
+    );
+    const raiz = fixture.nativeElement as HTMLElement;
+
+    expect(raiz.querySelector('.progreso-diario__descripcion')?.textContent).toContain(descripcion);
+    expect(raiz.querySelector('.progreso-diario__categoria')?.textContent).toContain('Piernas');
   });
 
   it('al marcar una casilla, llama al caso de uso con el nuevo estado', async () => {

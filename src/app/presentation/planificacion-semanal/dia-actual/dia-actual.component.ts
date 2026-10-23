@@ -4,7 +4,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ConsultarPlanificacionUseCase } from '../../../application/casos-uso/consultar-planificacion.use-case';
+import { CategoriaRepositoryPort } from '../../../application/ports/categoria-repository.port';
 import { EjercicioRepositoryPort } from '../../../application/ports/ejercicio-repository.port';
+import type { Categoria } from '../../../domain/categoria/categoria.entity';
 import type { Ejercicio } from '../../../domain/ejercicio/ejercicio.entity';
 import { DIAS_SEMANA_ORDENADOS } from '../../../domain/planificacion/planificacion.entity';
 import { diaSemanaDeFecha } from '../../../domain/planificacion/fecha-semana';
@@ -29,6 +31,7 @@ import { ProgresoDiarioComponent } from '../../progreso-diario/progreso-diario.c
 export class DiaActualComponent {
   private readonly consultarPlanificacion = inject(ConsultarPlanificacionUseCase);
   private readonly ejercicioRepository = inject(EjercicioRepositoryPort);
+  private readonly categoriaRepository = inject(CategoriaRepositoryPort);
 
   protected readonly hoy = new Date();
   protected readonly diaSemanaHoy = diaSemanaDeFecha(this.hoy);
@@ -45,6 +48,12 @@ export class DiaActualComponent {
   protected readonly recursoEjercicios = resource({
     loader: () => this.ejercicioRepository.listarTodos(),
   });
+
+  protected readonly recursoCategorias = resource({
+    loader: () => this.categoriaRepository.listarTodas(),
+  });
+
+  protected readonly categorias = computed((): Categoria[] => this.recursoCategorias.value() ?? []);
 
   protected readonly ejercicioIdsDeHoy = computed(() => {
     const planificacion = this.recursoPlanificacionHoy.value();
@@ -80,15 +89,22 @@ export class DiaActualComponent {
   });
 
   protected readonly cargando = computed(
-    () => this.recursoPlanificacionHoy.isLoading() || this.recursoEjercicios.isLoading()
+    () =>
+      this.recursoPlanificacionHoy.isLoading() ||
+      this.recursoEjercicios.isLoading() ||
+      this.recursoCategorias.isLoading()
   );
 
   protected readonly errorCarga = computed(
-    () => this.recursoPlanificacionHoy.error() !== undefined || this.recursoEjercicios.error() !== undefined
+    () =>
+      this.recursoPlanificacionHoy.error() !== undefined ||
+      this.recursoEjercicios.error() !== undefined ||
+      this.recursoCategorias.error() !== undefined
   );
 
   protected reintentarCarga(): void {
     this.recursoPlanificacionHoy.reload();
     this.recursoEjercicios.reload();
+    this.recursoCategorias.reload();
   }
 }
