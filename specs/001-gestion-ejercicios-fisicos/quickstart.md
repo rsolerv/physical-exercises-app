@@ -37,7 +37,7 @@ Abre la URL que muestra `npm start`. El primer arranque debe cargar el catálogo
 1. Abre "Buscar" sin texto ni categorías seleccionadas. **Esperado**: aparece el catálogo completo.
 2. Busca por nombre y filtra por categoría. Comprueba el estado de carga con placeholders que anticipan el contenido, que el buscador permanece disponible al recorrer resultados, que los filtros de categoría forman una sola fila desplazable horizontalmente y que el texto largo no provoca desplazamiento horizontal de la página.
 3. En móvil, confirma que los resultados muestran nombre, descripción y categorías separadas visualmente; no muestran imagen, miniatura ni vista previa. Selecciona uno y comprueba que abre su ficha.
-4. En escritorio, abre "Buscar" sin seleccionar ningún ejercicio y confirma que no aparece la ayuda genérica en el panel de la ficha. Selecciona resultados diferentes. **Esperado**: cada ficha aparece junto a la lista y cambiar la selección no borra los criterios ni los resultados.
+4. En escritorio, confirma el mismo flujo: seleccionar un resultado abre su ficha en una pantalla dedicada y "Volver" regresa a "Buscar".
 5. En la ficha, vuelve a la búsqueda, edita y elimina un ejercicio. Comprueba el feedback de cada operación y que el borrado puede deshacerse mientras la notificación esté visible.
 
 ## US3 — Calendario y constructor semanal
@@ -45,7 +45,7 @@ Abre la URL que muestra `npm start`. El primer arranque debe cargar el catálogo
 1. Crea o selecciona una planificación con ejercicios en varios días. Comprueba el estado de carga. En móvil, verifica que el día actual ya está seleccionado sin un rótulo o control "Hoy" redundante; selecciona cada día en la tira semanal. **Esperado**: solo se muestra el contenido del día elegido, los puntos indican actividad y los días vacíos aparecen como "Descanso".
 2. Repite en escritorio. **Esperado**: la cuadrícula permite comparar los siete días y las filas de ejercicios abren la ficha correspondiente.
 3. Cambia el plan desde la cabecera. Comprueba que se identifica como "Activa" o "Plantilla" y que su nombre no se repite como título redundante.
-4. Edita una planificación en escritorio y comprueba que el editor aprovecha el ancho disponible sin un máximo fijo. Activa "Agregar ejercicio". **Esperado**: se abre una pantalla independiente con un campo de búsqueda parcial en la parte superior y filtros por categoría; cada resultado muestra el nombre y la descripción completa, y es posible seleccionar varios antes de confirmar. Intenta añadir un ejercicio ya presente en ese día; el duplicado se impide.
+4. Edita una planificación en escritorio y comprueba que el editor aprovecha el ancho disponible sin un máximo fijo. Activa "Agregar ejercicio". **Esperado**: se abre una pantalla independiente con un campo de búsqueda parcial en la parte superior y filtros por categoría; cada resultado muestra el nombre y la descripción completa. Selecciona varios ejercicios sucesivamente y comprueba que cada uno se añade inmediatamente, sin confirmación adicional. Intenta añadir un ejercicio ya presente en ese día; el duplicado se impide.
 5. En un móvil, edita la fecha de inicio de una planificación. **Esperado**: el control abre el calendario y permite usarlo sin que lo oculten el teclado virtual o la navegación; solo se pueden elegir lunes y dejar la fecha vacía crea una plantilla.
 6. Comprueba que duplicar una planificación o plantilla conserva sus ejercicios y días, y que las restricciones de fecha y plan activo siguen vigentes.
 

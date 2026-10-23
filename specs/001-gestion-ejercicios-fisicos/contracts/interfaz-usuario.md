@@ -36,8 +36,7 @@ En móvil, las cabeceras no dejan más de 24 px entre el área segura superior y
 - Los filtros de categoría se muestran en una sola fila horizontalmente desplazable, sin provocar desbordamiento horizontal de la página.
 - Con los datos cargados, una búsqueda por texto o categoría muestra los resultados en menos de 1 segundo (SC-031).
 - Cada resultado muestra nombre, descripción y categorías claramente distinguibles y separadas visualmente de la descripción; las categorías no tienen que presentarse como chips. No muestra imagen, miniatura ni vista previa del ejercicio.
-- En escritorio, seleccionar un resultado muestra su ficha junto a la lista sin descartar los resultados ni los filtros. En móvil, abre la ficha.
-- Si no hay un ejercicio seleccionado, el panel contiguo de escritorio no muestra una ayuda genérica; al seleccionar uno, presenta su ficha.
+- Al seleccionar un resultado, tanto en escritorio como en móvil, se abre su ficha; "Volver" regresa a "Buscar".
 - La ficha permite volver a los resultados y editar; la eliminación está dentro de un menú secundario identificado como destructivo.
 - Los medios fallidos no ocultan el resto de la ficha. El vídeo requiere una acción explícita para iniciar la reproducción.
 - Las vistas previas de medios pertenecen a la ficha y muestran título y miniatura cuando están disponibles. Las observaciones pueden destacar series/repeticiones recomendadas existentes; no se inventan si faltan.
@@ -49,7 +48,7 @@ En móvil, las cabeceras no dejan más de 24 px entre el área segura superior y
 - En escritorio, la cuadrícula permite comparar los siete días.
 - En móvil, el día actual ya está seleccionado y no se añade un rótulo o control redundante "Hoy".
 - En el constructor, el selector de fecha ofrece un calendario que puede abrirse mediante un control visible tanto en móvil como en escritorio; en móvil permanece accesible durante la edición y no queda oculto por el teclado o la navegación. Solo permite seleccionar lunes; dejar la fecha vacía crea una plantilla.
-- La acción "Agregar ejercicio" abre una pantalla independiente desde el día correspondiente. Permite buscar por parte del nombre desde un campo superior, filtrar por categoría y seleccionar varios ejercicios antes de confirmar. No se admiten duplicados en el mismo día.
+- La acción "Agregar ejercicio" abre una pantalla independiente desde el día correspondiente. Permite buscar por parte del nombre desde un campo superior, filtrar por categoría y seleccionar varios ejercicios; cada selección se añade inmediatamente al día, sin confirmación adicional. No se admiten duplicados en el mismo día.
 - Los resultados del selector muestran el nombre, la descripción completa y las categorías de cada ejercicio, sin recortarlas.
 - Los ejercicios de la planificación llevan a su ficha sin sustituir el control de selección o edición.
 - El editor de planificación utiliza el ancho disponible en escritorio, sin un ancho máximo fijo.

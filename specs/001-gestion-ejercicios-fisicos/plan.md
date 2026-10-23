@@ -4,7 +4,7 @@
 
 ## Summary
 
-Actualizar la presentación de la aplicación y los flujos ya existentes para que biblioteca, búsqueda, ficha, planificación, progreso, categorías y sincronización compartan un sistema visual claro, accesible y responsive. La navegación cambia según el dispositivo; búsqueda en escritorio conserva su lista al mostrar una ficha; el constructor permite localizar ejercicios; las eliminaciones y cambios de progreso se pueden deshacer mientras la notificación está visible.
+Actualizar la presentación de la aplicación y los flujos ya existentes para que biblioteca, búsqueda, ficha, planificación, progreso, categorías y sincronización compartan un sistema visual claro, accesible y responsive. La navegación cambia según el dispositivo; la búsqueda abre la ficha en una pantalla dedicada; el constructor permite localizar y añadir ejercicios con rapidez; las eliminaciones y cambios de progreso se pueden deshacer mientras la notificación está visible.
 
 El alcance viene de la Living Spec actual (US1–US6, FR-038–FR-084 y los requisitos de negocio relacionados). Se conserva la aplicación Angular sin backend, sus cuatro capas, las reglas de dominio y el almacenamiento SQLite WASM. No se crea una feature nueva, no se añade una dependencia npm y los cambios de interfaz no introducen nuevas entidades persistentes.
 
@@ -57,8 +57,8 @@ La investigación técnica previa de Angular, SQLite WASM, Signal Forms, Vitest 
 
 1. **Fundación visual y shell**: centralizar tokens de color, tipografía, espaciado y radios en los estilos globales existentes; servir la fuente localmente; adaptar el shell a barra inferior y panel "Más" en móvil, riel lateral en tablet y menú agrupado en escritorio.
 2. **Biblioteca y categorías**: rediseñar la ficha y los formularios de ejercicio; tratar imágenes y vistas previas de enlaces según la spec; permitir edición de categoría en línea, informar el recuento de ejercicios y restaurar borrados desde una instantánea temporal. En el alta, ofrecer agregar el ejercicio al día actual solo si hay una planificación activa esta semana.
-3. **Búsqueda**: compactar los filtros y resultados para móvil y añadir una vista maestro-detalle en escritorio sin perder búsqueda ni selección. Los resultados muestran nombre, descripción y categorías separadas, sin imágenes ni vistas previas; estas permanecen en la ficha. Mantener una ficha de pantalla completa en móvil.
-4. **Planificación semanal**: usar la tira de días en móvil y la cuadrícula de siete columnas en escritorio, seleccionar planes desde la cabecera y abrir desde "Agregar ejercicio" una pantalla independiente para buscar por nombre parcial o categoría y seleccionar varios ejercicios. El día actual ya seleccionado no repite la etiqueta "Hoy"; el calendario de fecha de inicio sigue accesible durante la edición en móvil.
+3. **Búsqueda**: compactar los filtros y resultados; al seleccionar un resultado, abrir la ficha en una pantalla dedicada tanto en escritorio como en móvil. Los resultados muestran nombre, descripción y categorías separadas, sin imágenes ni vistas previas; estas permanecen en la ficha.
+4. **Planificación semanal**: usar la tira de días en móvil y la cuadrícula de siete columnas en escritorio, seleccionar planes desde la cabecera y abrir desde "Agregar ejercicio" una pantalla independiente para buscar por nombre parcial o categoría y seleccionar varios ejercicios. Cada selección se añade inmediatamente al día, sin confirmación adicional. El día actual ya seleccionado no repite la etiqueta "Hoy"; el calendario de fecha de inicio sigue accesible durante la edición en móvil.
 5. **Hoy y progreso**: priorizar sesión actual, mostrar estados inicial/parcial/completo y permitir marcar/deshacer también desde la ficha cuando el ejercicio esté planificado hoy.
 6. **Sincronización**: presentar una tarjeta con estado, acción principal y acceso a configuración plegable cuando ya esté configurada; conservar las reglas actuales de sincronización y conflicto.
 7. **Validación transversal**: verificar navegación, errores, cargas, foco, tamaños táctiles, contraste, anchos de referencia, uso del ancho disponible en el formulario de ejercicio y el editor semanal, y los flujos de regresión de datos.
@@ -119,7 +119,7 @@ src/
         ├── compartido/shell/           # navegación adaptada por dispositivo
         ├── compartido/ui/              # estados, avisos y controles reutilizables
         ├── biblioteca-ejercicios/      # formulario, ficha y categorías
-        ├── busqueda-ejercicios/        # resultados y vista maestro-detalle de escritorio
+        ├── busqueda-ejercicios/        # resultados y acceso a fichas de ejercicio
         ├── planificacion-semanal/      # calendario, constructor y vista de hoy
         └── sincronizacion/             # configuración, estados y conflictos
 
@@ -135,4 +135,4 @@ tests/
 
 ## Complexity Tracking
 
-No hay excepciones a la constitución que requieran justificación. Las vistas maestro-detalle, la navegación adaptable y la restauración temporal se realizan dentro de las capas y áreas funcionales existentes; no requieren una entidad de negocio, servicios ni dependencias nuevas.
+No hay excepciones a la constitución que requieran justificación. La navegación adaptable y la restauración temporal se realizan dentro de las capas y áreas funcionales existentes; no requieren una entidad de negocio, servicios ni dependencias nuevas.

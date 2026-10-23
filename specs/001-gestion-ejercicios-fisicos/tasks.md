@@ -89,12 +89,12 @@ description: "Implementación incremental del rediseño visual y funcional de la
 
 > Escribir y ejecutar estas pruebas primero; comprobar que fallan antes de implementar.
 
-- [X] T014 [P] [US2] Añadir pruebas de resultados diferenciados sin imagen/miniatura, categorías separadas de la descripción, buscador y filtros disponibles durante el scroll, estados vacío/carga, panel maestro-detalle sin ayuda genérica y conservación de criterios en `tests/component/presentation/busqueda-ejercicios.component.spec.ts` y `tests/component/presentation/shell-busqueda.integration.spec.ts`.
+- [X] T014 [P] [US2] Añadir pruebas de resultados diferenciados sin imagen/miniatura, categorías separadas de la descripción, buscador y filtros disponibles durante el scroll, estados vacío/carga y navegación a la ficha desde resultados en `tests/component/presentation/busqueda-ejercicios.component.spec.ts` y `tests/component/presentation/shell-busqueda.integration.spec.ts`.
 - [X] T015 [P] [US2] Añadir pruebas de ficha para orden y proporción de imágenes/vídeos, título/miniatura/atribución de vistas previas, reproducción explícita, enlaces autoidentificados, medios no disponibles, series/repeticiones de observaciones, carga y menú secundario destructivo en `tests/component/presentation/ejercicio-ficha.component.spec.ts`, `tests/component/presentation/enlace-embed.component.spec.ts` y `tests/component/presentation/youtube-embed.component.spec.ts`.
 
 ### Implementation for User Story 2
 
-- [X] T016 [P] [US2] Implementar resultados legibles con nombre, descripción y categorías separadas visualmente, sin imagen ni miniatura; conservar filtros y búsqueda, estados vacío/carga mediante el componente compartido, y selección móvil/escritorio maestro-detalle sin ayuda genérica cuando no haya selección en `src/app/presentation/busqueda-ejercicios/busqueda-ejercicios.component.ts`, `src/app/presentation/busqueda-ejercicios/busqueda-ejercicios.component.html` y `src/app/presentation/busqueda-ejercicios/busqueda-ejercicios.component.scss`.
+- [X] T016 [P] [US2] Implementar resultados legibles con nombre, descripción y categorías separadas visualmente, sin imagen ni miniatura; conservar filtros y búsqueda, estados vacío/carga mediante el componente compartido y navegación a la ficha al seleccionar un resultado, tanto en escritorio como en móvil, en `src/app/presentation/busqueda-ejercicios/busqueda-ejercicios.component.ts`, `src/app/presentation/busqueda-ejercicios/busqueda-ejercicios.component.html` y `src/app/presentation/busqueda-ejercicios/busqueda-ejercicios.component.scss`.
 - [X] T017 [P] [US2] Implementar ficha con estado de carga, medios al inicio, imágenes completas ampliables, preview 16:9 con título/miniatura/atribución cuando estén disponibles y reproducción explícita; identificar enlaces, conservar el enlace original ante fallos, destacar series/repeticiones existentes sin inventarlas y ofrecer volver/editar y eliminación en menú secundario destructivo, en `src/app/presentation/biblioteca-ejercicios/ejercicio-ficha.component.ts`, `src/app/presentation/biblioteca-ejercicios/ejercicio-ficha.component.html`, `src/app/presentation/biblioteca-ejercicios/ejercicio-ficha.component.scss`, `src/app/presentation/compartido/embebidos/enlace-embed.component.ts`, `src/app/presentation/compartido/embebidos/enlace-embed.component.html`, `src/app/presentation/compartido/embebidos/enlace-embed.component.scss`, `src/app/presentation/compartido/embebidos/youtube-embed.component.ts`, `src/app/presentation/compartido/embebidos/youtube-embed.component.html` y `src/app/presentation/compartido/embebidos/youtube-embed.component.scss`.
 
 **Checkpoint**: Se puede consultar el catálogo y abrir fichas sin perder el contexto requerido; los errores de medios no ocultan el resto de información.
@@ -117,7 +117,7 @@ description: "Implementación incremental del rediseño visual y funcional de la
 ### Implementation for User Story 3
 
 - [X] T020 [P] [US3] Implementar la tira de siete días en móvil y cuadrícula comparable en escritorio, ejercicios como filas con acceso a ficha, estado de carga compartido, nombre legible del ejercicio ante cargas asíncronas y fallback "Ejercicio no disponible" sin exponer identificadores, en `src/app/presentation/planificacion-semanal/calendario/calendario-semanal.component.ts`, `src/app/presentation/planificacion-semanal/calendario/calendario-semanal.component.html` y `src/app/presentation/planificacion-semanal/calendario/calendario-semanal.component.scss`.
-- [X] T021 [P] [US3] Implementar selección de planificación desde cabecera y una pantalla independiente de selección múltiple abierta por "Agregar ejercicio", con búsqueda parcial por nombre, filtro por categoría, resultados de descripción completa y confirmación de incorporación al día sin duplicados; mantener el calendario accesible en móvil y respetar que `fechaInicio` DEBE ser un lunes, que no haya dos planificaciones concretas con la misma fecha de inicio y que no se repita un ejercicio en el mismo día, en `src/app/presentation/planificacion-semanal/constructor/planificacion-constructor.component.ts`, `src/app/presentation/planificacion-semanal/constructor/planificacion-constructor.component.html` y `src/app/presentation/planificacion-semanal/constructor/planificacion-constructor.component.scss`.
+- [X] T021 [P] [US3] Implementar selección de planificación desde cabecera y una pantalla independiente de selección múltiple abierta por "Agregar ejercicio", con búsqueda parcial por nombre, filtro por categoría y resultados de descripción completa; añadir cada ejercicio al día inmediatamente al seleccionarlo, sin confirmación adicional ni duplicados; mantener el calendario accesible en móvil y respetar que `fechaInicio` DEBE ser un lunes y que no haya dos planificaciones concretas con la misma fecha de inicio, en `src/app/presentation/planificacion-semanal/constructor/planificacion-constructor.component.ts`, `src/app/presentation/planificacion-semanal/constructor/planificacion-constructor.component.html` y `src/app/presentation/planificacion-semanal/constructor/planificacion-constructor.component.scss`.
 
 **Checkpoint**: La persona puede cambiar de plan y día, buscar y asignar ejercicios sin duplicados y comparar la semana en escritorio.
 
@@ -243,9 +243,9 @@ Completar primero la base visual y de navegación de US6, en particular T004, y 
 
 ## Validation Summary
 
-- **Total**: 38 tareas, incluidas las 2 tareas de convergencia añadidas tras el plan original y las 2 tareas de esta ampliación de US1.
+- **Total**: 41 tareas, incluidas 2 tareas de convergencia pendientes, 3 tareas de convergencia cerradas por decisión de producto y 2 tareas de la ampliación de US1.
 - **Por historia**: US1 = 9; US6 = 5; US2 = 4; US3 = 4; US4 = 4; US5 = 6.
-- **Fuera de historias**: Setup = 1; Foundational = 0; Polish = 3; Convergence = 2.
+- **Fuera de historias**: Setup = 1; Foundational = 0; Polish = 3; Convergence = 5 (2 pendientes y 3 cerradas por decisión de producto).
 - **Criterios de prueba independientes**: definidos en cada fase de US1–US6.
 - **MVP**: US6 como base visual seguida de US1 como primer incremento funcional.
 - **Formato**: todas las tareas usan `- [ ] T###`, incluyen etiqueta de historia cuando corresponde y citan rutas concretas.
@@ -254,3 +254,9 @@ Completar primero la base visual y de navegación de US6, en particular T004, y 
 
 - [ ] T035 Completar y registrar los recorridos manuales pendientes: tiempos de SC-001, SC-002, SC-004, SC-006, SC-009 y SC-023; además, verificar teclado, foco, contraste y áreas táctiles según US6/AC6–8 y SC-028, corrigiendo los incumplimientos que se detecten (partial).
 - [ ] T036 Validar la sincronización real entre dos navegadores o perfiles, incluidos los escenarios de cambios locales/remotos y conflicto, y comprobar la transferencia de los datos según US5/AC2–7, FR-035 y SC-008; usar credenciales locales del usuario, sin compartir el token (partial).
+
+## Phase 11: Convergence
+
+- [X] T038 Cerrada por decisión de producto (2026-10-23): no implementar vista maestro-detalle en "Buscar"; seleccionar un resultado abre su ficha en una pantalla dedicada.
+- [X] T039 Cerrada por decisión de producto (2026-10-23): priorizar la rapidez; cada ejercicio se incorpora al seleccionarlo sin confirmación adicional.
+- [X] T040 Cerrada por decisión de producto (2026-10-23): no se exige deduplicar las categorías mostradas en los resultados de búsqueda.
