@@ -8,7 +8,8 @@ Para ello:
    Una vez lo tengas cambiar la presentación de busqueda-ejercicios para que inicialmente obtenga los 20 primeros registros y que cuando se ejecute loadMore 
    agregará los 20 siguientes, y si vuelve a ejecutarse loadMore cargará los otros 20. Como siempre estará cargada una categoria no tendremos demasiados registros.
 - Formulario ejercicio - Volver: Que vuelva a la pantalla de donde venga, no siempre va a buscar, porque puede ir a planificación, a Hoy o al semanal.
-- En la planificación de hoy cabe perfectamente la descripción de cada ejercicio debajo. Que quepa completamente. En lugar de consultar pondria la palabra Ver detalle o Detalle.
+- En la planificación de hoy cabe perfectamente la descripción de cada ejercicio debajo sin cortarla y hasta la categoria. Que quepa completamente. 
+Incluir la descripción completa también en pantalla de agregar ejercicio en edición de Planificación Semanal.
 - En la sincronización, Configuracion de Github no parece un link o algo pulsable, arreglar para que se entienda que se puede pulsar.
 
 
@@ -16,8 +17,8 @@ Para ello:
 Copilot hará:
 --------------
 - Formulario ejercicio: Las series y repeticiones en campos separados no obligatorios.
-- Si es un nuevo ejercicio tener una opción que sea: Agregar a los ejercicios de hoy, el cual agrega al dia actual del planificador de la semana activa el ejercicio creado. No será un boton, se puede usar un radiobutton o algo similar y estara al final del formulario antes de la barra de acciones. 
-Si no hay planificación esta semana que no aparezca.
+
+
 
 Hecho
 -------
@@ -37,3 +38,7 @@ Eliminar la búsqueda horrible que hay y dejar un botón de agregar ejercicio. E
 - El botón de cerrado del mas del menú inferior que se suele ver en movil no hace nada. Al pulsarlo debe ocultarse el menú que ha salido pulsando el más.
 - Boton de + se sube arriba asi no tapa contenido
 - Para movil se elimina la información de si está guardado o tiene cambios en el formulario de ejercicio.
+- Si es un nuevo ejercicio tener una opción que sea: Agregar a los ejercicios de hoy, el cual agrega al dia actual del planificador de la semana activa el ejercicio creado. No será un boton, se puede usar un radiobutton o algo similar y estara al final del formulario antes de la barra de acciones. 
+Si no hay planificación esta semana que no aparezca.
+- Boton volver en ejercicio: Al ejercicio se puede acceder desde las pantallas Hoy, planificación semanal y Buscar. 
+El botón de volver debe ir a la pantalla de la que ha venido. Si no detecta pantalla anterior vuelve a la de Buscar.
