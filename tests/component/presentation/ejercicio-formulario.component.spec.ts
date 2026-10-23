@@ -14,7 +14,10 @@ import { MensajeFeedbackService } from '../../../src/app/presentation/compartido
 import type { Categoria } from '../../../src/app/domain/categoria/categoria.entity';
 
 describe('EjercicioFormularioComponent', () => {
-  const categorias: Categoria[] = [{ id: 'cat-1', nombre: 'Rodilla' }];
+  const categorias: Categoria[] = [
+    { id: 'cat-1', nombre: 'Rodilla' },
+    { id: 'cat-2', nombre: 'Pierna' },
+  ];
   let mostrarExito: ReturnType<typeof vi.fn>;
   let mostrarError: ReturnType<typeof vi.fn>;
   let asignarEjercicioADia: ReturnType<typeof vi.fn>;
@@ -89,6 +92,23 @@ describe('EjercicioFormularioComponent', () => {
     expect(
       estilos.includes('.ejercicio-formulario__tipo .mat-button-toggle-button') && estilos.includes('min-height: 48px')
     ).toBe(true);
+  });
+
+  it('permite seleccionar varias categorías desde el formulario', async () => {
+    const fixture = crearComponente();
+    await vi.waitFor(() => expect(fixture.componentInstance.categorias()).toHaveLength(2));
+    fixture.detectChanges();
+    const raiz = fixture.nativeElement as HTMLElement;
+    const lista = raiz.querySelector('mat-chip-listbox');
+    const opciones = raiz.querySelectorAll('mat-chip-option');
+
+    expect(lista?.hasAttribute('multiple')).toBe(true);
+    (opciones[0] as HTMLElement).click();
+    fixture.detectChanges();
+    (opciones[1] as HTMLElement).click();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.categoriaIdsSeleccionadas()).toEqual(['cat-1', 'cat-2']);
   });
 
   it('rechaza un enlace con formato de URL inválido (FR-007) con un mensaje en español', () => {
@@ -325,12 +345,17 @@ describe('EjercicioFormularioComponent', () => {
     componente.formulario.nombre().value.set('Sentadilla');
     componente.formulario.descripcion().value.set('Flexionar rodillas');
     componente.alternarCategoria('cat-1');
+    componente.alternarCategoria('cat-2');
     fixture.detectChanges();
 
     await componente.guardar();
 
     expect(gestionarEjercicio.crear).toHaveBeenCalledWith(
-      expect.objectContaining({ nombre: 'Sentadilla', descripcion: 'Flexionar rodillas', categoriaIds: ['cat-1'] })
+      expect.objectContaining({
+        nombre: 'Sentadilla',
+        descripcion: 'Flexionar rodillas',
+        categoriaIds: ['cat-1', 'cat-2'],
+      })
     );
     expect(componente.guardando()).toBe(false);
   });

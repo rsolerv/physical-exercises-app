@@ -47,8 +47,8 @@ Como usuario quiero crear, modificar y organizar por categorías mis ejercicios 
 **Acceptance Scenarios**:
 
 1. **Given** que no existe ninguna categoría todavía, **When** el usuario crea una categoría indicando un nombre, **Then** la categoría queda disponible inmediatamente para asociarla a nuevos ejercicios.
-2. **Given** que existe al menos una categoría, **When** el usuario crea un ejercicio indicando nombre, descripción y categoría, **Then** el ejercicio se guarda correctamente y aparece disponible para su consulta.
-3. **Given** un ejercicio ya creado, **When** el usuario modifica cualquiera de sus datos (nombre, descripción, categoría, enlaces, imágenes u observaciones), **Then** los cambios quedan reflejados al volver a consultar el ejercicio.
+2. **Given** que existe al menos una categoría, **When** el usuario crea un ejercicio indicando nombre, descripción y una o varias categorías, **Then** el ejercicio se guarda correctamente y aparece disponible para su consulta con todas las categorías seleccionadas.
+3. **Given** un ejercicio ya creado, **When** el usuario modifica cualquiera de sus datos (nombre, descripción, una o varias categorías, enlaces, imágenes u observaciones), **Then** los cambios quedan reflejados al volver a consultar el ejercicio.
 4. **Given** que el usuario intenta crear una categoría con un nombre ya existente, **When** confirma la creación, **Then** el sistema rechaza la operación e informa de que el nombre ya está en uso.
 5. **Given** una categoría asociada a ejercicios, **When** el usuario intenta eliminarla, **Then** la operación se rechaza con los nombres de los ejercicios que solo tienen esa categoría; si todos los ejercicios asociados conservan otra categoría, la categoría se elimina y se retira de ellos.
 6. **Given** un ejercicio al que se le añade un enlace con formato no válido, **When** el usuario intenta guardarlo, **Then** el sistema rechaza el enlace e indica que el formato no es correcto.

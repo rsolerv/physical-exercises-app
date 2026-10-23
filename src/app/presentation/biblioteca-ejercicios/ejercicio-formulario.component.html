@@ -41,7 +41,7 @@
             <span>Cargando categorías…</span>
           </div>
         } @else {
-          <mat-chip-listbox>
+          <mat-chip-listbox multiple aria-label="Categorías del ejercicio">
             @for (categoria of categorias(); track categoria.id) {
               <mat-chip-option
                 [selected]="categoriaIdsSeleccionadas().includes(categoria.id)"
