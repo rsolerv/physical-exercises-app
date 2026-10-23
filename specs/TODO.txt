@@ -7,26 +7,23 @@ Para ello:
    pagina y el numero de registros por pagina. Que sea opcional. 
    Una vez lo tengas cambiar la presentación de busqueda-ejercicios para que inicialmente obtenga los 20 primeros registros y que cuando se ejecute loadMore 
    agregará los 20 siguientes, y si vuelve a ejecutarse loadMore cargará los otros 20. Como siempre estará cargada una categoria no tendremos demasiados registros.
-- Formulario ejercicio - Volver: Que vuelva a la pantalla de donde venga, no siempre va a buscar, porque puede ir a planificación, a Hoy o al semanal.
-
 - En la sincronización, Configuracion de Github no parece un link o algo pulsable, arreglar para que se entienda que se puede pulsar.
-
 
 
 Copilot hará:
 --------------
-- Formulario ejercicio: Las series y repeticiones en campos separados no obligatorios. Ademas deberian estar vinculados a la planificacion, no al ejercicio.
-
+- Formulario ejercicio: Las series y repeticiones en campos separados no obligatorios. Ademas deberian estar vinculados a la planificacion, no al ejercicio?.
+- Autenticación de varios usuarios para usar la sincronizacion. Permitir por oAuth que se validen contra Github y que en el repositorio de datos que tengo se sincronicen
+los datos por usuario.
 
 
 Hecho
 -------
 - Eliminar el tratamiento de "Sin categoría": todos los ejercicios deben tener al menos una categoría; el borrado se bloquea si dejaría un ejercicio sin categoría.
-- La categoria que sale en el buscador que se vea como un chip. Y que no este tan pegada a la descripción. Eliminada vista previa y miniatura.
+- La categoria que no este tan pegada a la descripción. Eliminada vista previa y miniatura.
 - Reducido espacio superior muy grande para moviles en cabecera de pantallas.
 - Eliminar la ayuda cutre que se muestra a la derecha en el Buscar de: Selecciona un ejercicio para ver su ficha...
 - Eliminar imagen de item de buscador
-- Selección de ejercicio en editor de planificación semanal.
 - Calendario de fecha de inicio accesible en móvil durante la edición de planificación.
 Eliminar la búsqueda horrible que hay y dejar un botón de agregar ejercicio. El botón abre una nueva pantalla donde se busca y seleccionan los ejercicios.
   - Comun: Botón de agregar ejercicio que en una pantalla nueva busque tranquilamente el ejercicio y lo selecciones. 
@@ -35,7 +32,7 @@ Eliminar la búsqueda horrible que hay y dejar un botón de agregar ejercicio. E
 - Quitar el Hoy de la planificación semanal en movil porque se ve todo apretado. Ademas ya esta seleccionado asi que no lo veo necesario.
 - La edición del formulario de ejercicio y de la planificación tienen un máximo de ancho en escritorio. Eso no es optimo porque no aprovecha la pantalla. Eliminar ese máximo.
 - El botón de cerrado del mas del menú inferior que se suele ver en movil no hace nada. Al pulsarlo debe ocultarse el menú que ha salido pulsando el más.
-- Boton de + se sube arriba asi no tapa contenido
+- Boton de + se sube arriba en movil asi no tapa contenido
 - Para movil se elimina la información de si está guardado o tiene cambios en el formulario de ejercicio.
 - Si es un nuevo ejercicio tener una opción que sea: Agregar a los ejercicios de hoy, el cual agrega al dia actual del planificador de la semana activa el ejercicio creado. No será un boton, se puede usar un radiobutton o algo similar y estara al final del formulario antes de la barra de acciones. 
 Si no hay planificación esta semana que no aparezca.

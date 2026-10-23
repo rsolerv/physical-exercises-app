@@ -6,7 +6,7 @@
 
 Actualizar la presentación de la aplicación y los flujos ya existentes para que biblioteca, búsqueda, ficha, planificación, progreso, categorías y sincronización compartan un sistema visual claro, accesible y responsive. La navegación cambia según el dispositivo; búsqueda en escritorio conserva su lista al mostrar una ficha; el constructor permite localizar ejercicios; las eliminaciones y cambios de progreso se pueden deshacer mientras la notificación está visible.
 
-El alcance viene de la Living Spec actual (US1–US6, FR-038–FR-078 y los requisitos de negocio relacionados). Se conserva la aplicación Angular sin backend, sus cuatro capas, las reglas de dominio y el almacenamiento SQLite WASM. No se crea una feature nueva, no se añade una dependencia npm y los cambios de interfaz no introducen nuevas entidades persistentes.
+El alcance viene de la Living Spec actual (US1–US6, FR-038–FR-084 y los requisitos de negocio relacionados). Se conserva la aplicación Angular sin backend, sus cuatro capas, las reglas de dominio y el almacenamiento SQLite WASM. No se crea una feature nueva, no se añade una dependencia npm y los cambios de interfaz no introducen nuevas entidades persistentes.
 
 ## Technical Context
 
@@ -41,7 +41,7 @@ El alcance viene de la Living Spec actual (US1–US6, FR-038–FR-078 y los requ
 | Principio / regla | Evaluación | Estado |
 |---|---|---|
 | I. Idioma y mercado | Etiquetas, errores, estados y ayudas nuevos en español de España. | PASS |
-| II. Cero alcance fantasma | Cada flujo nuevo o modificado se traza a FR-044–FR-078 o a requisitos de negocio existentes. | PASS |
+| II. Cero alcance fantasma | Cada flujo nuevo o modificado se traza a FR-044–FR-084 o a requisitos de negocio existentes. | PASS |
 | III. Verificabilidad por una persona no técnica | La navegación, las vistas, los estados y las operaciones reversibles tienen recorridos de validación manual en `quickstart.md`. | PASS |
 | IV. Experiencia multiplataforma y accesible | Se cubren navegación móvil/tablet/escritorio, anchos intermedios, teclado, foco y contraste WCAG 2.1 AA. | PASS |
 | Arquitectura y stack | Se reutilizan Angular Material y las cuatro capas; no se añade backend, framework ni tecnología de almacenamiento. Solo se amplía el ajuste técnico existente en SQLite. La restauración temporal se orquesta en Application y Presentation. | PASS |
@@ -49,7 +49,7 @@ El alcance viene de la Living Spec actual (US1–US6, FR-038–FR-078 y los requ
 
 ## Phase 0: Research
 
-La investigación técnica previa de Angular, SQLite WASM, Signal Forms, Vitest y arquitectura sigue vigente. Se añadieron en [research.md](./research.md) decisiones transversales para búsqueda/ficha, navegación por dispositivo, sistema visual, fuente local, deshacer temporal y fecha de sincronización. No quedan `NEEDS CLARIFICATION` ni elecciones de tecnología pendientes, y no se requieren nuevas dependencias.
+La investigación técnica previa de Angular, SQLite WASM, Signal Forms, Vitest y arquitectura sigue vigente. Se añadieron en [research.md](./research.md) decisiones transversales para búsqueda/ficha, navegación por dispositivo, sistema visual, fuente local, deshacer temporal, fecha de sincronización y selección de ejercicios. No quedan `NEEDS CLARIFICATION` ni elecciones de tecnología pendientes, y no se requieren nuevas dependencias.
 
 ## Phase 1: Design
 
@@ -57,11 +57,11 @@ La investigación técnica previa de Angular, SQLite WASM, Signal Forms, Vitest 
 
 1. **Fundación visual y shell**: centralizar tokens de color, tipografía, espaciado y radios en los estilos globales existentes; servir la fuente localmente; adaptar el shell a barra inferior y panel "Más" en móvil, riel lateral en tablet y menú agrupado en escritorio.
 2. **Biblioteca y categorías**: rediseñar la ficha y los formularios de ejercicio; tratar imágenes y vistas previas de enlaces según la spec; permitir edición de categoría en línea, informar el recuento de ejercicios y restaurar borrados desde una instantánea temporal. En el alta, ofrecer agregar el ejercicio al día actual solo si hay una planificación activa esta semana.
-3. **Búsqueda**: compactar los filtros y resultados para móvil y añadir una vista maestro-detalle en escritorio sin perder búsqueda ni selección. Mantener una ficha de pantalla completa en móvil.
-4. **Planificación semanal**: usar la tira de días en móvil y la cuadrícula de siete columnas en escritorio, seleccionar planes desde la cabecera e incorporar búsqueda de ejercicios al selector del día.
+3. **Búsqueda**: compactar los filtros y resultados para móvil y añadir una vista maestro-detalle en escritorio sin perder búsqueda ni selección. Los resultados muestran nombre, descripción y categorías separadas, sin imágenes ni vistas previas; estas permanecen en la ficha. Mantener una ficha de pantalla completa en móvil.
+4. **Planificación semanal**: usar la tira de días en móvil y la cuadrícula de siete columnas en escritorio, seleccionar planes desde la cabecera y abrir desde "Agregar ejercicio" una pantalla independiente para buscar por nombre parcial o categoría y seleccionar varios ejercicios. El día actual ya seleccionado no repite la etiqueta "Hoy"; el calendario de fecha de inicio sigue accesible durante la edición en móvil.
 5. **Hoy y progreso**: priorizar sesión actual, mostrar estados inicial/parcial/completo y permitir marcar/deshacer también desde la ficha cuando el ejercicio esté planificado hoy.
 6. **Sincronización**: presentar una tarjeta con estado, acción principal y acceso a configuración plegable cuando ya esté configurada; conservar las reglas actuales de sincronización y conflicto.
-7. **Validación transversal**: verificar navegación, errores, cargas, foco, tamaños táctiles, contraste, anchos de referencia y los flujos de regresión de datos.
+7. **Validación transversal**: verificar navegación, errores, cargas, foco, tamaños táctiles, contraste, anchos de referencia, uso del ancho disponible en el formulario de ejercicio y el editor semanal, y los flujos de regresión de datos.
 
 Las pantallas comparten los contratos de interacción descritos en [contracts/interfaz-usuario.md](./contracts/interfaz-usuario.md). Los detalles normativos de cada pantalla y sus criterios de aceptación permanecen en [spec.md](./spec.md).
 
@@ -83,7 +83,7 @@ No se añade entidad de negocio ni se modifican los modelos de Ejercicio, Catego
 | Principio / regla | Resultado posterior al diseño |
 |---|---|
 | Idioma y mercado | PASS: las nuevas cadenas de interfaz se mantienen en español de España. |
-| Cero alcance fantasma | PASS: el modelo de datos y los flujos se derivan de FR-038–FR-078 y de requisitos ya vigentes. |
+| Cero alcance fantasma | PASS: el modelo de datos y los flujos se derivan de FR-038–FR-084 y de requisitos ya vigentes. |
 | Verificabilidad | PASS: cada grupo de pantallas dispone de recorridos manuales y resultados esperados en `quickstart.md`. |
 | UX multiplataforma y accesible | PASS: el contrato especifica navegación, teclado, foco, contraste, tamaños y disposición para los dispositivos acordados. |
 | Arquitectura y stack | PASS: sin nuevos proyectos, servicios remotos, almacenes nuevos ni bibliotecas de componentes; se actualiza el esquema técnico existente para guardar la última sincronización. La instantánea de deshacer es estado temporal de la aplicación, no una capa adicional. |
