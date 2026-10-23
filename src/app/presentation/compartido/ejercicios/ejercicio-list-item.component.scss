@@ -46,17 +46,6 @@
 }
 
 .busqueda-ejercicios__etiquetas {
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: $espaciado-1;
-  gap: $espaciado-1;
-
-  span {
-    color: var(--mat-sys-on-surface-variant);
-  }
-
-  @include mat.chips-overrides((
-    elevated-container-color: var(--color-primario-suave),
-    label-text-color: var(--color-texto)
-  ));
+  color: var(--mat-sys-primary);
+  font-size: 12px;
 }

@@ -24,7 +24,7 @@
                 <span matListItemLine class="agregar-ejercicio__descripcion">{{ ejercicio.descripcion }}</span>
                 @if (nombresCategorias(ejercicio).length > 0) {
                   <span matListItemLine class="agregar-ejercicio__categorias">
-                    Categorías: {{ nombresCategorias(ejercicio).join(', ') }}
+                    {{ nombresCategorias(ejercicio).join(', ') }}
                   </span>
                 }
             </mat-list-option>
