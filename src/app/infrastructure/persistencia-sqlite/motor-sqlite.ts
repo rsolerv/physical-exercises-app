@@ -24,6 +24,21 @@ export class MotorSqlite {
       this.db.exec('ALTER TABLE ajustes_aplicacion ADD COLUMN ultima_sincronizacion_correcta TEXT');
     }
 
+    for (const columna of ['metodo_sincronizacion', 'cuenta_google', 'destino_ultima_sincronizacion']) {
+      if (!columnasAjustes.some((existente) => existente.name === columna)) {
+        this.db.exec(`ALTER TABLE ajustes_aplicacion ADD COLUMN ${columna} TEXT`);
+      }
+    }
+    this.db.exec(
+      "UPDATE ajustes_aplicacion SET metodo_sincronizacion = 'github' " +
+        'WHERE metodo_sincronizacion IS NULL AND token_github IS NOT NULL AND repositorio_github IS NOT NULL'
+    );
+    this.db.exec(
+      "UPDATE ajustes_aplicacion SET destino_ultima_sincronizacion = 'github' " +
+        "WHERE metodo_sincronizacion = 'github' AND destino_ultima_sincronizacion IS NULL " +
+        'AND ultimo_sha_sincronizado IS NOT NULL'
+    );
+
     const columnasCategoria = this.db.exec({
       sql: 'PRAGMA table_info(categoria)',
       returnValue: 'resultRows',

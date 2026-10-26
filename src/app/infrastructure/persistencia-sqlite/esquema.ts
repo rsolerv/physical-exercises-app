@@ -83,7 +83,10 @@ CREATE TABLE IF NOT EXISTS ajustes_aplicacion (
   ultimo_sha_sincronizado TEXT,
   ultima_sincronizacion_correcta TEXT,
   cambios_locales_pendientes INTEGER NOT NULL DEFAULT 0,
-  catalogo_predefinido_cargado INTEGER NOT NULL DEFAULT 0
+  catalogo_predefinido_cargado INTEGER NOT NULL DEFAULT 0,
+  metodo_sincronizacion TEXT,
+  cuenta_google TEXT,
+  destino_ultima_sincronizacion TEXT
 );
 
 INSERT OR IGNORE INTO ajustes_aplicacion (id) VALUES (1);

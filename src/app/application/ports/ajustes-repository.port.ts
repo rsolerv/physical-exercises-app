@@ -2,10 +2,13 @@
 export interface AjustesAplicacion {
   tokenGitHub: string | null;
   repositorioGitHub: string | null;
-  ultimoShaSincronizado: string | null;
+  ultimaVersionSincronizada: string | null;
   ultimaSincronizacionCorrecta: Date | null;
   cambiosLocalesPendientes: boolean;
   catalogoPredefinidoCargado: boolean;
+  metodoSincronizacion: 'github' | 'google' | null;
+  cuentaGoogle: string | null;
+  destinoUltimaSincronizacion: string | null;
 }
 
 /**
@@ -27,7 +30,13 @@ export abstract class AjustesRepositoryPort {
   /** Borra token y repositorio guardados (acción "Olvidar token", FR-037). */
   abstract olvidarCredencialesGitHub(): Promise<void>;
 
-  abstract actualizarUltimoShaSincronizado(sha: string): Promise<void>;
+  abstract actualizarUltimaVersionSincronizada(version: string): Promise<void>;
+
+  abstract conectarGoogle(correo: string): Promise<void>;
+
+  abstract desconectarGoogle(): Promise<void>;
+
+  abstract registrarDestinoSincronizado(destino: string): Promise<void>;
 
   /** Persiste la fecha UTC de la última sincronización completada correctamente (FR-070). */
   abstract registrarSincronizacionCorrecta(fecha: Date): Promise<void>;

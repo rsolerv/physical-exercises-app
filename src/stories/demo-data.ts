@@ -1,6 +1,7 @@
 import type { Provider } from '@angular/core';
 import { signal } from '@angular/core';
 import { AjustesRepositoryPort } from '../app/application/ports/ajustes-repository.port';
+import type { AjustesAplicacion } from '../app/application/ports/ajustes-repository.port';
 import { CategoriaRepositoryPort } from '../app/application/ports/categoria-repository.port';
 import { EjercicioRepositoryPort } from '../app/application/ports/ejercicio-repository.port';
 import { PlanificacionRepositoryPort } from '../app/application/ports/planificacion-repository.port';
@@ -11,13 +12,16 @@ import { GestionarCategoriaUseCase } from '../app/application/casos-uso/gestiona
 import { GestionarEjercicioUseCase } from '../app/application/casos-uso/gestionar-ejercicio.use-case';
 import { GestionarPlanificacionUseCase } from '../app/application/casos-uso/gestionar-planificacion.use-case';
 import { GestionarProgresoDiarioUseCase } from '../app/application/casos-uso/gestionar-progreso-diario.use-case';
-import { SincronizarGithubUseCase } from '../app/application/casos-uso/sincronizar-github.use-case';
+import { SincronizarUseCase } from '../app/application/casos-uso/sincronizar.use-case';
+import { GestionarConexionSincronizacionUseCase } from '../app/application/casos-uso/gestionar-conexion-sincronizacion.use-case';
+import { CopiaManualUseCase } from '../app/application/casos-uso/copia-manual.use-case';
 import type { Categoria } from '../app/domain/categoria/categoria.entity';
 import type { Ejercicio } from '../app/domain/ejercicio/ejercicio.entity';
 import type { DiaSemana, Planificacion } from '../app/domain/planificacion/planificacion.entity';
 import { DIAS_SEMANA_ORDENADOS, crearDiasVacios } from '../app/domain/planificacion/planificacion.entity';
 import { ConflictoSincronizacionEstadoService } from '../app/presentation/sincronizacion/conflicto-sincronizacion-estado.service';
 import { MensajeFeedbackService } from '../app/presentation/compartido/ui/mensaje-feedback.service';
+import { DescargaArchivoService } from '../app/presentation/sincronizacion/copia-manual/descarga-archivo.service';
 
 export const CATEGORIAS_DEMO: Categoria[] = [
   { id: 'fuerza', nombre: 'Fuerza', descripcion: 'Ejercicios de fuerza' },
@@ -83,17 +87,24 @@ export const CONFLICTO_DEMO = {
     planificaciones: [],
     progresoDiario: [],
   },
-  sha: 'storybook-demo-sha',
+  version: 'storybook-demo-version',
 };
 
-const ajustesDemo = {
+export const AJUSTES_SINCRONIZACION_DEMO: AjustesAplicacion = {
   tokenGitHub: null,
   repositorioGitHub: null,
-  ultimoShaSincronizado: null,
+  ultimaVersionSincronizada: null,
   ultimaSincronizacionCorrecta: null,
   cambiosLocalesPendientes: false,
   catalogoPredefinidoCargado: true,
+  metodoSincronizacion: null,
+  cuentaGoogle: null,
+  destinoUltimaSincronizacion: null,
 };
+
+export function ajustesSincronizacionDemo(cambios: Partial<AjustesAplicacion> = {}): AjustesAplicacion {
+  return { ...AJUSTES_SINCRONIZACION_DEMO, ...cambios };
+}
 
 const conflictoEstado = new ConflictoSincronizacionEstadoService();
 conflictoEstado.conflictoActual.set(CONFLICTO_DEMO);
@@ -163,10 +174,13 @@ export const DEMO_PROVIDERS: Provider[] = [
   {
     provide: AjustesRepositoryPort,
     useValue: {
-      obtener: async () => ajustesDemo,
+      obtener: async () => AJUSTES_SINCRONIZACION_DEMO,
       guardarCredencialesGitHub: async () => undefined,
       olvidarCredencialesGitHub: async () => undefined,
-      actualizarUltimoShaSincronizado: async () => undefined,
+      actualizarUltimaVersionSincronizada: async () => undefined,
+      conectarGoogle: async () => undefined,
+      desconectarGoogle: async () => undefined,
+      registrarDestinoSincronizado: async () => undefined,
       registrarSincronizacionCorrecta: async () => undefined,
       marcarCambiosLocalesPendientes: async () => undefined,
       estaCatalogoPredefinidoCargado: async () => true,
@@ -222,7 +236,33 @@ export const DEMO_PROVIDERS: Provider[] = [
       obtenerProgresoDeFecha: async () => ({ porcentaje: 50, realizados: 1, total: 2 }),
     },
   },
-  { provide: SincronizarGithubUseCase, useValue: { sincronizar: async () => ({ tipo: 'completada', accion: 'nada' }) } },
+  { provide: SincronizarUseCase, useValue: { sincronizar: async () => ({ tipo: 'completada', accion: 'nada' }) } },
+  {
+    provide: GestionarConexionSincronizacionUseCase,
+    useValue: {
+      conectarGoogle: async () => ({ correo: 'raquel@example.com', nombre: 'Raquel' }),
+      desconectar: async () => undefined,
+    },
+  },
+  {
+    provide: CopiaManualUseCase,
+    useValue: {
+      exportar: async () => ({
+        nombreSugerido: 'copia-ejercicios-demo.zip',
+        archivos: {
+          'datos.json': JSON.stringify({
+            version: 1,
+            ejercicios: [],
+            categorias: [],
+            planificaciones: [],
+            progresoDiario: [],
+          }),
+        },
+      }),
+      importar: async () => undefined,
+    },
+  },
+  { provide: DescargaArchivoService, useValue: { descargar: () => undefined } },
   {
     provide: MensajeFeedbackService,
     useValue: {

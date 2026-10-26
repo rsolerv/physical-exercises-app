@@ -17,6 +17,7 @@
 
 - Una planificación concreta está activa automáticamente cuando la semana actual (de lunes a domingo) cae dentro de su semana; no existe activación manual.
 - La sincronización con GitHub requiere que el usuario introduzca un token fine-grained limitado a un único repositorio privado de datos, con permisos de lectura y escritura de contenidos. El token se muestra oculto, no se incluye en los datos sincronizados y puede eliminarse mediante la acción "Olvidar token". Se acepta guardarlo sin cifrar en el almacenamiento local del navegador.
+- La capacidad de sincronización se amplía con Google y copia manual según [la especificación 002](../002-sincronizacion-google-drive/spec.md); esta especificación conserva sin cambios el comportamiento de GitHub.
 - El repositorio privado de datos es distinto del repositorio público que aloja la aplicación.
 - Si solo hay cambios locales, se suben; si solo hay cambios remotos, se descargan. Si ambos lados han cambiado, el usuario elige qué copia completa conservar. En la primera sincronización con datos remotos, se ofrece esa elección con "Usar los datos de GitHub" seleccionado por defecto.
 - Todo ejercicio debe tener al menos una categoría. Al eliminar una categoría, la operación se rechaza si algún ejercicio asociado se quedaría sin categorías y se indican los ejercicios que hay que reasignar; si todos conservan otra categoría, se elimina normalmente. No existe una categoría genérica o de reserva.

@@ -1,0 +1,32 @@
+<section class="copia-manual" aria-labelledby="titulo-copia-manual">
+  <div>
+    <h2 id="titulo-copia-manual">Copia de seguridad en un archivo ZIP</h2>
+    <p>Guarda o recupera tus datos y las imágenes en un archivo ZIP.</p>
+  </div>
+  <div class="copia-manual__acciones">
+    <button mat-stroked-button type="button" [disabled]="exportando()" (click)="exportar()">
+      <mat-icon>download</mat-icon>
+      {{ exportando() ? 'Preparando copia…' : 'Exportar copia de seguridad' }}
+    </button>
+    <button mat-stroked-button type="button" (click)="selectorArchivo.click()">
+      <mat-icon>upload_file</mat-icon>
+      Importar copia de seguridad
+    </button>
+    <input #selectorArchivo class="copia-manual__selector" type="file" accept=".zip,application/zip"
+      aria-label="Seleccionar archivo ZIP de copia de seguridad" (change)="seleccionarArchivo($event)" />
+  </div>
+  @if (error(); as mensaje) {
+    <p class="copia-manual__error" role="alert">{{ mensaje }}</p>
+  }
+  @if (confirmacionImportacion()) {
+    <div class="copia-manual__confirmacion" role="group" aria-label="Confirmar importación de copia">
+      <p>Al importar, los datos actuales de este dispositivo se reemplazarán por los de la copia.</p>
+      <div class="copia-manual__acciones">
+        <button mat-flat-button color="primary" type="button" [disabled]="importando()" (click)="confirmarImportacion()">
+          {{ importando() ? 'Importando…' : 'Importar' }}
+        </button>
+        <button mat-stroked-button type="button" [disabled]="importando()" (click)="cancelarImportacion()">Cancelar</button>
+      </div>
+    </div>
+  }
+</section>

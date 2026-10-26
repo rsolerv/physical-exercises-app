@@ -5,21 +5,36 @@ import { provideRouter, Router } from '@angular/router';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { ConfiguracionSincronizacionComponent } from '../../../src/app/presentation/sincronizacion/configuracion/configuracion-sincronizacion.component';
 import { AjustesRepositoryPort } from '../../../src/app/application/ports/ajustes-repository.port';
-import { SincronizarGithubUseCase } from '../../../src/app/application/casos-uso/sincronizar-github.use-case';
+import { SincronizarUseCase } from '../../../src/app/application/casos-uso/sincronizar.use-case';
+import { GestionarConexionSincronizacionUseCase } from '../../../src/app/application/casos-uso/gestionar-conexion-sincronizacion.use-case';
+import { CopiaManualUseCase } from '../../../src/app/application/casos-uso/copia-manual.use-case';
 import { ConflictoSincronizacionEstadoService } from '../../../src/app/presentation/sincronizacion/conflicto-sincronizacion-estado.service';
 import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
+import {
+  ErrorAutorizacionGoogle,
+  ErrorConflictoRemoto,
+  ErrorConexionCancelada,
+  ErrorVentanaBloqueada,
+} from '../../../src/app/domain/errores/errores-dominio';
 import type { AjustesAplicacion } from '../../../src/app/application/ports/ajustes-repository.port';
 
 function ajustes(sobrescribir: Partial<AjustesAplicacion> = {}): AjustesAplicacion {
-  return {
+  const resultado: AjustesAplicacion = {
     tokenGitHub: null,
     repositorioGitHub: null,
-    ultimoShaSincronizado: null,
+    ultimaVersionSincronizada: null,
     ultimaSincronizacionCorrecta: null,
     cambiosLocalesPendientes: false,
     catalogoPredefinidoCargado: true,
+    metodoSincronizacion: null,
+    cuentaGoogle: null,
+    destinoUltimaSincronizacion: null,
     ...sobrescribir,
   };
+  if (resultado.metodoSincronizacion === null && resultado.tokenGitHub && resultado.repositorioGitHub) {
+    resultado.metodoSincronizacion = 'github';
+  }
+  return resultado;
 }
 
 describe('ConfiguracionSincronizacionComponent', () => {
@@ -30,6 +45,8 @@ describe('ConfiguracionSincronizacionComponent', () => {
     ajustes?: AjustesAplicacion;
     obtenerAjustes?: ReturnType<typeof vi.fn>;
     sincronizar?: ReturnType<typeof vi.fn>;
+    conectarGoogle?: ReturnType<typeof vi.fn>;
+    desconectarGoogle?: ReturnType<typeof vi.fn>;
     olvidarCredencialesGitHub?: ReturnType<typeof vi.fn>;
     guardarCredencialesGitHub?: ReturnType<typeof vi.fn>;
   } = {}) {
@@ -49,8 +66,19 @@ describe('ConfiguracionSincronizacionComponent', () => {
           },
         },
         {
-          provide: SincronizarGithubUseCase,
+          provide: SincronizarUseCase,
           useValue: { sincronizar: opciones.sincronizar ?? vi.fn().mockResolvedValue({ tipo: 'completada', accion: 'nada' }) },
+        },
+        {
+          provide: GestionarConexionSincronizacionUseCase,
+          useValue: {
+            conectarGoogle: opciones.conectarGoogle ?? vi.fn().mockResolvedValue({ correo: 'raquel@example.com', nombre: 'Raquel' }),
+            desconectar: opciones.desconectarGoogle ?? vi.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: CopiaManualUseCase,
+          useValue: { exportar: vi.fn(), importar: vi.fn() },
         },
         ConflictoSincronizacionEstadoService,
         { provide: MensajeFeedbackService, useValue: { mostrarExito, mostrarError } },
@@ -84,12 +112,23 @@ describe('ConfiguracionSincronizacionComponent', () => {
     expect(texto.toLowerCase()).toContain('fine-grained');
   });
 
+  it('muestra el aviso de privacidad sin jerga técnica en el bloque de Google', async () => {
+    configurar();
+    const fixture = await crearComponente();
+    const textoGoogle = (fixture.nativeElement as HTMLElement).querySelector('.configuracion-sincronizacion__tarjeta--principal')?.textContent ?? '';
+
+    expect(textoGoogle).toContain('Solo se guarda en un espacio privado');
+    expect(textoGoogle).not.toMatch(/token|oauth|credenciales/i);
+  });
+
   it('mantiene abierta la configuración cuando no hay credenciales y comunica estado sin configurar', async () => {
     configurar();
     const fixture = await crearComponente();
+    const principal = (fixture.nativeElement as HTMLElement).querySelector('.configuracion-sincronizacion__tarjeta--principal');
 
-    expect((fixture.nativeElement as HTMLElement).querySelector('details')?.open).toBe(true);
+    expect((fixture.nativeElement as HTMLElement).querySelector('details')?.open).toBe(false);
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Sin configurar');
+    expect(principal?.textContent).toContain('Conectar con Google');
   });
 
   it('expone el estado de carga accesible mientras consulta los ajustes', () => {
@@ -113,7 +152,7 @@ describe('ConfiguracionSincronizacionComponent', () => {
     const fixture = await crearComponente();
     const raiz = fixture.nativeElement as HTMLElement;
 
-    expect(raiz.querySelector('details')?.open).toBe(false);
+    expect(raiz.querySelector('details')?.open).toBe(true);
     expect(raiz.textContent).toContain('owner/datos');
     expect(raiz.textContent).toContain('Última sincronización correcta');
     expect(raiz.querySelector('input[type="password"]')).toBeTruthy();
@@ -161,7 +200,7 @@ describe('ConfiguracionSincronizacionComponent', () => {
       tipo: 'conflicto',
       opcionPorDefecto: 'conservar_remoto',
       datosRemotos: { version: 1, ejercicios: [], categorias: [], planificaciones: [], progresoDiario: [] },
-      sha: 'sha-1',
+      version: 'sha-1',
     });
     configurar({ ajustes: ajustes({ tokenGitHub: 'token-x', repositorioGitHub: 'owner/data' }), sincronizar });
     const fixture = await crearComponente();
@@ -175,7 +214,7 @@ describe('ConfiguracionSincronizacionComponent', () => {
     expect(estado.conflictoActual()).toEqual({
       opcionPorDefecto: 'conservar_remoto',
       datosRemotos: { version: 1, ejercicios: [], categorias: [], planificaciones: [], progresoDiario: [] },
-      sha: 'sha-1',
+      version: 'sha-1',
     });
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Conflicto pendiente de resolución');
     expect(navigateSpy).toHaveBeenCalledWith(['/sincronizacion/conflicto']);
@@ -191,6 +230,7 @@ describe('ConfiguracionSincronizacionComponent', () => {
 
     expect(mostrarError).toHaveBeenCalledWith('Sin conexión.');
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Error de sincronización');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Reintentar');
   });
 
   it('muestra un estado accesible de sincronización en curso y luego sincronizado', async () => {
@@ -206,11 +246,159 @@ describe('ConfiguracionSincronizacionComponent', () => {
 
     const peticion = fixture.componentInstance.sincronizarAhora();
     fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).querySelector('[role="status"]')?.textContent).toContain('Sincronizando');
+    const raiz = fixture.nativeElement as HTMLElement;
+    expect(raiz.querySelector('[role="status"]')?.textContent).toContain('Sincronizando');
+    const botonSincronizar = Array.from(raiz.querySelectorAll('button')).find((boton) => boton.textContent?.includes('Sincronizar ahora')) as HTMLButtonElement;
+    expect(botonSincronizar.disabled).toBe(true);
+    botonSincronizar.click();
+    expect(sincronizar).toHaveBeenCalledOnce();
 
     completar({ tipo: 'completada', accion: 'nada' });
     await peticion;
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Sincronizado');
+  });
+
+  it('muestra cuenta, método, fecha y acciones para Google conectado', async () => {
+    configurar({
+      ajustes: ajustes({
+        metodoSincronizacion: 'google',
+        cuentaGoogle: 'raquel@example.com',
+        ultimaSincronizacionCorrecta: new Date('2026-10-20T12:34:00.000Z'),
+      }),
+    });
+    const fixture = await crearComponente();
+    const raiz = fixture.nativeElement as HTMLElement;
+
+    expect(raiz.textContent).toContain('Sincronización con Google');
+    expect(raiz.textContent).toContain('raquel@example.com');
+    expect(raiz.textContent).toContain('Conectado');
+    expect(raiz.textContent).toContain('Última sincronización correcta');
+    expect(raiz.textContent).toContain('Desconectar cuenta');
+  });
+
+  it('al conectar Google confirma la acción y muestra la cuenta enlazada', async () => {
+    let valorAjustes = ajustes();
+    const obtenerAjustes = vi.fn().mockImplementation(async () => valorAjustes);
+    const conectarGoogle = vi.fn().mockImplementation(async () => {
+      valorAjustes = ajustes({ metodoSincronizacion: 'google', cuentaGoogle: 'raquel@example.com' });
+      return { correo: 'raquel@example.com', nombre: 'Raquel' };
+    });
+    configurar({ obtenerAjustes, conectarGoogle });
+    const fixture = await crearComponente();
+
+    await fixture.componentInstance.conectarGoogle();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('raquel@example.com');
+    expect(mostrarExito).toHaveBeenCalledWith('Cuenta de Google conectada.');
+  });
+
+  it('pide confirmación en línea y desconecta la cuenta sin borrar los datos remotos', async () => {
+    const desconectar = vi.fn().mockResolvedValue(undefined);
+    configurar({ ajustes: ajustes({ metodoSincronizacion: 'google', cuentaGoogle: 'raquel@example.com' }), desconectarGoogle: desconectar });
+    const fixture = await crearComponente();
+
+    fixture.componentInstance.confirmandoDesconexion.set(true);
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Tus datos en este dispositivo y los guardados en Google no se borran');
+
+    await fixture.componentInstance.desconectarGoogle();
+    expect(desconectar).toHaveBeenCalledOnce();
+    expect(mostrarExito).toHaveBeenCalledWith(expect.stringContaining('se conservan'));
+  });
+
+  it('cancelar la confirmación de desconexión conserva la cuenta conectada', async () => {
+    const desconectar = vi.fn();
+    configurar({ ajustes: ajustes({ metodoSincronizacion: 'google', cuentaGoogle: 'raquel@example.com' }), desconectarGoogle: desconectar });
+    const fixture = await crearComponente();
+
+    fixture.componentInstance.confirmandoDesconexion.set(true);
+    fixture.detectChanges();
+    fixture.componentInstance.confirmandoDesconexion.set(false);
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('raquel@example.com');
+    expect(desconectar).not.toHaveBeenCalled();
+  });
+
+  it('al caducar la autorización ofrece reconectar y reanuda la sincronización automáticamente', async () => {
+    const sincronizar = vi.fn()
+      .mockRejectedValueOnce(new ErrorAutorizacionGoogle())
+      .mockResolvedValueOnce({ tipo: 'completada', accion: 'nada' });
+    const conectarGoogle = vi.fn().mockResolvedValue({ correo: 'raquel@example.com', nombre: null });
+    configurar({
+      ajustes: ajustes({ metodoSincronizacion: 'google', cuentaGoogle: 'raquel@example.com' }),
+      sincronizar,
+      conectarGoogle,
+    });
+    const fixture = await crearComponente();
+
+    await fixture.componentInstance.sincronizarAhora();
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Volver a conectar');
+
+    await fixture.componentInstance.conectarGoogle();
+    fixture.detectChanges();
+    expect(conectarGoogle).toHaveBeenCalledOnce();
+    expect(sincronizar).toHaveBeenCalledTimes(2);
+    expect(mostrarExito).toHaveBeenCalledWith(expect.stringContaining('Sincronización completada'));
+  });
+
+  it('la cancelación del consentimiento no conecta la cuenta y permite reintentar', async () => {
+    const conectarGoogle = vi.fn().mockRejectedValue(new ErrorConexionCancelada());
+    configurar({ conectarGoogle });
+    const fixture = await crearComponente();
+
+    await fixture.componentInstance.conectarGoogle();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('.configuracion-sincronizacion__resumen')?.textContent).toContain('Sin configurar');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('La conexión no se ha completado');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Reintentar');
+  });
+
+  it('explica cómo permitir la ventana cuando el navegador bloquea Google', async () => {
+    configurar({ conectarGoogle: vi.fn().mockRejectedValue(new ErrorVentanaBloqueada()) });
+    const fixture = await crearComponente();
+
+    await fixture.componentInstance.conectarGoogle();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('[role="alert"]')?.textContent).toContain('Tu navegador ha bloqueado la ventana de Google');
+  });
+
+  it('bloquea Google mientras GitHub sea el método activo', async () => {
+    configurar({ ajustes: ajustes({ tokenGitHub: 'token-x', repositorioGitHub: 'owner/data' }) });
+    const fixture = await crearComponente();
+    const detalles = (fixture.nativeElement as HTMLElement).querySelector('details');
+    const botonGoogle = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('button'))
+      .find((boton) => boton.textContent?.includes('Conectar con Google'));
+
+    expect(detalles?.open).toBe(true);
+    expect((botonGoogle as HTMLButtonElement).disabled).toBe(true);
+    expect((fixture.nativeElement as HTMLElement).textContent?.toLowerCase()).toContain('olvida primero la configuración de github');
+  });
+
+  it('muestra un conflicto remoto con la indicación de reintentar sin cambiar los datos locales', async () => {
+    configurar({
+      ajustes: ajustes({ metodoSincronizacion: 'google', cuentaGoogle: 'raquel@example.com' }),
+      sincronizar: vi.fn().mockRejectedValue(new ErrorConflictoRemoto('Los datos de Google han cambiado. Vuelve a sincronizar.')),
+    });
+    const fixture = await crearComponente();
+
+    await fixture.componentInstance.sincronizarAhora();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('[role="alert"]')?.textContent).toContain('Tus datos de este dispositivo no han cambiado');
+  });
+
+  it('bloquea el formulario de GitHub cuando Google es el método activo', async () => {
+    configurar({ ajustes: ajustes({ metodoSincronizacion: 'google', cuentaGoogle: 'raquel@example.com' }) });
+    const fixture = await crearComponente();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('form')).toBeNull();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Desconecta tu cuenta de Google antes de configurar GitHub');
   });
 });

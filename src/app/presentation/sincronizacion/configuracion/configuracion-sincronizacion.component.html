@@ -1,5 +1,5 @@
 <section class="configuracion-sincronizacion">
-  <app-cabecera-pagina titulo="Sincronización" descripcion="Conserva tus datos y sincronízalos manualmente con GitHub." />
+  <app-cabecera-pagina titulo="Sincronización" descripcion="Guarda tus datos en tu cuenta de Google." />
 
   @if (recursoAjustes.isLoading()) {
     <div class="contenido--centrado" role="status">
@@ -12,60 +12,169 @@
       <button mat-stroked-button type="button" (click)="recursoAjustes.reload()">Reintentar</button>
     </div>
   } @else {
-    <section class="configuracion-sincronizacion__tarjeta" aria-label="Estado de sincronización">
-      <div class="configuracion-sincronizacion__resumen" role="status">
-        <strong>{{ estadoVisible() }}</strong>
-        @if (tieneCredenciales) {
-          <span>Repositorio: {{ recursoAjustes.value()?.repositorioGitHub }}</span>
-          @if (fechaSincronizacionLegible(); as fecha) {
-            <span>Última sincronización correcta: {{ fecha }}</span>
+    <div class="configuracion-sincronizacion__contenido">
+      <section class="configuracion-sincronizacion__tarjeta configuracion-sincronizacion__tarjeta--principal" aria-label="Sincronización con Google">
+        <div class="configuracion-sincronizacion__encabezado">
+          <div class="configuracion-sincronizacion__icono-google" aria-hidden="true">
+            <mat-icon>cloud_sync</mat-icon>
+          </div>
+          <div>
+            <h2>Sincronización con Google</h2>
+            <p>Guarda tus ejercicios y planificaciones en tu cuenta.</p>
+          </div>
+        </div>
+
+        <p class="configuracion-sincronizacion__privacidad">
+          Solo se guarda en un espacio privado de esta aplicación; no se accede a tus documentos ni a tu correo.
+        </p>
+        <p class="configuracion-sincronizacion__aviso-google">
+          Si Google muestra un aviso de seguridad sobre esta aplicación, es normal mientras no esté verificada:
+          pulsa «Configuración avanzada» y después «Ir a la aplicación».
+        </p>
+        @if (mensajeError(); as error) {
+          <p class="configuracion-sincronizacion__error" role="alert">{{ error }}</p>
+        }
+
+        @if (metodoGitHubActivo) {
+          <div class="configuracion-sincronizacion__resumen" role="status">
+            <strong>{{ estadoVisible() }}</strong>
+            <span>Para cambiar de método, olvida primero la configuración de GitHub en las opciones avanzadas.</span>
+          </div>
+          <button mat-flat-button type="button" disabled aria-describedby="aviso-google-github">
+            <mat-icon>account_circle</mat-icon>
+            Conectar con Google
+          </button>
+          <span id="aviso-google-github" class="configuracion-sincronizacion__aviso">
+            Olvida primero la configuración de GitHub en las opciones avanzadas.
+          </span>
+          @if (sincronizando()) {
+            <div class="configuracion-sincronizacion__progreso" role="status" aria-live="polite">
+              <mat-spinner diameter="20" />
+              <span>Sincronizando tus datos…</span>
+            </div>
+          }
+          <button mat-flat-button color="primary" type="button" [disabled]="sincronizando()" (click)="sincronizarAhora()">
+            @if (sincronizando()) { <mat-spinner diameter="18" /> } @else { <mat-icon>sync</mat-icon> }
+            {{ resultadoSincronizacion() === 'error' ? 'Reintentar' : 'Sincronizar ahora' }}
+          </button>
+        } @else if (!cuentaGoogle) {
+          <div class="configuracion-sincronizacion__resumen" role="status">
+            <strong>Sin configurar</strong>
+            <span>Conecta tu cuenta para sincronizar tus datos entre dispositivos.</span>
+          </div>
+          <button mat-flat-button color="primary" type="button" [disabled]="conectando()" (click)="conectarGoogle()">
+            @if (conectando()) {
+              <mat-spinner diameter="18" />
+              Conectando…
+            } @else {
+              <ng-container>
+                <mat-icon>account_circle</mat-icon>
+                {{ resultadoSincronizacion() === 'error' ? 'Reintentar' : 'Conectar con Google' }}
+              </ng-container>
+            }
+          </button>
+        } @else {
+          <div class="configuracion-sincronizacion__resumen" role="status">
+            <strong>
+              @if (sincronizando()) {
+                Sincronizando…
+              } @else if (requiereReconectar()) {
+                Requiere reconectar
+              } @else {
+                {{ estadoVisible() }}
+              }
+            </strong>
+            <span>Cuenta de Google: {{ cuentaGoogle }}</span>
+            @if (fechaSincronizacionLegible(); as fecha) {
+              <span>Última sincronización correcta: {{ fecha }}</span>
+            } @else {
+              <span>Aún no hay una sincronización correcta.</span>
+            }
+          </div>
+
+          @if (requiereReconectar()) {
+            <p class="configuracion-sincronizacion__error" role="alert">
+              La conexión con Google ha caducado. Vuelve a conectar para sincronizar.
+            </p>
+            <button mat-flat-button color="primary" type="button" [disabled]="conectando()" (click)="conectarGoogle()">
+              @if (conectando()) { <mat-spinner diameter="18" /> } @else { <mat-icon>refresh</mat-icon> }
+              Volver a conectar
+            </button>
           } @else {
-            <span>Aún no hay una sincronización correcta.</span>
+            @if (sincronizando()) {
+              <div class="configuracion-sincronizacion__progreso" role="status" aria-live="polite">
+                <mat-spinner diameter="20" />
+                <span>Sincronizando tus datos…</span>
+              </div>
+            }
+            <div class="configuracion-sincronizacion__acciones">
+              <button mat-flat-button color="primary" type="button" [disabled]="sincronizando()" (click)="sincronizarAhora()">
+                @if (sincronizando()) { <mat-spinner diameter="18" /> } @else { <mat-icon>sync</mat-icon> }
+                {{ resultadoSincronizacion() === 'error' ? 'Reintentar' : 'Sincronizar ahora' }}
+              </button>
+              <button mat-stroked-button type="button" [disabled]="sincronizando()" (click)="confirmandoDesconexion.set(true)">
+                Desconectar cuenta
+              </button>
+            </div>
+            @if (confirmandoDesconexion()) {
+              <div class="configuracion-sincronizacion__confirmacion" role="group" aria-label="Confirmar desconexión">
+                <p>¿Desconectar tu cuenta? Tus datos en este dispositivo y los guardados en Google no se borran.</p>
+                <div class="configuracion-sincronizacion__acciones">
+                  <button mat-flat-button color="primary" type="button" (click)="desconectarGoogle()">Desconectar</button>
+                  <button mat-stroked-button type="button" (click)="confirmandoDesconexion.set(false)">Cancelar</button>
+                </div>
+              </div>
+            }
           }
         }
-      </div>
+      </section>
 
-      <details class="configuracion-sincronizacion__configuracion" [open]="!tieneCredenciales">
-        <summary>Configuración de GitHub</summary>
-        <section class="configuracion-sincronizacion__guia">
-          <h3>Cómo configurar la sincronización</h3>
-          <ol>
-            <li>Crea en GitHub un repositorio <strong>privado</strong> dedicado solo a tus datos (por ejemplo, <code>data-physical-exercises</code>), distinto del repositorio de la aplicación.</li>
-            <li>Crea un token <strong>fine-grained</strong> limitado a ese repositorio, con permiso de lectura y escritura de contenidos.</li>
-            <li>Introduce aquí el nombre del repositorio ("usuario/repositorio") y el token.</li>
-          </ol>
-        </section>
-
-        <form class="configuracion-sincronizacion__formulario" (submit)="$event.preventDefault(); guardarCredenciales()">
+      <details class="configuracion-sincronizacion__tarjeta configuracion-sincronizacion__configuracion"
+        [open]="esConfiguracionGitHubPlegada === false">
+        <summary>Sincronizar con GitHub (avanzado)</summary>
+        <div class="configuracion-sincronizacion__guia">
+          <h3>Configurar GitHub</h3>
+          @if (metodoGoogleActivo) {
+            <p>Desconecta tu cuenta de Google antes de configurar GitHub.</p>
+          } @else {
+            <ol>
+              <li>Crea un repositorio <strong>privado</strong> dedicado solo a tus datos.</li>
+              <li>Crea un token fine-grained limitado al repositorio, con permiso de lectura y escritura de contenidos.</li>
+              <li>Introduce el nombre del repositorio y el token.</li>
+            </ol>
+          }
+        </div>
+        <div class="configuracion-sincronizacion__resumen" role="status">
+          <strong>{{ estadoVisible() }}</strong>
+          @if (tieneCredenciales) {
+            <span>Repositorio: {{ recursoAjustes.value()?.repositorioGitHub }}</span>
+            @if (fechaSincronizacionLegible(); as fecha) {
+              <span>Última sincronización correcta: {{ fecha }}</span>
+            }
+          }
+        </div>
+        @if (metodoGoogleActivo) {
+          <p class="configuracion-sincronizacion__aviso">Desconecta tu cuenta de Google antes de configurar GitHub.</p>
+        } @else {
+          <form class="configuracion-sincronizacion__formulario" (submit)="$event.preventDefault(); guardarCredenciales()">
           <mat-form-field appearance="outline">
             <mat-label>Repositorio de datos (usuario/repositorio)</mat-label>
-            <input
-              matInput
-              [formField]="formulario.repositorio"
-              placeholder="usuario/data-physical-exercises"
-              (input)="errorRepositorio.set(null)"
-            />
+            <input matInput [formField]="formulario.repositorio" placeholder="usuario/data-physical-exercises"
+              (input)="errorRepositorio.set(null)" />
             @if (errorRepositorio(); as error) {
               <p class="configuracion-sincronizacion__error-campo" role="alert">{{ error }}</p>
             }
           </mat-form-field>
-
           <mat-form-field appearance="outline">
             <mat-label>Token fine-grained</mat-label>
-            <input
-              matInput
-              type="password"
-              class="configuracion-sincronizacion__token"
-              [formField]="formulario.token"
-              (input)="errorToken.set(null)"
-            />
+            <input matInput type="password" class="configuracion-sincronizacion__token"
+              [formField]="formulario.token" (input)="errorToken.set(null)" />
             @if (errorToken(); as error) {
               <p class="configuracion-sincronizacion__error-campo" role="alert">{{ error }}</p>
             }
           </mat-form-field>
-
           <div class="configuracion-sincronizacion__acciones">
-            <button mat-flat-button color="primary" type="submit" [disabled]="guardando()">Guardar credenciales</button>
+            <button mat-flat-button color="primary" type="submit" [disabled]="guardando()">Guardar configuración</button>
             @if (tieneCredenciales) {
               <button mat-stroked-button type="button" (click)="olvidarToken()">
                 <mat-icon>delete</mat-icon>
@@ -73,22 +182,11 @@
               </button>
             }
           </div>
-        </form>
+          </form>
+        }
       </details>
 
-      <section class="configuracion-sincronizacion__sincronizar">
-        <button mat-flat-button color="primary" type="button" [disabled]="!tieneCredenciales || sincronizando()" (click)="sincronizarAhora()">
-          @if (sincronizando()) {
-            <mat-spinner diameter="18" />
-          } @else {
-            <mat-icon>sync</mat-icon>
-          }
-          Sincronizar ahora
-        </button>
-        @if (!tieneCredenciales) {
-          <p class="configuracion-sincronizacion__aviso">Guarda primero el repositorio y el token para poder sincronizar.</p>
-        }
-      </section>
-    </section>
+      <app-copia-manual />
+    </div>
   }
 </section>

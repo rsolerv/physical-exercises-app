@@ -6,14 +6,16 @@ import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejer
 import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
 import { PlanificacionRepositoryPort } from '../../../src/app/application/ports/planificacion-repository.port';
 import { ProgresoDiarioRepositoryPort } from '../../../src/app/application/ports/progreso-diario-repository.port';
-import { GitHubSyncPort } from '../../../src/app/application/ports/github-sync.port';
 import { crearDiasVacios } from '../../../src/app/domain/planificacion/planificacion.entity';
 import { ErrorValidacion } from '../../../src/app/domain/errores/errores-dominio';
 import type { Ejercicio } from '../../../src/app/domain/ejercicio/ejercicio.entity';
 import type { Categoria } from '../../../src/app/domain/categoria/categoria.entity';
 import type { Planificacion } from '../../../src/app/domain/planificacion/planificacion.entity';
+import type { ImagenArchivoJSON } from '../../../src/app/application/ports/github-sync.port';
 
-const CREDENCIALES = { tokenPAT: 'token', repositorio: 'owner/data' };
+const resolverImagenVacio = async (): Promise<ImagenArchivoJSON> => {
+  throw new Error('No se esperaban imágenes de archivo.');
+};
 
 function ejercicio(sobrescribir: Partial<Ejercicio> = {}): Ejercicio {
   return {
@@ -33,7 +35,6 @@ describe('ExportarImportarDatosUseCase', () => {
     categorias?: Partial<CategoriaRepositoryPort>;
     planificaciones?: Partial<PlanificacionRepositoryPort>;
     progreso?: Partial<ProgresoDiarioRepositoryPort>;
-    githubSync?: Partial<GitHubSyncPort>;
   }) {
     TestBed.configureTestingModule({
       providers: [
@@ -72,13 +73,6 @@ describe('ExportarImportarDatosUseCase', () => {
             obtenerPorFecha: vi.fn().mockResolvedValue([]),
             marcar: vi.fn().mockResolvedValue(undefined),
             ...overrides.progreso,
-          },
-        },
-        {
-          provide: GitHubSyncPort,
-          useValue: {
-            leerImagen: vi.fn(),
-            ...overrides.githubSync,
           },
         },
       ],
@@ -156,7 +150,7 @@ describe('ExportarImportarDatosUseCase', () => {
 
     await caso.importar(
       { version: 1, ejercicios: [ejercicio()], categorias: [{ id: 'cat-1', nombre: 'Piernas' }], planificaciones: [], progresoDiario: [] },
-      CREDENCIALES
+      resolverImagenVacio
     );
 
     expect(eliminarEjercicio).toHaveBeenCalledWith('ej-viejo');
@@ -179,7 +173,7 @@ describe('ExportarImportarDatosUseCase', () => {
           planificaciones: [],
           progresoDiario: [],
         },
-        CREDENCIALES
+        resolverImagenVacio
       )
     ).rejects.toThrow(ErrorValidacion);
 
@@ -187,12 +181,12 @@ describe('ExportarImportarDatosUseCase', () => {
     expect(eliminar).not.toHaveBeenCalled();
   });
 
-  it('importar() descarga vía leerImagen() cada imagen de archivo referenciada y la guarda localmente', async () => {
-    const leerImagen = vi
-      .fn()
+  it('importar() resuelve por ruta cada imagen de archivo y la guarda localmente', async () => {
+    const resolverImagen = vi
+      .fn<(ruta: string) => Promise<ImagenArchivoJSON>>()
       .mockResolvedValue({ id: 'img-1', nombreArchivo: 'foto.png', tipoMime: 'image/png', contenidoBase64: 'ABC123' });
     const crearEjercicio = vi.fn().mockResolvedValue(ejercicio());
-    const caso = configurar({ githubSync: { leerImagen }, ejercicios: { crear: crearEjercicio } });
+    const caso = configurar({ ejercicios: { crear: crearEjercicio } });
 
     const ejercicioConImagen = {
       id: 'ej-1',
@@ -211,14 +205,108 @@ describe('ExportarImportarDatosUseCase', () => {
         planificaciones: [],
         progresoDiario: [],
       },
-      CREDENCIALES
+      resolverImagen
     );
 
-    expect(leerImagen).toHaveBeenCalledWith(CREDENCIALES, 'imagenes/img-1.json');
+    expect(resolverImagen).toHaveBeenCalledWith('imagenes/img-1.json');
     expect(crearEjercicio).toHaveBeenCalledWith(
       expect.objectContaining({
         imagenes: [{ id: 'img-1', tipo: 'archivo', contenidoBase64: 'ABC123', tipoMime: 'image/png', nombreArchivo: 'foto.png' }],
       })
     );
+  });
+
+  it('resuelve todas las imágenes antes de eliminar datos locales', async () => {
+    const eliminar = vi.fn().mockResolvedValue(undefined);
+    const resolverImagen = vi.fn().mockResolvedValue({
+      id: 'img-1',
+      nombreArchivo: 'foto.png',
+      tipoMime: 'image/png',
+      contenidoBase64: 'ABC123',
+    });
+    const caso = configurar({
+      ejercicios: {
+        listarTodos: vi.fn().mockResolvedValue([ejercicio({ id: 'local' })]),
+        eliminar,
+      },
+    });
+    const datos = {
+      version: 1,
+      ejercicios: [{
+        id: 'ej-1',
+        nombre: 'Sentadilla',
+        descripcion: 'desc',
+        categoriaIds: ['cat-1'],
+        enlaces: [],
+        imagenes: [{ id: 'img-1', tipo: 'archivo' as const, ruta: 'imagenes/img-1.json' }],
+      }],
+      categorias: [{ id: 'cat-1', nombre: 'Piernas' }],
+      planificaciones: [],
+      progresoDiario: [],
+    };
+
+    await caso.importar(datos, resolverImagen);
+
+    expect(resolverImagen.mock.invocationCallOrder[0]).toBeLessThan(eliminar.mock.invocationCallOrder[0]);
+    expect(eliminar).toHaveBeenCalledWith('local');
+  });
+
+  it('si falla la resolución de imágenes, conserva intactos los datos locales', async () => {
+    const listarTodos = vi.fn().mockResolvedValue([ejercicio({ id: 'local' })]);
+    const eliminar = vi.fn();
+    const resolverImagen = vi.fn().mockRejectedValue(new Error('Fallo de red'));
+    const caso = configurar({ ejercicios: { listarTodos, eliminar } });
+    const datos = {
+      version: 1,
+      ejercicios: [{
+        id: 'ej-1',
+        nombre: 'Sentadilla',
+        descripcion: 'desc',
+        categoriaIds: ['cat-1'],
+        enlaces: [],
+        imagenes: [{ id: 'img-1', tipo: 'archivo' as const, ruta: 'imagenes/img-1.json' }],
+      }],
+      categorias: [{ id: 'cat-1', nombre: 'Piernas' }],
+      planificaciones: [],
+      progresoDiario: [],
+    };
+
+    await expect(caso.importar(datos, resolverImagen)).rejects.toThrow('Fallo de red');
+
+    expect(listarTodos).not.toHaveBeenCalled();
+    expect(eliminar).not.toHaveBeenCalled();
+  });
+
+  it('rechaza imágenes de archivo mayores de 5 MB antes de borrar datos locales', async () => {
+    const listarTodos = vi.fn().mockResolvedValue([ejercicio({ id: 'local' })]);
+    const eliminar = vi.fn();
+    const resolverImagen = vi.fn().mockResolvedValue({
+      id: 'img-1',
+      nombreArchivo: 'grande.png',
+      tipoMime: 'image/png',
+      contenidoBase64: 'A'.repeat(Math.ceil(((5 * 1024 * 1024 + 1) * 4) / 3)),
+    });
+    const caso = configurar({ ejercicios: { listarTodos, eliminar } });
+    const datos = {
+      version: 1,
+      ejercicios: [{
+        id: 'ej-1',
+        nombre: 'Sentadilla',
+        descripcion: 'desc',
+        categoriaIds: ['cat-1'],
+        enlaces: [],
+        imagenes: [{ id: 'img-1', tipo: 'archivo' as const, ruta: 'imagenes/img-1.json' }],
+      }],
+      categorias: [{ id: 'cat-1', nombre: 'Piernas' }],
+      planificaciones: [],
+      progresoDiario: [],
+    };
+
+    await expect(caso.importar(datos, resolverImagen)).rejects.toThrow(
+      'Cada imagen de archivo no puede superar los 5 MB.'
+    );
+
+    expect(listarTodos).not.toHaveBeenCalled();
+    expect(eliminar).not.toHaveBeenCalled();
   });
 });

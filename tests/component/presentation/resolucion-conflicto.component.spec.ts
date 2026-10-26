@@ -5,8 +5,9 @@ import { provideRouter, Router } from '@angular/router';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { ResolucionConflictoComponent } from '../../../src/app/presentation/sincronizacion/conflicto/resolucion-conflicto.component';
 import { ConflictoSincronizacionEstadoService } from '../../../src/app/presentation/sincronizacion/conflicto-sincronizacion-estado.service';
-import { SincronizarGithubUseCase } from '../../../src/app/application/casos-uso/sincronizar-github.use-case';
+import { SincronizarUseCase } from '../../../src/app/application/casos-uso/sincronizar.use-case';
 import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
+import { AjustesRepositoryPort } from '../../../src/app/application/ports/ajustes-repository.port';
 import type { ExportacionJSON } from '../../../src/app/application/ports/github-sync.port';
 
 const DATOS_REMOTOS: ExportacionJSON = { version: 1, ejercicios: [], categorias: [], planificaciones: [], progresoDiario: [] };
@@ -15,8 +16,9 @@ describe('ResolucionConflictoComponent', () => {
   let mostrarError: ReturnType<typeof vi.fn>;
 
   function configurar(
-    conflicto: { opcionPorDefecto: 'conservar_local' | 'conservar_remoto'; datosRemotos: ExportacionJSON; sha: string } | null,
-    resolverConflicto?: ReturnType<typeof vi.fn>
+    conflicto: { opcionPorDefecto: 'conservar_local' | 'conservar_remoto'; datosRemotos: ExportacionJSON; version: string } | null,
+    resolverConflicto?: ReturnType<typeof vi.fn>,
+    metodoSincronizacion: 'github' | 'google' | null = 'github'
   ) {
     mostrarError = vi.fn();
     TestBed.configureTestingModule({
@@ -24,7 +26,8 @@ describe('ResolucionConflictoComponent', () => {
         provideZonelessChangeDetection(),
         provideRouter([]),
         provideNoopAnimations(),
-        { provide: SincronizarGithubUseCase, useValue: { resolverConflicto: resolverConflicto ?? vi.fn().mockResolvedValue(undefined) } },
+        { provide: SincronizarUseCase, useValue: { resolverConflicto: resolverConflicto ?? vi.fn().mockResolvedValue(undefined) } },
+        { provide: AjustesRepositoryPort, useValue: { obtener: vi.fn().mockResolvedValue({ metodoSincronizacion }) } },
         { provide: MensajeFeedbackService, useValue: { mostrarExito: vi.fn(), mostrarError } },
       ],
     });
@@ -39,14 +42,14 @@ describe('ResolucionConflictoComponent', () => {
   }
 
   it('preselecciona la opción por defecto indicada por el caso de uso (FR-035)', () => {
-    configurar({ opcionPorDefecto: 'conservar_remoto', datosRemotos: DATOS_REMOTOS, sha: 'sha-1' });
+    configurar({ opcionPorDefecto: 'conservar_remoto', datosRemotos: DATOS_REMOTOS, version: 'sha-1' });
     const fixture = crearComponente();
 
     expect(fixture.componentInstance.opcionSeleccionada()).toBe('conservar_remoto');
   });
 
   it('ofrece las opciones "conservar mis datos" y "usar los datos de GitHub"', () => {
-    configurar({ opcionPorDefecto: 'conservar_local', datosRemotos: DATOS_REMOTOS, sha: 'sha-1' });
+    configurar({ opcionPorDefecto: 'conservar_local', datosRemotos: DATOS_REMOTOS, version: 'sha-1' });
     const fixture = crearComponente();
 
     const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
@@ -54,9 +57,19 @@ describe('ResolucionConflictoComponent', () => {
     expect(texto.toLowerCase()).toContain('github');
   });
 
+  it('muestra "Usar los datos de Google" cuando Google es el método activo', async () => {
+    configurar({ opcionPorDefecto: 'conservar_remoto', datosRemotos: DATOS_REMOTOS, version: 'v1' }, undefined, 'google');
+    const fixture = crearComponente();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Usar los datos de Google');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('en Google');
+  });
+
   it('al confirmar, llama a resolverConflicto con la opción elegida', async () => {
     const resolverConflicto = vi.fn().mockResolvedValue(undefined);
-    configurar({ opcionPorDefecto: 'conservar_local', datosRemotos: DATOS_REMOTOS, sha: 'sha-1' }, resolverConflicto);
+    configurar({ opcionPorDefecto: 'conservar_local', datosRemotos: DATOS_REMOTOS, version: 'sha-1' }, resolverConflicto);
     const fixture = crearComponente();
     const router = TestBed.inject(Router);
     vi.spyOn(router, 'navigate').mockResolvedValue(true);
@@ -75,7 +88,7 @@ describe('ResolucionConflictoComponent', () => {
           fallar = reject;
         })
     );
-    configurar({ opcionPorDefecto: 'conservar_local', datosRemotos: DATOS_REMOTOS, sha: 'sha-1' }, resolverConflicto);
+    configurar({ opcionPorDefecto: 'conservar_local', datosRemotos: DATOS_REMOTOS, version: 'sha-1' }, resolverConflicto);
     const fixture = crearComponente();
 
     const peticion = fixture.componentInstance.confirmar();

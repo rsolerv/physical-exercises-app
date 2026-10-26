@@ -72,3 +72,24 @@ export class ErrorConflictoRemoto extends ErrorDominio {
     super(mensaje, 'ErrorConflictoRemoto');
   }
 }
+
+/** La autorización de Google ha caducado, se ha revocado o no se ha concedido. */
+export class ErrorAutorizacionGoogle extends ErrorDominio {
+  constructor(mensaje = 'La conexión con Google requiere que vuelvas a conectar tu cuenta.') {
+    super(mensaje, 'ErrorAutorizacionGoogle');
+  }
+}
+
+/** La persona cerró la ventana de Google o no concedió el permiso solicitado. */
+export class ErrorConexionCancelada extends ErrorDominio {
+  constructor(mensaje = 'La conexión no se ha completado. Tus datos no han cambiado. Puedes volver a intentarlo.') {
+    super(mensaje, 'ErrorConexionCancelada');
+  }
+}
+
+/** El navegador impidió abrir la ventana de autorización de Google. */
+export class ErrorVentanaBloqueada extends ErrorDominio {
+  constructor(mensaje = 'Tu navegador ha bloqueado la ventana de Google. Permítela e inténtalo de nuevo.') {
+    super(mensaje, 'ErrorVentanaBloqueada');
+  }
+}

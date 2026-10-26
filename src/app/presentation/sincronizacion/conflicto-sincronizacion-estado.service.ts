@@ -4,7 +4,7 @@ import type { ExportacionJSON } from '../../application/ports/github-sync.port';
 export interface ConflictoSincronizacion {
   opcionPorDefecto: 'conservar_local' | 'conservar_remoto';
   datosRemotos: ExportacionJSON;
-  sha: string;
+  version: string;
 }
 
 /**

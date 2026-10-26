@@ -12,7 +12,9 @@ import { CategoriaRepositoryPort } from '../../../src/app/application/ports/cate
 import { PlanificacionRepositoryPort } from '../../../src/app/application/ports/planificacion-repository.port';
 import { ProgresoDiarioRepositoryPort } from '../../../src/app/application/ports/progreso-diario-repository.port';
 import { AjustesRepositoryPort } from '../../../src/app/application/ports/ajustes-repository.port';
+import { GoogleAutorizacionPort } from '../../../src/app/application/ports/google-autorizacion.port';
 import { GitHubSyncPort } from '../../../src/app/application/ports/github-sync.port';
+import { ProveedorSincronizacionPort } from '../../../src/app/application/ports/proveedor-sincronizacion.port';
 
 const anchoViewportOriginal = window.innerWidth;
 
@@ -61,14 +63,29 @@ describe('ShellComponent (navegación)', () => {
             obtener: vi.fn().mockResolvedValue({
               tokenGitHub: null,
               repositorioGitHub: null,
-              ultimoShaSincronizado: null,
+              ultimaVersionSincronizada: null,
               ultimaSincronizacionCorrecta: null,
               cambiosLocalesPendientes: false,
               catalogoPredefinidoCargado: true,
+              metodoSincronizacion: null,
+              cuentaGoogle: null,
+              destinoUltimaSincronizacion: null,
             }),
           },
         },
+        {
+          provide: GoogleAutorizacionPort,
+          useValue: {
+            conectar: vi.fn().mockResolvedValue({ correo: 'raquel@example.com', nombre: 'Raquel' }),
+            obtenerTokenAcceso: vi.fn().mockResolvedValue('test-token'),
+            desconectar: vi.fn().mockResolvedValue(undefined),
+          },
+        },
         { provide: GitHubSyncPort, useValue: {} },
+        {
+          provide: ProveedorSincronizacionPort,
+          useValue: { leerRemoto: vi.fn(), escribirRemoto: vi.fn(), leerImagen: vi.fn() },
+        },
       ],
     });
   });

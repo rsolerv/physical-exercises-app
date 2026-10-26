@@ -1,25 +1,19 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 2.3.0 → 2.4.1
-Rationale: Se añade un principio obligatorio para que los cambios grandes
-de presentación se prototipen y revisen en Storybook antes de implementarlos
-(2.4.0, MINOR). La aprobación explícita del propietario actúa como puerta de
-calidad; las modificaciones visuales pequeñas quedan excluidas. En 2.4.1
-(PATCH) se aclara que el responsable de crear y presentar las historias es el
-agente `ux-ui-expert`, sin cambiar el alcance del principio.
+Version change: 2.4.1 → 2.5.0
+Rationale: Se amplía materialmente la regla de copia manual para permitir un
+contenedor ZIP que conserva los documentos JSON y sus rutas de imagen.
 
-Added principles:
-- V. Prototipo y aprobación de cambios grandes de presentación.
+Modified sections:
+- Arquitectura y Stack Tecnológico — sincronización de datos.
 
-Modified principles: ninguno
+Added principles: ninguno
 Added sections: ninguna
 Removed sections: ninguna
 
-Documentación alineada fuera de la constitución:
-- `.github/instructions/ux-ui.instructions.md` (procedimiento y responsable).
-- `.specify/templates/tasks-template.md` (bloque de tareas con aprobación).
-- `.github/agents/ux-ui-expert.agent.md` (puerta de aprobación y documentos SDD).
+Follow-up TODOs:
+- Confirmar la fecha de ratificación original, que no consta en el repositorio.
 
 TODO(RATIFICATION_DATE): la fecha de adopción original no consta y requiere
 confirmación del propietario.
@@ -119,7 +113,9 @@ de invertir en implementación, sin ralentizar correcciones y mejoras menores.
   dispositivos son:
   - la API de GitHub (repositorio de datos del usuario);
   - el espacio privado de la aplicación en la cuenta de Google de la persona;
-  - la copia manual mediante exportación e importación de un fichero JSON.
+  - la copia manual mediante exportación e importación de JSON; puede usarse
+    un ZIP para conservar `datos.json` y los documentos JSON de imágenes como
+    archivos separados y con sus rutas relativas.
 
   Solo PUEDE haber un destino de sincronización activo a la vez. Toda
   comunicación con un proveedor DEBE hacerse directamente desde el navegador,
@@ -190,4 +186,4 @@ principios antes de pasar a la fase de implementación. Cualquier
 complejidad añadida a la arquitectura de capas definida DEBE justificarse
 por escrito en el plan correspondiente.
 
-**Version**: 2.4.1 | **Last Amended**: 2026-10-26
+**Version**: 2.5.0 | **Ratified**: TODO(RATIFICATION_DATE: fecha original no registrada) | **Last Amended**: 2026-10-26

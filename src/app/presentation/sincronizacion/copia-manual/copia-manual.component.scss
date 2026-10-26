@@ -1,0 +1,54 @@
+@use '../../../../styles/espaciado' as *;
+
+.copia-manual {
+  display: grid;
+  align-content: start;
+  gap: $espaciado-2;
+  padding: $espaciado-3;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 16px;
+  background: var(--mat-sys-surface-container-low);
+
+  h2,
+  p {
+    margin-top: 0;
+  }
+
+  h2 {
+    margin-bottom: $espaciado-1;
+    font-size: 1.125rem;
+  }
+}
+
+.copia-manual__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $espaciado-2;
+
+  button {
+    min-height: 48px;
+  }
+}
+
+.copia-manual__selector {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.copia-manual__confirmacion {
+  display: grid;
+  gap: $espaciado-2;
+  padding: $espaciado-2;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 12px;
+}
+
+.copia-manual__error {
+  color: var(--mat-sys-error);
+}

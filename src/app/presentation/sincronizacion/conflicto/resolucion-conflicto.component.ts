@@ -1,12 +1,13 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, resource, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatButtonModule } from '@angular/material/button';
 import { ConflictoSincronizacionEstadoService } from '../conflicto-sincronizacion-estado.service';
-import { SincronizarGithubUseCase } from '../../../application/casos-uso/sincronizar-github.use-case';
+import { SincronizarUseCase } from '../../../application/casos-uso/sincronizar.use-case';
 import { CabeceraPaginaComponent } from '../../compartido/ui/cabecera-pagina/cabecera-pagina.component';
 import { EstadoVacioComponent } from '../../compartido/ui/estado-vacio/estado-vacio.component';
 import { MensajeFeedbackService } from '../../compartido/ui/mensaje-feedback.service';
+import { AjustesRepositoryPort } from '../../../application/ports/ajustes-repository.port';
 
 /**
  * Resolución de un conflicto de sincronización (Historia de Usuario 5,
@@ -22,11 +23,16 @@ import { MensajeFeedbackService } from '../../compartido/ui/mensaje-feedback.ser
 })
 export class ResolucionConflictoComponent {
   private readonly conflictoEstado = inject(ConflictoSincronizacionEstadoService);
-  private readonly sincronizarGithub = inject(SincronizarGithubUseCase);
+  private readonly sincronizar = inject(SincronizarUseCase);
+  private readonly ajustesRepository = inject(AjustesRepositoryPort);
   private readonly mensajeFeedback = inject(MensajeFeedbackService);
   private readonly router = inject(Router);
 
   protected readonly conflicto = this.conflictoEstado.conflictoActual;
+  protected readonly recursoAjustes = resource({ loader: () => this.ajustesRepository.obtener() });
+  protected readonly proveedorRemoto = computed(
+    () => (this.recursoAjustes.value()?.metodoSincronizacion === 'google' ? 'Google' : 'GitHub'),
+  );
 
   readonly opcionSeleccionada = signal<'conservar_local' | 'conservar_remoto'>(this.conflicto()?.opcionPorDefecto ?? 'conservar_remoto');
 
@@ -41,7 +47,7 @@ export class ResolucionConflictoComponent {
     this.errorAlResolver.set(null);
     this.confirmando.set(true);
     try {
-      await this.sincronizarGithub.resolverConflicto(this.opcionSeleccionada(), conflicto.datosRemotos, conflicto.sha);
+      await this.sincronizar.resolverConflicto(this.opcionSeleccionada(), conflicto.datosRemotos, conflicto.version);
       this.conflictoEstado.conflictoActual.set(null);
       this.mensajeFeedback.mostrarExito('Conflicto resuelto. Sincronización completada.');
       await this.router.navigate(['/sincronizacion']);

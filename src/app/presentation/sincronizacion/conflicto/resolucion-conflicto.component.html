@@ -4,12 +4,12 @@
   @if (conflicto(); as conflicto) {
     <p class="resolucion-conflicto__estado" role="status">Conflicto pendiente de resolución</p>
     <p class="resolucion-conflicto__explicacion">
-      Hay cambios tanto en este dispositivo como en GitHub desde la última sincronización. Elige qué versión quieres conservar.
+      Hay cambios tanto en este dispositivo como en {{ proveedorRemoto() }} desde la última sincronización. Elige qué versión quieres conservar.
     </p>
 
     <mat-radio-group class="resolucion-conflicto__opciones" [value]="opcionSeleccionada()" (change)="opcionSeleccionada.set($event.value)">
       <mat-radio-button value="conservar_local">Conservar mis datos (de este dispositivo)</mat-radio-button>
-      <mat-radio-button value="conservar_remoto">Usar los datos de GitHub</mat-radio-button>
+      <mat-radio-button value="conservar_remoto">Usar los datos de {{ proveedorRemoto() }}</mat-radio-button>
     </mat-radio-group>
 
     @if (errorAlResolver(); as error) {

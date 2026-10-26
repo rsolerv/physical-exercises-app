@@ -7,9 +7,8 @@ import { CategoriaRepositoryPort } from '../ports/categoria-repository.port';
 import { PlanificacionRepositoryPort } from '../ports/planificacion-repository.port';
 import { ProgresoDiarioRepositoryPort } from '../ports/progreso-diario-repository.port';
 import { ErrorValidacion } from '../../domain/errores/errores-dominio';
+import { TAMANO_MAXIMO_IMAGEN_BYTES } from '../../domain/ejercicio/validar-ejercicio';
 import {
-  GitHubSyncPort,
-  type CredencialesGitHub,
   type EjercicioExportado,
   type ExportacionJSON,
   type ImagenArchivoJSON,
@@ -34,8 +33,6 @@ export class ExportarImportarDatosUseCase {
   private readonly categoriaRepository = inject(CategoriaRepositoryPort);
   private readonly planificacionRepository = inject(PlanificacionRepositoryPort);
   private readonly progresoDiarioRepository = inject(ProgresoDiarioRepositoryPort);
-  private readonly githubSync = inject(GitHubSyncPort);
-
   async exportar(): Promise<ResultadoExportacion> {
     const ejercicios = await this.ejercicioRepository.listarTodos();
     const categorias = await this.categoriaRepository.listarTodas();
@@ -104,11 +101,10 @@ export class ExportarImportarDatosUseCase {
 
   /**
    * Reemplaza por completo los datos locales con los de `datos` (FR-032).
-   * Primero elimina ejercicios, planificaciones y categorías (en ese orden,
-   * para no violar las claves foráneas) y después recrea todo con nuevos
-   * identificadores locales, remapeando las referencias cruzadas.
+   * Primero resuelve las imágenes; solo después reemplaza ejercicios,
+   * planificaciones y categorías, remapeando las referencias cruzadas.
    */
-  async importar(datos: ExportacionJSON, credenciales: CredencialesGitHub): Promise<void> {
+  async importar(datos: ExportacionJSON, resolverImagen: (ruta: string) => Promise<ImagenArchivoJSON>): Promise<void> {
     if (!Array.isArray(datos.categorias) || !Array.isArray(datos.ejercicios)) {
       throw new ErrorValidacion('Los datos importados deben incluir una lista de ejercicios y otra de categorías.');
     }
@@ -123,6 +119,11 @@ export class ExportarImportarDatosUseCase {
           `El ejercicio «${ejercicio.nombre}» hace referencia a la categoría «${categoriaInexistente}», que no está en los datos importados.`
         );
       }
+    }
+
+    const imagenesPorEjercicio = new Map<string, ImagenEjercicio[]>();
+    for (const ejercicio of datos.ejercicios) {
+      imagenesPorEjercicio.set(ejercicio.id, await this.resolverImagenes(ejercicio.imagenes, resolverImagen));
     }
 
     const ejerciciosActuales = await this.ejercicioRepository.listarTodos();
@@ -146,13 +147,12 @@ export class ExportarImportarDatosUseCase {
 
     const idsEjercicios = new Map<string, string>();
     for (const ejercicio of datos.ejercicios) {
-      const imagenes = await this.resolverImagenes(ejercicio.imagenes, credenciales);
       const datosCreacion: DatosNuevoEjercicio = {
         nombre: ejercicio.nombre,
         descripcion: ejercicio.descripcion,
         categoriaIds: ejercicio.categoriaIds.map((id) => idsCategorias.get(id) ?? id),
         enlaces: ejercicio.enlaces,
-        imagenes,
+        imagenes: imagenesPorEjercicio.get(ejercicio.id) ?? [],
         observaciones: ejercicio.observaciones,
       };
       const creado = await this.ejercicioRepository.crear(datosCreacion);
@@ -185,7 +185,7 @@ export class ExportarImportarDatosUseCase {
 
   private async resolverImagenes(
     imagenes: EjercicioExportado['imagenes'],
-    credenciales: CredencialesGitHub
+    resolverImagen: (ruta: string) => Promise<ImagenArchivoJSON>
   ): Promise<ImagenEjercicio[]> {
     const resueltas: ImagenEjercicio[] = [];
     for (const imagen of imagenes) {
@@ -193,7 +193,10 @@ export class ExportarImportarDatosUseCase {
         resueltas.push({ id: imagen.id, tipo: 'url', valorUrl: imagen.valorUrl });
         continue;
       }
-      const archivo = await this.githubSync.leerImagen(credenciales, imagen.ruta ?? `imagenes/${imagen.id}.json`);
+      const archivo = await resolverImagen(imagen.ruta ?? `imagenes/${imagen.id}.json`);
+      if (this.tamanoBase64EnBytes(archivo.contenidoBase64) > TAMANO_MAXIMO_IMAGEN_BYTES) {
+        throw new ErrorValidacion('Cada imagen de archivo no puede superar los 5 MB.');
+      }
       resueltas.push({
         id: imagen.id,
         tipo: 'archivo',
@@ -203,5 +206,11 @@ export class ExportarImportarDatosUseCase {
       });
     }
     return resueltas;
+  }
+
+  private tamanoBase64EnBytes(base64: string): number {
+    const limpio = base64.replace(/[^A-Za-z0-9+/=]/g, '');
+    const relleno = limpio.endsWith('==') ? 2 : limpio.endsWith('=') ? 1 : 0;
+    return Math.floor((limpio.length * 3) / 4) - relleno;
   }
 }

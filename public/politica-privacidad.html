@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Política de privacidad de Physical Exercises: información sobre el almacenamiento local y las opciones de sincronización."
+    />
+    <meta name="color-scheme" content="light" />
+    <title>Política de privacidad · Physical Exercises</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family:
+          system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #202124;
+        background: #f6f8fb;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        line-height: 1.65;
+      }
+
+      main {
+        width: min(100% - 32px, 820px);
+        margin: 32px auto;
+        padding: clamp(24px, 5vw, 48px);
+        border: 1px solid #dfe3eb;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 8px 32px rgb(32 33 36 / 6%);
+      }
+
+      h1,
+      h2 {
+        line-height: 1.25;
+        color: #172b4d;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(1.8rem, 6vw, 2.5rem);
+      }
+
+      h2 {
+        margin: 32px 0 8px;
+        font-size: 1.2rem;
+      }
+
+      p,
+      ul {
+        margin: 8px 0 16px;
+      }
+
+      li + li {
+        margin-top: 8px;
+      }
+
+      a {
+        color: #174ea6;
+        text-underline-offset: 3px;
+        overflow-wrap: anywhere;
+      }
+
+      a:focus-visible {
+        outline: 3px solid #174ea6;
+        outline-offset: 3px;
+        border-radius: 2px;
+      }
+
+      .fecha {
+        margin-top: 0;
+        color: #5f6368;
+      }
+
+      .nota {
+        padding: 16px;
+        border-left: 4px solid #174ea6;
+        border-radius: 4px;
+        background: #f1f5fc;
+      }
+
+      footer {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #dfe3eb;
+      }
+
+      @media (max-width: 480px) {
+        main {
+          width: 100%;
+          margin: 0;
+          padding: 24px 20px;
+          border: 0;
+          border-radius: 0;
+          box-shadow: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Política de privacidad</h1>
+        <p class="fecha">Physical Exercises · Última actualización: 26 de octubre de 2026</p>
+      </header>
+
+      <p>
+        Esta política explica cómo se tratan los datos cuando utilizas Physical Exercises,
+        una aplicación web para organizar ejercicios, planificaciones y progreso. La aplicación
+        está diseñada para funcionar en tu dispositivo y no tiene un servidor propio que reciba
+        tus datos.
+      </p>
+
+      <h2>Responsable y contacto</h2>
+      <p>
+        La responsable del proyecto es <strong>Raquel Soler Viveros</strong>. Para consultas
+        sobre privacidad o para ejercer tus derechos, escribe a
+        <a href="mailto:halura@hotmail.com">halura@hotmail.com</a>.
+      </p>
+
+      <h2>Qué datos se tratan</h2>
+      <ul>
+        <li>
+          Los datos que introduces en la aplicación: ejercicios, categorías, imágenes,
+          planificaciones y progreso diario.
+        </li>
+        <li>
+          Si conectas Google, la dirección de correo de la cuenta seleccionada, para que puedas
+          identificarla en la aplicación.
+        </li>
+        <li>
+          Si configuras la opción avanzada de GitHub, el nombre del repositorio y el token que
+          proporcionas para acceder a él.
+        </li>
+      </ul>
+      <p>
+        No introduzcas información que no quieras almacenar en tu dispositivo o, si activas la
+        sincronización, en el servicio que elijas.
+      </p>
+
+      <h2>Dónde se guardan tus datos</h2>
+      <p>
+        Los datos de la aplicación se guardan en el almacenamiento de tu navegador y dispositivo.
+        La aplicación utiliza SQLite en el navegador; si el navegador no permite el almacenamiento
+        persistente, los datos pueden mantenerse solo mientras dure la sesión. Borrar los datos del
+        sitio o del navegador puede eliminar la copia local.
+      </p>
+      <p>
+        La sincronización es opcional y solo se inicia cuando la solicitas. Si eliges Google, los
+        datos de ejercicios y sus imágenes se guardan en el espacio privado de la aplicación en tu
+        cuenta de Google. La aplicación solicita el permiso
+        <code>drive.appdata</code>: no accede a tus documentos, otros ficheros ni a tu correo.
+        El correo de la cuenta se guarda localmente para mostrar qué cuenta está conectada. El
+        acceso se realiza directamente entre tu navegador y Google; la responsable no recibe una
+        copia de esos datos.
+      </p>
+      <p>
+        Si eliges GitHub, los datos se guardan en el repositorio que indiques. El nombre del
+        repositorio y el token que proporcionas se conservan en el almacenamiento local de tu
+        navegador. Al sincronizar, tu navegador se comunica directamente con GitHub y envía el
+        token a ese servicio para realizar la operación.
+      </p>
+      <p>
+        También puedes exportar una copia de seguridad a un fichero JSON e importarla en otro
+        dispositivo. La exportación se descarga en el lugar que elijas; la aplicación no la envía a
+        ningún servicio. Tú eres responsable de proteger el fichero y eliminarlo cuando ya no lo
+        necesites.
+      </p>
+
+      <h2>Cómo se usan y comparten los datos</h2>
+      <p>
+        Los datos se utilizan únicamente para guardar, mostrar, exportar, importar y, cuando lo
+        solicites, sincronizar la información de la aplicación. No se venden ni se utilizan para
+        publicidad o elaboración de perfiles. La aplicación no incorpora un servicio propio de
+        analítica.
+      </p>
+      <p>
+        Al utilizar Google, el acceso a sus datos se limita a proporcionar la sincronización que
+        has solicitado y se rige también por la
+        <a href="https://developers.google.com/terms/api-services-user-data-policy" rel="noreferrer">
+          Política de datos de usuario de los servicios de API de Google
+        </a>,
+        incluidos sus requisitos de uso limitado. Google y GitHub tratan los datos que reciben
+        conforme a sus propias políticas de privacidad. La aplicación también carga fuentes e
+        iconos alojados por Google Fonts; al solicitarlos, tu navegador puede transmitir a Google
+        datos técnicos como la dirección IP y la información del navegador.
+      </p>
+
+      <h2>Conservación y eliminación</h2>
+      <p>
+        La copia local permanece en tu navegador hasta que la elimines o borres los datos del sitio.
+        Las copias de Google o GitHub permanecen en la cuenta o repositorio correspondiente hasta
+        que las elimines allí. Desconectar Google retira la conexión de la aplicación, pero no borra
+        los datos guardados en Google. Olvidar la configuración de GitHub tampoco elimina el
+        repositorio ni su contenido.
+      </p>
+      <p>
+        El token de acceso de Google solo se mantiene en memoria mientras se utiliza y no se guarda
+        en el almacenamiento local. Puedes retirar el acceso desde tu cuenta de Google. El token de
+        GitHub se conserva localmente hasta que olvides esa configuración o elimines los datos del
+        sitio; también puedes revocarlo desde GitHub.
+      </p>
+
+      <h2>Tus derechos</h2>
+      <p>
+        Puedes solicitar acceso, rectificación o eliminación de los datos personales que te
+        conciernan, así como ejercer los demás derechos reconocidos por la normativa de protección
+        de datos, escribiendo a
+        <a href="mailto:halura@hotmail.com">halura@hotmail.com</a>. Como la responsable no recibe
+        las copias que guardas en el navegador, Google o GitHub, su consulta o eliminación debe
+        realizarse también desde el dispositivo, cuenta o repositorio que controles. Si consideras
+        que tus derechos no han sido atendidos, puedes presentar una reclamación ante la
+        <a href="https://www.aepd.es/" rel="noreferrer">Agencia Española de Protección de Datos</a>.
+      </p>
+
+      <h2>Cambios en esta política</h2>
+      <p>
+        Esta política puede actualizarse si cambia la aplicación o el tratamiento de los datos.
+        La fecha de la última actualización aparece al principio de esta página.
+      </p>
+
+      <footer>
+        <a href="./">Volver a Physical Exercises</a>
+      </footer>
+    </main>
+  </body>
+</html>

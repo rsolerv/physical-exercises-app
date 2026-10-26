@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { SqliteConexionService } from '../../../src/app/infrastructure/persistencia-sqlite/sqlite-conexion.service';
 import { AjustesRepositorySqlite } from '../../../src/app/infrastructure/persistencia-sqlite/ajustes-repository.sqlite';
 import { MotorSqlite, crearMotorSqliteEnMemoria } from '../../../src/app/infrastructure/persistencia-sqlite/motor-sqlite';
+import { ErrorValidacion } from '../../../src/app/domain/errores/errores-dominio';
 
 describe('AjustesRepositorySqlite', () => {
   let conexion: SqliteConexionService;
@@ -23,8 +24,11 @@ describe('AjustesRepositorySqlite', () => {
     expect(ajustes.catalogoPredefinidoCargado).toBe(false);
     expect(ajustes.tokenGitHub).toBeNull();
     expect(ajustes.repositorioGitHub).toBeNull();
-    expect(ajustes.ultimoShaSincronizado).toBeNull();
+    expect(ajustes.ultimaVersionSincronizada).toBeNull();
     expect(ajustes.ultimaSincronizacionCorrecta).toBeNull();
+    expect(ajustes.metodoSincronizacion).toBeNull();
+    expect(ajustes.cuentaGoogle).toBeNull();
+    expect(ajustes.destinoUltimaSincronizacion).toBeNull();
   });
 
   it('registra la fecha correcta como ISO UTC y conserva el valor nulo inicial', async () => {
@@ -40,17 +44,65 @@ describe('AjustesRepositorySqlite', () => {
     let ajustes = await repositorio.obtener();
     expect(ajustes.tokenGitHub).toBe('ghp_token123');
     expect(ajustes.repositorioGitHub).toBe('owner/data-physical-exercises');
+    expect(ajustes.metodoSincronizacion).toBe('github');
 
     await repositorio.olvidarCredencialesGitHub();
     ajustes = await repositorio.obtener();
     expect(ajustes.tokenGitHub).toBeNull();
     expect(ajustes.repositorioGitHub).toBeNull();
+    expect(ajustes.metodoSincronizacion).toBeNull();
   });
 
-  it('actualiza el último SHA sincronizado', async () => {
-    await repositorio.actualizarUltimoShaSincronizado('abc123');
+  it('actualiza la última versión sincronizada en la columna existente', async () => {
+    await repositorio.actualizarUltimaVersionSincronizada('version-1');
     const ajustes = await repositorio.obtener();
-    expect(ajustes.ultimoShaSincronizado).toBe('abc123');
+    expect(ajustes.ultimaVersionSincronizada).toBe('version-1');
+  });
+
+  it('conecta Google y no permite activar dos métodos a la vez', async () => {
+    await repositorio.conectarGoogle('persona@example.com');
+    expect(await repositorio.obtener()).toMatchObject({
+      metodoSincronizacion: 'google',
+      cuentaGoogle: 'persona@example.com',
+    });
+
+    await expect(repositorio.guardarCredencialesGitHub('token', 'owner/datos')).rejects.toThrow(ErrorValidacion);
+  });
+
+  it('no permite conectar Google mientras GitHub está activo', async () => {
+    await repositorio.guardarCredencialesGitHub('token', 'owner/datos');
+    await expect(repositorio.conectarGoogle('persona@example.com')).rejects.toThrow(ErrorValidacion);
+  });
+
+  it('olvidar las credenciales de GitHub no desconecta una cuenta de Google activa', async () => {
+    await repositorio.conectarGoogle('persona@example.com');
+
+    await repositorio.olvidarCredencialesGitHub();
+
+    expect(await repositorio.obtener()).toMatchObject({
+      metodoSincronizacion: 'google',
+      cuentaGoogle: 'persona@example.com',
+    });
+  });
+
+  it('desconectar Google conserva la versión y el destino sincronizados', async () => {
+    await repositorio.conectarGoogle('persona@example.com');
+    await repositorio.actualizarUltimaVersionSincronizada('v-1');
+    await repositorio.registrarDestinoSincronizado('google:persona@example.com');
+
+    await repositorio.desconectarGoogle();
+
+    expect(await repositorio.obtener()).toMatchObject({
+      metodoSincronizacion: null,
+      cuentaGoogle: null,
+      ultimaVersionSincronizada: 'v-1',
+      destinoUltimaSincronizacion: 'google:persona@example.com',
+    });
+  });
+
+  it('rechaza un método de sincronización persistido desconocido', async () => {
+    await conexion.ejecutarSinResultado("UPDATE ajustes_aplicacion SET metodo_sincronizacion = 'otro' WHERE id = 1");
+    await expect(repositorio.obtener()).rejects.toThrow(ErrorValidacion);
   });
 
   it('marca y desmarca cambiosLocalesPendientes', async () => {
@@ -89,7 +141,9 @@ describe('AjustesRepositorySqlite', () => {
     expect(ajustesMigrados).toMatchObject({
       tokenGitHub: 'token-existente',
       repositorioGitHub: 'owner/datos',
-      ultimoShaSincronizado: 'sha-existente',
+      ultimaVersionSincronizada: 'sha-existente',
+      metodoSincronizacion: 'github',
+      destinoUltimaSincronizacion: 'github',
       cambiosLocalesPendientes: true,
       catalogoPredefinidoCargado: true,
       ultimaSincronizacionCorrecta: null,

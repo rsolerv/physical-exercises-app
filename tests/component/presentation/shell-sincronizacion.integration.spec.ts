@@ -6,7 +6,9 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from '../../../src/app/app.routes';
 import { AjustesRepositoryPort } from '../../../src/app/application/ports/ajustes-repository.port';
+import { GoogleAutorizacionPort } from '../../../src/app/application/ports/google-autorizacion.port';
 import { GitHubSyncPort } from '../../../src/app/application/ports/github-sync.port';
+import { ProveedorSincronizacionPort } from '../../../src/app/application/ports/proveedor-sincronizacion.port';
 import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejercicio-repository.port';
 import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
 import { PlanificacionRepositoryPort } from '../../../src/app/application/ports/planificacion-repository.port';
@@ -27,16 +29,31 @@ describe('Integración de rutas de sincronización (US5)', () => {
             obtener: vi.fn().mockResolvedValue({
               tokenGitHub: null,
               repositorioGitHub: null,
-              ultimoShaSincronizado: null,
+              ultimaVersionSincronizada: null,
               ultimaSincronizacionCorrecta: null,
               cambiosLocalesPendientes: false,
               catalogoPredefinidoCargado: true,
+              metodoSincronizacion: null,
+              cuentaGoogle: null,
+              destinoUltimaSincronizacion: null,
             }),
             guardarCredencialesGitHub: vi.fn().mockResolvedValue(undefined),
             olvidarCredencialesGitHub: vi.fn().mockResolvedValue(undefined),
           },
         },
+        {
+          provide: GoogleAutorizacionPort,
+          useValue: {
+            conectar: vi.fn().mockResolvedValue({ correo: 'raquel@example.com', nombre: 'Raquel' }),
+            obtenerTokenAcceso: vi.fn().mockResolvedValue('test-token'),
+            desconectar: vi.fn().mockResolvedValue(undefined),
+          },
+        },
         { provide: GitHubSyncPort, useValue: {} },
+        {
+          provide: ProveedorSincronizacionPort,
+          useValue: { leerRemoto: vi.fn(), escribirRemoto: vi.fn(), leerImagen: vi.fn() },
+        },
         { provide: EjercicioRepositoryPort, useValue: { listarTodos: vi.fn().mockResolvedValue([]) } },
         { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue([]) } },
         { provide: PlanificacionRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue([]) } },
@@ -61,7 +78,7 @@ describe('Integración de rutas de sincronización (US5)', () => {
     await harness.fixture.whenStable();
 
     const estado = TestBed.inject(ConflictoSincronizacionEstadoService);
-    estado.conflictoActual.set({ opcionPorDefecto: 'conservar_local', datosRemotos, sha: 'sha-1' });
+    estado.conflictoActual.set({ opcionPorDefecto: 'conservar_local', datosRemotos, version: 'sha-1' });
     await harness.navigateByUrl('/sincronizacion/conflicto');
     await harness.fixture.whenStable();
 

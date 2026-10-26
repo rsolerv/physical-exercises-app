@@ -7,10 +7,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AjustesRepositoryPort } from '../../../application/ports/ajustes-repository.port';
-import { SincronizarGithubUseCase } from '../../../application/casos-uso/sincronizar-github.use-case';
+import { SincronizarUseCase } from '../../../application/casos-uso/sincronizar.use-case';
+import { GestionarConexionSincronizacionUseCase } from '../../../application/casos-uso/gestionar-conexion-sincronizacion.use-case';
+import { CopiaManualComponent } from '../copia-manual/copia-manual.component';
 import { ConflictoSincronizacionEstadoService } from '../conflicto-sincronizacion-estado.service';
 import { CabeceraPaginaComponent } from '../../compartido/ui/cabecera-pagina/cabecera-pagina.component';
 import { MensajeFeedbackService } from '../../compartido/ui/mensaje-feedback.service';
+import { ErrorAutorizacionGoogle, ErrorConflictoRemoto } from '../../../domain/errores/errores-dominio';
 
 interface ModeloCredencialesGitHub {
   token: string;
@@ -32,13 +35,23 @@ const ETIQUETAS_ACCION: Record<'subir' | 'descargar' | 'nada', string> = {
 @Component({
   selector: 'app-configuracion-sincronizacion',
   standalone: true,
-  imports: [FormField, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule, CabeceraPaginaComponent],
+  imports: [
+    FormField,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    CabeceraPaginaComponent,
+    CopiaManualComponent,
+  ],
   templateUrl: './configuracion-sincronizacion.component.html',
   styleUrl: './configuracion-sincronizacion.component.scss',
 })
 export class ConfiguracionSincronizacionComponent {
   private readonly ajustesRepository = inject(AjustesRepositoryPort);
-  private readonly sincronizarGithub = inject(SincronizarGithubUseCase);
+  private readonly sincronizar = inject(SincronizarUseCase);
+  private readonly gestionarConexion = inject(GestionarConexionSincronizacionUseCase);
   private readonly conflictoEstado = inject(ConflictoSincronizacionEstadoService);
   private readonly mensajeFeedback = inject(MensajeFeedbackService);
   private readonly router = inject(Router);
@@ -55,20 +68,47 @@ export class ConfiguracionSincronizacionComponent {
   readonly formulario = form(this.modelo);
 
   readonly sincronizando = signal(false);
+  readonly conectando = signal(false);
   readonly guardando = signal(false);
+  readonly confirmandoDesconexion = signal(false);
+  readonly requiereReconectar = signal(false);
+  readonly mensajeError = signal<string | null>(null);
   readonly errorRepositorio = signal<string | null>(null);
   readonly errorToken = signal<string | null>(null);
+  private readonly sincronizacionPendiente = signal(false);
   private readonly fechaSincronizacionTemporal = signal<Date | null>(null);
-  private readonly resultadoSincronizacion = signal<'inicial' | 'sincronizado' | 'error' | 'conflicto'>('inicial');
+  readonly resultadoSincronizacion = signal<'inicial' | 'sincronizado' | 'error' | 'conflicto'>('inicial');
 
   protected get tieneCredenciales(): boolean {
     const ajustes = this.recursoAjustes.value();
     return !!(ajustes?.tokenGitHub && ajustes?.repositorioGitHub);
   }
 
+  protected get cuentaGoogle(): string | null {
+    const ajustes = this.recursoAjustes.value();
+    return ajustes?.metodoSincronizacion === 'google' ? ajustes.cuentaGoogle : null;
+  }
+
+  protected get metodoGoogleActivo(): boolean {
+    return this.recursoAjustes.value()?.metodoSincronizacion === 'google';
+  }
+
+  protected get metodoGitHubActivo(): boolean {
+    return this.recursoAjustes.value()?.metodoSincronizacion === 'github';
+  }
+
+  protected get hayMetodoActivo(): boolean {
+    return this.metodoGoogleActivo || this.metodoGitHubActivo;
+  }
+
+  protected get esConfiguracionGitHubPlegada(): boolean {
+    return !this.metodoGitHubActivo;
+  }
+
   protected readonly estadoVisible = computed(() => {
-    if (!this.tieneCredenciales) return 'Sin configurar';
+    if (!this.hayMetodoActivo) return 'Sin configurar';
     if (this.sincronizando()) return 'Sincronizando...';
+    if (this.requiereReconectar()) return 'Requiere reconectar';
     switch (this.resultadoSincronizacion()) {
       case 'sincronizado':
         return 'Sincronizado';
@@ -77,7 +117,7 @@ export class ConfiguracionSincronizacionComponent {
       case 'conflicto':
         return 'Conflicto pendiente de resolución';
       default:
-        return 'Configurado';
+        return this.metodoGoogleActivo ? 'Conectado' : 'Sincronización activa con GitHub';
     }
   });
 
@@ -123,17 +163,58 @@ export class ConfiguracionSincronizacionComponent {
     }
   }
 
-  async sincronizarAhora(): Promise<void> {
+  async conectarGoogle(): Promise<void> {
+    if (this.metodoGitHubActivo) return;
+    this.conectando.set(true);
+    this.mensajeError.set(null);
+    try {
+      await this.gestionarConexion.conectarGoogle();
+      this.requiereReconectar.set(false);
+      this.recursoAjustes.reload();
+      this.mensajeFeedback.mostrarExito('Cuenta de Google conectada.');
+      if (this.sincronizacionPendiente()) {
+        this.sincronizacionPendiente.set(false);
+        await this.sincronizarAhora(true);
+      }
+    } catch (error) {
+      this.resultadoSincronizacion.set('error');
+      const mensaje = error instanceof Error ? error.message : 'No se ha podido conectar con Google.';
+      this.mensajeError.set(mensaje);
+      this.mensajeFeedback.mostrarError(mensaje);
+    } finally {
+      this.conectando.set(false);
+    }
+  }
+
+  async desconectarGoogle(): Promise<void> {
+    try {
+      await this.gestionarConexion.desconectar();
+      this.confirmandoDesconexion.set(false);
+      this.requiereReconectar.set(false);
+      this.sincronizacionPendiente.set(false);
+      this.resultadoSincronizacion.set('inicial');
+      this.fechaSincronizacionTemporal.set(null);
+      this.recursoAjustes.reload();
+      this.mensajeFeedback.mostrarExito('Cuenta de Google desconectada. Tus datos se conservan en este dispositivo y en Google.');
+    } catch (error) {
+      this.mensajeFeedback.mostrarError(error instanceof Error ? error.message : 'No se ha podido desconectar la cuenta.');
+    }
+  }
+
+  async sincronizarAhora(continuarTrasReconectar = false): Promise<void> {
+    if (!this.hayMetodoActivo && !continuarTrasReconectar) return;
     this.resultadoSincronizacion.set('inicial');
+    this.mensajeError.set(null);
     this.sincronizando.set(true);
     try {
-      const resultado = await this.sincronizarGithub.sincronizar();
+      const resultado = await this.sincronizar.sincronizar();
+      if (!resultado) return;
       if (resultado.tipo === 'conflicto') {
         this.resultadoSincronizacion.set('conflicto');
         this.conflictoEstado.conflictoActual.set({
           opcionPorDefecto: resultado.opcionPorDefecto,
           datosRemotos: resultado.datosRemotos,
-          sha: resultado.sha,
+          version: resultado.version,
         });
         await this.router.navigate(['/sincronizacion/conflicto']);
         return;
@@ -142,8 +223,23 @@ export class ConfiguracionSincronizacionComponent {
       this.fechaSincronizacionTemporal.set(new Date());
       this.mensajeFeedback.mostrarExito(`Sincronización completada. ${ETIQUETAS_ACCION[resultado.accion]}`);
     } catch (error) {
-      this.resultadoSincronizacion.set('error');
-      this.mensajeFeedback.mostrarError(error instanceof Error ? error.message : 'No se ha podido sincronizar con GitHub.');
+      if (error instanceof ErrorAutorizacionGoogle && this.metodoGoogleActivo) {
+        this.requiereReconectar.set(true);
+        this.sincronizacionPendiente.set(true);
+        const mensaje = 'La conexión con Google ha caducado. Vuelve a conectar para sincronizar.';
+        this.mensajeError.set(mensaje);
+        this.mensajeFeedback.mostrarError(mensaje);
+      } else {
+        this.resultadoSincronizacion.set('error');
+        const mensaje =
+          error instanceof Error
+            ? error instanceof ErrorConflictoRemoto
+              ? `${error.message} Tus datos de este dispositivo no han cambiado.`
+              : error.message
+            : 'No se ha podido sincronizar.';
+        this.mensajeError.set(mensaje);
+        this.mensajeFeedback.mostrarError(mensaje);
+      }
     } finally {
       this.sincronizando.set(false);
     }
