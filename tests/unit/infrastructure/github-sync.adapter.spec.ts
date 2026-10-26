@@ -54,21 +54,19 @@ describe('GithubSyncAdapter', () => {
     expect(resultado).toEqual({ existe: true, datos: DATOS_VACIOS, sha: 'sha-1' });
   });
 
-  it('leerRemoto() recupera datos.json en formato raw cuando GitHub omite su contenido codificado', async () => {
+  it('leerRemoto() descarga datos.json por la API de blobs cuando GitHub omite su contenido codificado', async () => {
     const promesa = adapter.leerRemoto(CREDENCIALES);
 
     const respuestaMetadatos = httpMock.expectOne(
       'https://api.github.com/repos/owner/data-physical-exercises/contents/datos.json'
     );
-    respuestaMetadatos.flush({ content: '', sha: 'sha-grande' });
+    respuestaMetadatos.flush({ content: '', encoding: 'none', sha: 'sha-grande' });
     await flushMicrotareas();
 
-    const respuestaRaw = httpMock.expectOne(
-      'https://api.github.com/repos/owner/data-physical-exercises/contents/datos.json'
+    const respuestaBlob = httpMock.expectOne(
+      'https://api.github.com/repos/owner/data-physical-exercises/git/blobs/sha-grande'
     );
-    expect(respuestaRaw.request.responseType).toBe('text');
-    expect(respuestaRaw.request.headers.get('Accept')).toBe('application/vnd.github.raw+json');
-    respuestaRaw.flush(JSON.stringify(DATOS_VACIOS));
+    respuestaBlob.flush({ content: aBase64(JSON.stringify(DATOS_VACIOS)), encoding: 'base64', sha: 'sha-grande' });
 
     await expect(promesa).resolves.toEqual({ existe: true, datos: DATOS_VACIOS, sha: 'sha-grande' });
   });
@@ -146,43 +144,39 @@ describe('GithubSyncAdapter', () => {
     expect(resultado).toEqual(imagen);
   });
 
-  it('leerImagen() recupera una imagen en formato raw cuando GitHub omite su contenido codificado', async () => {
+  it('leerImagen() descarga por la API de blobs una imagen de más de 1 MB cuando GitHub omite su contenido', async () => {
     const imagen: ImagenArchivoJSON = { id: 'img-1', nombreArchivo: 'foto.png', tipoMime: 'image/png', contenidoBase64: 'QUJD' };
     const promesa = adapter.leerImagen(CREDENCIALES, 'imagenes/img-1.json');
 
     const respuestaMetadatos = httpMock.expectOne(
       'https://api.github.com/repos/owner/data-physical-exercises/contents/imagenes/img-1.json'
     );
-    respuestaMetadatos.flush({ content: '', sha: 'sha-imagen' });
+    respuestaMetadatos.flush({ content: '', encoding: 'none', sha: 'sha-imagen' });
     await flushMicrotareas();
 
-    const respuestaRaw = httpMock.expectOne(
-      'https://api.github.com/repos/owner/data-physical-exercises/contents/imagenes/img-1.json'
+    const respuestaBlob = httpMock.expectOne(
+      'https://api.github.com/repos/owner/data-physical-exercises/git/blobs/sha-imagen'
     );
-    expect(respuestaRaw.request.responseType).toBe('text');
-    respuestaRaw.flush(JSON.stringify(imagen));
+    expect(respuestaBlob.request.method).toBe('GET');
+    expect(respuestaBlob.request.headers.get('Authorization')).toContain('token-secreto');
+    respuestaBlob.flush({ content: aBase64(JSON.stringify(imagen)), encoding: 'base64', sha: 'sha-imagen' });
 
     await expect(promesa).resolves.toEqual(imagen);
   });
 
-  it('leerImagen() decodifica la respuesta de contenidos de GitHub si el servidor no devuelve el raw esperado', async () => {
-    const imagen: ImagenArchivoJSON = { id: 'img-1', nombreArchivo: 'foto.png', tipoMime: 'image/png', contenidoBase64: 'QUJD' };
+  it('leerImagen() decodifica contenido Base64 con saltos de línea, como lo devuelve la API de blobs', async () => {
+    const imagen: ImagenArchivoJSON = { id: 'img-1', nombreArchivo: 'foto.png', tipoMime: 'image/png', contenidoBase64: 'A'.repeat(5000) };
     const promesa = adapter.leerImagen(CREDENCIALES, 'imagenes/img-1.json');
 
-    const respuestaMetadatos = httpMock.expectOne(
-      'https://api.github.com/repos/owner/data-physical-exercises/contents/imagenes/img-1.json'
-    );
-    respuestaMetadatos.flush({ content: '', sha: 'sha-imagen' });
+    httpMock
+      .expectOne('https://api.github.com/repos/owner/data-physical-exercises/contents/imagenes/img-1.json')
+      .flush({ content: '', encoding: 'none', sha: 'sha-imagen' });
     await flushMicrotareas();
 
-    const respuestaFallback = httpMock.expectOne(
-      'https://api.github.com/repos/owner/data-physical-exercises/contents/imagenes/img-1.json'
-    );
-    respuestaFallback.flush(JSON.stringify({
-      content: aBase64(JSON.stringify(imagen)),
-      encoding: 'base64',
-      sha: 'sha-imagen',
-    }));
+    const base64ConSaltos = aBase64(JSON.stringify(imagen)).replace(/(.{60})/g, '$1\n');
+    httpMock
+      .expectOne('https://api.github.com/repos/owner/data-physical-exercises/git/blobs/sha-imagen')
+      .flush({ content: base64ConSaltos, encoding: 'base64', sha: 'sha-imagen' });
 
     await expect(promesa).resolves.toEqual(imagen);
   });

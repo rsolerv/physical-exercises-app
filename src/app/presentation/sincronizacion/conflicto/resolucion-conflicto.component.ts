@@ -8,6 +8,7 @@ import { CabeceraPaginaComponent } from '../../compartido/ui/cabecera-pagina/cab
 import { EstadoVacioComponent } from '../../compartido/ui/estado-vacio/estado-vacio.component';
 import { MensajeFeedbackService } from '../../compartido/ui/mensaje-feedback.service';
 import { AjustesRepositoryPort } from '../../../application/ports/ajustes-repository.port';
+import { textoImagenesOmitidas } from '../texto-imagenes-omitidas';
 
 /**
  * Resolución de un conflicto de sincronización (Historia de Usuario 5,
@@ -47,9 +48,19 @@ export class ResolucionConflictoComponent {
     this.errorAlResolver.set(null);
     this.confirmando.set(true);
     try {
-      await this.sincronizar.resolverConflicto(this.opcionSeleccionada(), conflicto.datosRemotos, conflicto.version);
+      const { imagenesOmitidas } = await this.sincronizar.resolverConflicto(
+        this.opcionSeleccionada(),
+        conflicto.datosRemotos,
+        conflicto.version
+      );
       this.conflictoEstado.conflictoActual.set(null);
-      this.mensajeFeedback.mostrarExito('Conflicto resuelto. Sincronización completada.');
+      if (imagenesOmitidas > 0) {
+        this.mensajeFeedback.mostrarError(
+          `Conflicto resuelto. Sincronización completada. ${textoImagenesOmitidas(imagenesOmitidas)}`
+        );
+      } else {
+        this.mensajeFeedback.mostrarExito('Conflicto resuelto. Sincronización completada.');
+      }
       await this.router.navigate(['/sincronizacion']);
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'No se ha podido resolver el conflicto.';

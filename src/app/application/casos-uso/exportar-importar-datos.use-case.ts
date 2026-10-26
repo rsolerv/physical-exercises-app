@@ -15,6 +15,11 @@ import {
   type ImagenEjercicioExportada,
 } from '../ports/github-sync.port';
 
+export interface ResultadoImportacion {
+  /** Imágenes de archivo cuyo documento remoto era inválido y no se han importado. */
+  imagenesOmitidas: number;
+}
+
 interface ResultadoExportacion {
   datos: ExportacionJSON;
   imagenesParaSubir: ImagenArchivoJSON[];
@@ -104,7 +109,11 @@ export class ExportarImportarDatosUseCase {
    * Primero resuelve las imágenes; solo después reemplaza ejercicios,
    * planificaciones y categorías, remapeando las referencias cruzadas.
    */
-  async importar(datos: ExportacionJSON, resolverImagen: (ruta: string) => Promise<ImagenArchivoJSON>): Promise<void> {
+  async importar(
+    datos: ExportacionJSON,
+    resolverImagen: (ruta: string) => Promise<ImagenArchivoJSON>,
+    omitirImagenesInvalidas = false
+  ): Promise<ResultadoImportacion> {
     if (!Array.isArray(datos.categorias) || !Array.isArray(datos.ejercicios)) {
       throw new ErrorValidacion('Los datos importados deben incluir una lista de ejercicios y otra de categorías.');
     }
@@ -122,8 +131,15 @@ export class ExportarImportarDatosUseCase {
     }
 
     const imagenesPorEjercicio = new Map<string, ImagenEjercicio[]>();
+    let imagenesOmitidas = 0;
     for (const ejercicio of datos.ejercicios) {
-      imagenesPorEjercicio.set(ejercicio.id, await this.resolverImagenes(ejercicio.imagenes, resolverImagen));
+      const { resueltas, omitidas } = await this.resolverImagenes(
+        ejercicio.imagenes,
+        resolverImagen,
+        omitirImagenesInvalidas
+      );
+      imagenesPorEjercicio.set(ejercicio.id, resueltas);
+      imagenesOmitidas += omitidas;
     }
 
     const ejerciciosActuales = await this.ejercicioRepository.listarTodos();
@@ -181,19 +197,33 @@ export class ExportarImportarDatosUseCase {
         await this.progresoDiarioRepository.marcar(parsearFechaIsoLocal(registro.fecha), ejercicioIdNuevo, registro.realizado);
       }
     }
+
+    return { imagenesOmitidas };
   }
 
   private async resolverImagenes(
     imagenes: EjercicioExportado['imagenes'],
-    resolverImagen: (ruta: string) => Promise<ImagenArchivoJSON>
-  ): Promise<ImagenEjercicio[]> {
+    resolverImagen: (ruta: string) => Promise<ImagenArchivoJSON>,
+    omitirImagenesInvalidas: boolean
+  ): Promise<{ resueltas: ImagenEjercicio[]; omitidas: number }> {
     const resueltas: ImagenEjercicio[] = [];
+    let omitidas = 0;
     for (const imagen of imagenes) {
       if (imagen.tipo === 'url') {
         resueltas.push({ id: imagen.id, tipo: 'url', valorUrl: imagen.valorUrl });
         continue;
       }
-      const archivo = await resolverImagen(imagen.ruta ?? `imagenes/${imagen.id}.json`);
+      let archivo: ImagenArchivoJSON;
+      try {
+        archivo = await resolverImagen(imagen.ruta ?? `imagenes/${imagen.id}.json`);
+      } catch (error) {
+        // Un documento de imagen inválido no debe impedir importar el resto; los fallos de red o autenticación sí abortan.
+        if (omitirImagenesInvalidas && error instanceof ErrorValidacion) {
+          omitidas++;
+          continue;
+        }
+        throw error;
+      }
       if (this.tamanoBase64EnBytes(archivo.contenidoBase64) > TAMANO_MAXIMO_IMAGEN_BYTES) {
         throw new ErrorValidacion('Cada imagen de archivo no puede superar los 5 MB.');
       }
@@ -205,7 +235,7 @@ export class ExportarImportarDatosUseCase {
         nombreArchivo: archivo.nombreArchivo,
       });
     }
-    return resueltas;
+    return { resueltas, omitidas };
   }
 
   private tamanoBase64EnBytes(base64: string): number {

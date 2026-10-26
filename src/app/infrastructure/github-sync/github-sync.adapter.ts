@@ -41,14 +41,6 @@ interface ContenidoRemoto {
   sha: string;
 }
 
-function esRespuestaContenidoBase64(
-  valor: unknown
-): valor is { content: string; encoding: 'base64'; sha?: string } {
-  if (typeof valor !== 'object' || valor === null) return false;
-  const respuesta = valor as Record<string, unknown>;
-  return respuesta['encoding'] === 'base64' && typeof respuesta['content'] === 'string';
-}
-
 function esImagenArchivoValida(valor: unknown): valor is ImagenArchivoJSON {
   if (typeof valor !== 'object' || valor === null) return false;
   const imagen = valor as Record<string, unknown>;
@@ -120,17 +112,16 @@ export class GithubSyncAdapter implements GitHubSyncPort {
       return { texto: desdeBase64(respuesta.content), sha: respuesta.sha };
     }
 
-    const texto = await firstValueFrom(
-      this.http.get(url, {
-        headers: this.cabeceras(credenciales, 'application/vnd.github.raw+json'),
-        responseType: 'text',
+    // Por encima de 1 MB la API de contenidos no devuelve el cuerpo; la API de blobs admite hasta 100 MB.
+    const blob = await firstValueFrom(
+      this.http.get<ContenidoGitHub>(`${API_BASE}/${credenciales.repositorio}/git/blobs/${respuesta.sha}`, {
+        headers: this.cabeceras(credenciales),
       })
     );
-    const respuestaRaw: unknown = JSON.parse(texto);
-    if (esRespuestaContenidoBase64(respuestaRaw)) {
-      return { texto: desdeBase64(respuestaRaw.content), sha: respuestaRaw.sha ?? respuesta.sha };
+    if (!blob.content?.trim()) {
+      throw new ErrorValidacion(`GitHub no ha devuelto el contenido del documento remoto «${ruta}».`);
     }
-    return { texto, sha: respuesta.sha };
+    return { texto: desdeBase64(blob.content), sha: respuesta.sha };
   }
 
   private async obtenerShaRemoto(credenciales: CredencialesGitHub, ruta: string): Promise<string | null> {
@@ -176,13 +167,10 @@ export class GithubSyncAdapter implements GitHubSyncPort {
     return `${API_BASE}/${credenciales.repositorio}/contents/${ruta}`;
   }
 
-  private cabeceras(
-    credenciales: CredencialesGitHub,
-    accept = 'application/vnd.github+json'
-  ): HttpHeaders {
+  private cabeceras(credenciales: CredencialesGitHub): HttpHeaders {
     return new HttpHeaders({
       Authorization: `Bearer ${credenciales.tokenPAT}`,
-      Accept: accept,
+      Accept: 'application/vnd.github+json',
     });
   }
 

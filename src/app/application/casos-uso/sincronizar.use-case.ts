@@ -9,7 +9,7 @@ import { versionSincronizadaEfectiva } from '../../domain/sincronizacion/version
 import { ErrorValidacion } from '../../domain/errores/errores-dominio';
 
 export type ResultadoSincronizacion =
-  | { tipo: 'completada'; accion: 'subir' | 'descargar' | 'nada' }
+  | { tipo: 'completada'; accion: 'subir' | 'descargar' | 'nada'; imagenesOmitidas?: number }
   | {
       tipo: 'conflicto';
       opcionPorDefecto: 'conservar_local' | 'conservar_remoto';
@@ -61,8 +61,8 @@ export class SincronizarUseCase {
       }
       case 'descargar': {
         if (!lecturaRemota.existe) throw new ErrorValidacion('No hay datos remotos para descargar.');
-        await this.aplicarDescarga(lecturaRemota.datos, lecturaRemota.version, destino);
-        return { tipo: 'completada', accion: 'descargar' };
+        const imagenesOmitidas = await this.aplicarDescarga(lecturaRemota.datos, lecturaRemota.version, destino);
+        return { tipo: 'completada', accion: 'descargar', imagenesOmitidas };
       }
       case 'conflicto':
         if (!lecturaRemota.existe) throw new ErrorValidacion('No hay datos remotos para resolver el conflicto.');
@@ -79,15 +79,15 @@ export class SincronizarUseCase {
     opcion: 'conservar_local' | 'conservar_remoto',
     datosRemotos: ExportacionJSON,
     version: string
-  ): Promise<void> {
+  ): Promise<{ imagenesOmitidas: number }> {
     const ajustes = await this.ajustesRepository.obtener();
     const destino = identificarDestinoSincronizacion(ajustes.metodoSincronizacion, ajustes.cuentaGoogle);
     if (destino === null) throw new ErrorValidacion('No hay ningún método de sincronización activo.');
     if (opcion === 'conservar_local') {
       await this.subir(version, destino);
-    } else {
-      await this.aplicarDescarga(datosRemotos, version, destino);
+      return { imagenesOmitidas: 0 };
     }
+    return { imagenesOmitidas: await this.aplicarDescarga(datosRemotos, version, destino) };
   }
 
   private async subir(versionEsperada: string | null, destino: string | null): Promise<void> {
@@ -96,9 +96,14 @@ export class SincronizarUseCase {
     await this.registrarExito(versionNueva, destino);
   }
 
-  private async aplicarDescarga(datos: ExportacionJSON, version: string, destino: string | null): Promise<void> {
-    await this.exportarImportarDatos.importar(datos, (ruta) => this.proveedor.leerImagen(ruta));
+  private async aplicarDescarga(datos: ExportacionJSON, version: string, destino: string | null): Promise<number> {
+    const { imagenesOmitidas } = await this.exportarImportarDatos.importar(
+      datos,
+      (ruta) => this.proveedor.leerImagen(ruta),
+      true
+    );
     await this.registrarExito(version, destino);
+    return imagenesOmitidas;
   }
 
   private async registrarExito(version: string, destino: string | null): Promise<void> {

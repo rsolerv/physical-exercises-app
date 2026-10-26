@@ -42,7 +42,7 @@ describe('SincronizarUseCase', () => {
     const registrarSincronizacionCorrecta = vi.fn().mockResolvedValue(undefined);
     const marcarCambiosLocalesPendientes = vi.fn().mockResolvedValue(undefined);
     const exportar = vi.fn().mockResolvedValue({ datos: DATOS_VACIOS, imagenesParaSubir: [] });
-    const importar = vi.fn().mockResolvedValue(undefined);
+    const importar = vi.fn().mockResolvedValue({ imagenesOmitidas: 0 });
     const leerRemoto = opciones.leerRemoto ?? vi.fn().mockResolvedValue({ existe: false });
     const escribirRemoto = opciones.escribirRemoto ?? vi.fn().mockResolvedValue({ versionNueva: 'v-nueva' });
     const leerImagen = opciones.leerImagen ?? vi.fn().mockResolvedValue({
@@ -109,8 +109,8 @@ describe('SincronizarUseCase', () => {
 
     const resultado = await caso.sincronizar();
 
-    expect(resultado).toEqual({ tipo: 'completada', accion: 'descargar' });
-    expect(importar).toHaveBeenCalledWith(DATOS_VACIOS, expect.any(Function));
+    expect(resultado).toEqual({ tipo: 'completada', accion: 'descargar', imagenesOmitidas: 0 });
+    expect(importar).toHaveBeenCalledWith(DATOS_VACIOS, expect.any(Function), true);
     await importar.mock.calls[0][1]('imagenes/img-1.json');
     expect(leerImagen).toHaveBeenCalledWith('imagenes/img-1.json');
     expect(actualizarUltimaVersionSincronizada).toHaveBeenCalledWith('v-2');
@@ -168,9 +168,10 @@ describe('SincronizarUseCase', () => {
   it('resuelve conservar_remoto aplicando los datos y su versión localmente', async () => {
     const { caso, importar, actualizarUltimaVersionSincronizada } = configurar({ ajustes: ajustes() });
 
-    await caso.resolverConflicto('conservar_remoto', DATOS_VACIOS, 'v-remota');
+    const resultado = await caso.resolverConflicto('conservar_remoto', DATOS_VACIOS, 'v-remota');
 
-    expect(importar).toHaveBeenCalledWith(DATOS_VACIOS, expect.any(Function));
+    expect(resultado).toEqual({ imagenesOmitidas: 0 });
+    expect(importar).toHaveBeenCalledWith(DATOS_VACIOS, expect.any(Function), true);
     expect(actualizarUltimaVersionSincronizada).toHaveBeenCalledWith('v-remota');
   });
 

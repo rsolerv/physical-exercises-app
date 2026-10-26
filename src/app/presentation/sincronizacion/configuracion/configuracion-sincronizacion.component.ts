@@ -14,6 +14,7 @@ import { ConflictoSincronizacionEstadoService } from '../conflicto-sincronizacio
 import { CabeceraPaginaComponent } from '../../compartido/ui/cabecera-pagina/cabecera-pagina.component';
 import { MensajeFeedbackService } from '../../compartido/ui/mensaje-feedback.service';
 import { ErrorAutorizacionGoogle, ErrorConflictoRemoto } from '../../../domain/errores/errores-dominio';
+import { textoImagenesOmitidas } from '../texto-imagenes-omitidas';
 
 interface ModeloCredencialesGitHub {
   token: string;
@@ -225,7 +226,14 @@ export class ConfiguracionSincronizacionComponent {
           : resultado.accion === 'descargar'
             ? `Datos descargados de ${this.metodoActivoNombre}.`
             : 'Ya estaba todo sincronizado.';
-      this.mensajeFeedback.mostrarExito(`Sincronización completada. ${accion}`);
+      const omitidas = resultado.imagenesOmitidas ?? 0;
+      if (omitidas > 0) {
+        this.mensajeFeedback.mostrarError(
+          `Sincronización completada. ${accion} ${textoImagenesOmitidas(omitidas)}`
+        );
+      } else {
+        this.mensajeFeedback.mostrarExito(`Sincronización completada. ${accion}`);
+      }
     } catch (error) {
       if (error instanceof ErrorAutorizacionGoogle && this.metodoGoogleActivo) {
         this.requiereReconectar.set(true);

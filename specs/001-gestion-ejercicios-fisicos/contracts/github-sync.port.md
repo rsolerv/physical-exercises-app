@@ -10,8 +10,8 @@ interface GitHubSyncPort {
   leerRemoto(credenciales: CredencialesGitHub): Promise<LecturaRemota>;
   // Descarga datos.json del repositorio y su SHA actual.
   // Devuelve { existe: false } si el repositorio aún no contiene datos.
-  // Si la API omite el contenido codificado (por ejemplo, por el tamaño del
-  // fichero), vuelve a solicitarlo en formato raw.
+  // Si la API de contenidos omite el contenido codificado (ficheros de más de
+  // 1 MB), lo descarga por la API de blobs usando el SHA del fichero.
   // Las imágenes no se descargan aquí; se piden bajo demanda con leerImagen(),
   // o todas juntas al aplicar una descarga completa (ver exportar-importar-datos.use-case).
 
@@ -28,9 +28,10 @@ interface GitHubSyncPort {
   // al crear uno nuevo.
 
   leerImagen(credenciales: CredencialesGitHub, ruta: string): Promise<ImagenArchivoJSON>;
-  // Descarga y parsea un documento imagenes/<id>.json; usa formato raw si la
-  // respuesta de metadatos no incluye el contenido codificado.
-  // el límite de 5 MB por imagen deja el JSON resultante en torno a 6,7 MB en base64).
+  // Descarga y parsea un documento imagenes/<id>.json; usa la API de blobs si la
+  // respuesta de metadatos no incluye el contenido codificado (más de 1 MB).
+  // Lanza ErrorValidacion si el documento no tiene el formato de ImagenArchivoJSON.
+  // El límite de 5 MB por imagen deja el JSON resultante en torno a 6,7 MB en base64).
 }
 
 type LecturaRemota =

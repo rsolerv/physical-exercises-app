@@ -277,6 +277,87 @@ describe('ExportarImportarDatosUseCase', () => {
     expect(eliminar).not.toHaveBeenCalled();
   });
 
+  it('con omitirImagenesInvalidas importa el resto y omite solo la imagen con documento inválido', async () => {
+    const crearEjercicio = vi.fn().mockResolvedValue(ejercicio());
+    const resolverImagen = vi
+      .fn<(ruta: string) => Promise<ImagenArchivoJSON>>()
+      .mockRejectedValueOnce(new ErrorValidacion('Documento inválido'))
+      .mockResolvedValueOnce({ id: 'img-2', nombreArchivo: 'b.png', tipoMime: 'image/png', contenidoBase64: 'ABC123' });
+    const caso = configurar({ ejercicios: { crear: crearEjercicio } });
+    const datos = {
+      version: 1,
+      ejercicios: [{
+        id: 'ej-1',
+        nombre: 'Sentadilla',
+        descripcion: 'desc',
+        categoriaIds: ['cat-1'],
+        enlaces: [],
+        imagenes: [
+          { id: 'img-1', tipo: 'archivo' as const, ruta: 'imagenes/img-1.json' },
+          { id: 'img-2', tipo: 'archivo' as const, ruta: 'imagenes/img-2.json' },
+        ],
+      }],
+      categorias: [{ id: 'cat-1', nombre: 'Piernas' }],
+      planificaciones: [],
+      progresoDiario: [],
+    };
+
+    const resultado = await caso.importar(datos, resolverImagen, true);
+
+    expect(resultado).toEqual({ imagenesOmitidas: 1 });
+    expect(crearEjercicio).toHaveBeenCalledWith(
+      expect.objectContaining({
+        imagenes: [{ id: 'img-2', tipo: 'archivo', contenidoBase64: 'ABC123', tipoMime: 'image/png', nombreArchivo: 'b.png' }],
+      })
+    );
+  });
+
+  it('sin omitirImagenesInvalidas una imagen inválida sigue abortando la importación', async () => {
+    const eliminar = vi.fn();
+    const resolverImagen = vi.fn().mockRejectedValue(new ErrorValidacion('Documento inválido'));
+    const caso = configurar({ ejercicios: { eliminar } });
+    const datos = {
+      version: 1,
+      ejercicios: [{
+        id: 'ej-1',
+        nombre: 'Sentadilla',
+        descripcion: 'desc',
+        categoriaIds: ['cat-1'],
+        enlaces: [],
+        imagenes: [{ id: 'img-1', tipo: 'archivo' as const, ruta: 'imagenes/img-1.json' }],
+      }],
+      categorias: [{ id: 'cat-1', nombre: 'Piernas' }],
+      planificaciones: [],
+      progresoDiario: [],
+    };
+
+    await expect(caso.importar(datos, resolverImagen)).rejects.toThrow('Documento inválido');
+    expect(eliminar).not.toHaveBeenCalled();
+  });
+
+  it('con omitirImagenesInvalidas los errores que no son de validación (p. ej. red) siguen abortando', async () => {
+    const eliminar = vi.fn();
+    const resolverImagen = vi.fn().mockRejectedValue(new Error('Fallo de red'));
+    const caso = configurar({ ejercicios: { eliminar } });
+    const datos = {
+      version: 1,
+      ejercicios: [{
+        id: 'ej-1',
+        nombre: 'Sentadilla',
+        descripcion: 'desc',
+        categoriaIds: ['cat-1'],
+        enlaces: [],
+        imagenes: [{ id: 'img-1', tipo: 'archivo' as const, ruta: 'imagenes/img-1.json' }],
+      }],
+      categorias: [{ id: 'cat-1', nombre: 'Piernas' }],
+      planificaciones: [],
+      progresoDiario: [],
+    };
+
+    await expect(caso.importar(datos, resolverImagen, true)).rejects.toThrow('Fallo de red');
+    expect(eliminar).not.toHaveBeenCalled();
+  });
+
   it('rechaza imágenes de archivo mayores de 5 MB antes de borrar datos locales', async () => {
     const listarTodos = vi.fn().mockResolvedValue([ejercicio({ id: 'local' })]);
     const eliminar = vi.fn();
