@@ -63,6 +63,7 @@ Abre la URL que muestra `npm start`. El primer arranque debe cargar el catálogo
 2. Configura el repositorio y el token. Comprueba que el token permanece oculto, que los errores de validación aparecen junto a sus campos y que la configuración queda plegada en la siguiente visita.
 3. Completa una sincronización correcta, cierra y vuelve a abrir la pantalla. **Esperado**: se muestra la fecha de la última sincronización. Provoca después un error o conflicto y comprueba que la fecha de la última operación correcta no se reemplaza.
 4. Sincroniza con dos navegadores y comprueba los casos existentes de primera sincronización, cambios locales, cambios remotos, conflicto y recuperación tras un fallo. Los datos locales deben conservarse ante errores.
+5. En un repositorio de prueba, referencia en `datos.json` varias imágenes válidas y una imagen de archivo cuyo documento `imagenes/<id>.json` no exista o no tenga el formato esperado. Descarga los datos o elige conservar los datos remotos al resolver un conflicto. **Esperado**: se importan los datos y las imágenes válidas, se omite solo la imagen inválida y se informa del número de imágenes omitidas. Repite provocando un error de conexión al leer una imagen; **esperado**: la importación se cancela y los datos locales permanecen intactos.
 
 ## US6 — Navegación, estados y accesibilidad
 
