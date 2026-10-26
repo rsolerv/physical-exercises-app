@@ -1,33 +1,28 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 2.1.1 → 2.2.0
-Rationale: Se restauran las secciones "Arquitectura y Stack Tecnológico" y
-"Calidad de Código y Pruebas", eliminadas en la versión 2.0.0, a petición
-explícita del usuario. Vuelven a ser gobernanza obligatoria del proyecto
-con el mismo contenido que tenían antes de su eliminación. Al añadir de
-nuevo contenido normativo, corresponde un bump MINOR.
+Version change: 2.3.0 → 2.4.1
+Rationale: Se añade un principio obligatorio para que los cambios grandes
+de presentación se prototipen y revisen en Storybook antes de implementarlos
+(2.4.0, MINOR). La aprobación explícita del propietario actúa como puerta de
+calidad; las modificaciones visuales pequeñas quedan excluidas. En 2.4.1
+(PATCH) se aclara que el responsable de crear y presentar las historias es el
+agente `ux-ui-expert`, sin cambiar el alcance del principio.
 
-Modified principles: ninguno (los cuatro Core Principles no cambian)
+Added principles:
+- V. Prototipo y aprobación de cambios grandes de presentación.
 
-Added sections (restauradas):
-- Arquitectura y Stack Tecnológico (Angular 21+, SQLite WASM, export/import
-  JSON vía GitHub API, GitHub Pages, ausencia de backend, Angular Material,
-  arquitectura en capas Domain/Application/Infrastructure/Presentation)
-- Calidad de Código y Pruebas (SOLID, cero errores de ESLint, Vitest,
-  cobertura 80%/100%, test-first)
-
+Modified principles: ninguno
+Added sections: ninguna
 Removed sections: ninguna
 
-Other changes:
-- Se restaura en Governance la frase sobre justificar por escrito la
-  complejidad añadida a la arquitectura en capas.
+Documentación alineada fuera de la constitución:
+- `.github/instructions/ux-ui.instructions.md` (procedimiento y responsable).
+- `.specify/templates/tasks-template.md` (bloque de tareas con aprobación).
+- `.github/agents/ux-ui-expert.agent.md` (puerta de aprobación y documentos SDD).
 
-Templates requiring follow-up: none checked automatically by this command
-(this command only updates the constitution itself; dependent templates read
-it at runtime per the scope guard).
-
-Deferred / TODO placeholders: none left unresolved.
+TODO(RATIFICATION_DATE): la fecha de adopción original no consta y requiere
+confirmación del propietario.
 -->
 
 # PhysicalExercises Constitution
@@ -44,8 +39,8 @@ latinoamericano) ni anglicismos de interfaz evitables. Los únicos términos en
 otro idioma permitidos son identificadores técnicos sin traducción estándar
 (nombres de librerías, siglas de estándares, etc.) que no sean visibles para
 el usuario final.
-**Rationale**: El producto tiene un único mercado objetivo (el usuario de
-GitHub propietario de la app, hispanohablante de España); la consistencia
+**Rationale**: El producto tiene un único mercado objetivo (personas
+hispanohablantes de España, sin conocimientos técnicos necesarios); la consistencia
 lingüística evita confusión y mantiene coherencia de marca y experiencia.
 
 ### II. Cero Alcance Fantasma (NON-NEGOTIABLE)
@@ -87,6 +82,28 @@ cada acción realizada.
 entrenamiento desde cualquier dispositivo disponible en el momento, sin
 soporte técnico de terceros.
 
+### V. Prototipo y Aprobación de Cambios Grandes de Presentación
+
+Antes de implementar en la aplicación un cambio grande de presentación,
+DEBEN prepararse historias navegables en Storybook que reflejen las pantallas,
+estados y tamaños de pantalla afectados. El agente `ux-ui-expert` (definido en
+`.github/agents/ux-ui-expert.agent.md`) DEBE crear esas historias a partir del
+diseño SDD de la feature (spec, plan, research y contratos) y de las normas de
+`.github/instructions/ux-ui.instructions.md`, presentar el prototipo al
+propietario y pedirle explícitamente aprobación o indicaciones de fallos y
+mejoras. No DEBE comenzar la implementación de presentación hasta recibir
+aprobación explícita. Si se indican cambios, DEBE actualizarse el prototipo y
+solicitarse aprobación de nuevo.
+
+Se consideran cambios grandes la creación de una pantalla o flujo nuevo, el
+rediseño de una pantalla existente o un cambio que altere de forma sustancial
+la estructura visual o navegación. No requieren esta aprobación los ajustes
+pequeños de espaciado, color, texto, accesibilidad ni correcciones puntuales
+que no alteren la estructura o el flujo.
+
+**Rationale**: Permite validar la dirección visual con el propietario antes
+de invertir en implementación, sin ralentizar correcciones y mejoras menores.
+
 ## Arquitectura y Stack Tecnológico
 
 - **Framework de frontend**: Angular 21 o superior, obligatorio.
@@ -96,9 +113,21 @@ soporte técnico de terceros.
   fuera del navegador.
 - **Sincronización de datos**: los datos generados por el usuario en SQLite
 
-  DEBEN poder exportarse e importarse en formato JSON contra GitHub mediante
-  la API de GitHub, como único mecanismo de copia de seguridad y
-  sincronización entre dispositivos.
+  DEBEN poder exportarse e importarse en formato JSON, y la aplicación DEBE
+  seguir siendo plenamente utilizable sin ninguna cuenta (local-first). Los
+  únicos mecanismos permitidos de copia de seguridad y sincronización entre
+  dispositivos son:
+  - la API de GitHub (repositorio de datos del usuario);
+  - el espacio privado de la aplicación en la cuenta de Google de la persona;
+  - la copia manual mediante exportación e importación de un fichero JSON.
+
+  Solo PUEDE haber un destino de sincronización activo a la vez. Toda
+  comunicación con un proveedor DEBE hacerse directamente desde el navegador,
+  sin servidor intermediario. La autorización DEBE usar flujos que no
+  requieran secretos de cliente; en el código solo pueden existir
+  identificadores públicos de aplicación, nunca secretos. Cada persona
+  sincroniza únicamente sus propios datos, sin datos compartidos entre
+  personas. Añadir un destino nuevo exige enmendar esta constitución.
 - **Despliegue**: la aplicación se publica exclusivamente en GitHub Pages.
 - **Backend**: no existe backend ni servidor de aplicación propio; toda la
 
@@ -115,7 +144,8 @@ soporte técnico de terceros.
   - **Application**: orquestación de casos de uso y puertos (interfaces) de
     entrada/salida hacia infraestructura.
   - **Infrastructure**: implementaciones concretas (acceso a SQLite WASM,
-    cliente de GitHub API, adaptadores de almacenamiento).
+    clientes de los proveedores de sincronización autorizados, adaptadores
+    de almacenamiento).
   - **Presentation**: componentes Angular, Angular Material, enrutamiento y
     estado de interfaz de usuario.
 
@@ -160,4 +190,4 @@ principios antes de pasar a la fase de implementación. Cualquier
 complejidad añadida a la arquitectura de capas definida DEBE justificarse
 por escrito en el plan correspondiente.
 
-**Version**: 1.0.0
+**Version**: 2.4.1 | **Last Amended**: 2026-10-26

@@ -87,6 +87,14 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T010 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
 - [ ] T011 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
 
+### Storybook prototype and approval for User Story 1 (ONLY for large presentation changes)
+
+> **GATE (constitution principle V, see `.github/instructions/ux-ui.instructions.md`)**: applies only to a new screen or flow, a redesign, or a substantial change of visual structure or navigation. Omit this block for small tweaks. The `ux-ui-expert` agent (`.github/agents/ux-ui-expert.agent.md`) creates and presents the stories. Presentation tasks MUST NOT start until the owner explicitly approves.
+
+- [ ] T0XX [US1] Agent `ux-ui-expert`: create or update Storybook stories for the affected screens in src/stories/ from the feature's spec.md, plan.md, research.md and contracts/ (mobile, tablet and desktop; with data, empty, loading and error states)
+- [ ] T0XX [US1] Agent `ux-ui-expert`: present the prototype to the owner and request explicit approval or fixes/improvements; iterate until approved
+- [ ] T0XX [US1] Record the owner's approval before starting the presentation tasks below
+
 ### Implementation for User Story 1
 
 - [ ] T012 [P] [US1] Create [Entity1] model in src/models/[entity1].py
@@ -179,6 +187,7 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Within Each User Story
 
+- For large presentation changes, the Storybook prototype and the owner's explicit approval MUST be completed before any presentation (UI) task starts
 - Tests (if included) MUST be written and FAIL before implementation
 - Models before services
 - Services before endpoints
@@ -247,6 +256,7 @@ With multiple developers:
 - [Story] label maps task to specific user story for traceability
 - Each user story should be independently completable and testable
 - Verify tests fail before implementing
+- Large presentation changes require a Storybook prototype approved by the owner before implementing the UI; small changes do not
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence

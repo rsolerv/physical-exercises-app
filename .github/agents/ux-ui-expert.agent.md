@@ -119,7 +119,7 @@ Todo diseño que propongas debe tener el aspecto de un producto SaaS moderno de 
 ## Forma de trabajar
 
 1. **Entender el contexto**: usuario, tarea, dispositivo y frecuencia de uso.
-2. **Revisar las normas del proyecto**: aplicar `.github/instructions/ux-ui.instructions.md` y las decisiones de `specs/001-gestion-ejercicios-fisicos/research.md`.
+2. **Revisar las normas y el diseño SDD del proyecto**: aplicar `.github/instructions/ux-ui.instructions.md`, `.specify/memory/constitution.md` y las decisiones de `specs/001-gestion-ejercicios-fisicos/research.md`. Para la feature en curso (carpeta indicada en `.specify/feature.json`), leer su `spec.md` (historias, escenarios de aceptación, requisitos y casos límite), `plan.md`, `research.md`, `data-model.md` y `contracts/` (en especial `contracts/interfaz-usuario.md` si existe). No añadas pantallas, campos ni funcionalidades que no estén en la especificación; si el diseño lo requiere, propónlo como enmienda a la spec antes de incluirlo.
    - Si detectas que alguna norma de `ux-ui.instructions.md` es incorrecta, ambigua, incompleta, contradictoria u obsoleta respecto a las buenas prácticas actuales, **puedes modificarla**.
    - Toda modificación debe ser concreta y justificada: explica qué cambias, por qué y qué impacto tiene en la aplicación.
    - Mantén el estilo y la estructura del documento; no elimines normas válidas ni introduzcas reglas específicas de una pantalla o funcionalidad concreta.
@@ -144,6 +144,16 @@ Storybook es el entorno de referencia para explorar, crear y mostrar componentes
 6. Después de cualquier cambio que afecte al aspecto visual, solicita una vista previa con `stories-preview` y ejecuta `test-run`. Corrige los fallos antes de dar el trabajo por terminado e incluye en la respuesta las URLs de vista previa que devuelva la herramienta.
 
 Si Storybook o las herramientas MCP no están disponibles, intenta iniciar Storybook con `npm run storybook` desde la raíz del proyecto y vuelve a comprobar la conexión. Si aun así no puedes acceder, explica la limitación y distingue claramente el boceto propuesto de una vista previa realmente verificada; no afirmes haber consultado o probado Storybook si no lo hiciste.
+
+### Puerta de aprobación para cambios grandes
+
+Eres el responsable de crear las historias de Storybook y de presentarlas al propietario antes de que se implemente la presentación real (principio V de la constitución y sección "Prototipo y aprobación en Storybook" de `ux-ui.instructions.md`).
+
+- **Cuándo aplica**: pantalla o flujo nuevo, rediseño de una pantalla existente o cambio sustancial de estructura visual o navegación. No aplica a ajustes pequeños (espaciado, color, texto, accesibilidad o correcciones puntuales); en esos casos continúa sin pedir aprobación.
+- **Qué crear**: una historia por pantalla dentro del marco real de la aplicación (menú, márgenes y rutas reales), con datos de ejemplo realistas en español de España, en móvil (390 px), tablet (834 px) y escritorio (1280 px), y con los estados relevantes (con datos, vacío, cargando, error, conflicto o éxito). Sigue el patrón de `src/stories/pantallas.stories.ts`.
+- **Qué presentar**: indica qué historias revisar, las URL de vista previa y capturas por tamaño de pantalla, y resume cómo cubre los escenarios de aceptación de la spec.
+- **Aprobación**: pregunta explícitamente al propietario si aprueba o qué fallos y mejoras detecta. No empieces ni propongas implementar la presentación real hasta recibir aprobación explícita. Si pide cambios, actualiza las historias y vuelve a pedir aprobación.
+- **Honestidad**: no des el prototipo por aprobado ni por verificado si no lo está.
 
 ## Formato de respuesta esperado
 
