@@ -9,7 +9,11 @@ Se aplican sin cambios el sistema visual, la navegación, los tamaños de refere
 
 ## Estructura de la pantalla
 
-Una sola ruta (`/sincronizacion`, se mantiene `/sincronizacion/conflicto`) con un título de página y tres bloques, de arriba abajo:
+Una sola ruta (`/sincronizacion`, se mantiene `/sincronizacion/conflicto`) con un título de página, una barra común de acción y tres bloques, de arriba abajo:
+
+| Elemento | Contenido |
+|---|---|
+| Acción común de sincronización | Fuera de las tarjetas de proveedor. Muestra el método activo y "Sincronizar ahora" o "Reintentar", con progreso y errores compartidos. |
 
 | Bloque | Contenido |
 |---|---|
@@ -19,22 +23,22 @@ Una sola ruta (`/sincronizacion`, se mantiene `/sincronizacion/conflicto`) con u
 
 | Dispositivo | Disposición |
 |---|---|
-| Móvil (≤599 px) | Una columna; el estado y "Sincronizar ahora" quedan visibles sin desplazarse; controles de al menos 48 × 48 px |
+| Móvil (≤599 px) | Una columna; la acción común y el estado quedan visibles sin desplazarse; controles de al menos 48 × 48 px |
 | Tablet (768–1024 px) | Una o dos columnas adaptativas; bloque 3 puede ir junto al bloque 1 |
 | Escritorio (≥1280 px) | Bloque 1 como tarjeta principal y bloques 2 y 3 en columnas o secciones contiguas, sin ancho máximo fijo |
 
 ## Estados del bloque principal
 
-Un solo método está activo (Google o GitHub). Estados comunes a ambos y casos específicos:
+Un solo método está activo (Google o GitHub). La acción de sincronización se presenta en la barra común, fuera del bloque de Google, identificando el método activo. Estados comunes a ambos y casos específicos:
 
-| Estado | Qué muestra | Acción principal | Otras acciones |
+| Estado | Qué muestra | Acción en la barra común | Otras acciones |
 |---|---|---|---|
-| Sin configurar | Invitación a conectar y texto explicativo | "Conectar con Google" | "Opciones avanzadas" desplegable |
+| Sin configurar | Invitación a conectar y texto explicativo | No se muestra | "Conectar con Google"; "Opciones avanzadas" desplegable |
 | Conectando | Indicador de progreso | — (deshabilitada) | — |
-| Conectado, listo | Cuenta (correo), estado "Conectado", última sincronización si existe | "Sincronizar ahora" | "Desconectar cuenta" |
+| Conectado, listo | Método activo, cuenta (correo) si es Google, estado y última sincronización si existe | "Sincronizar ahora" | "Desconectar cuenta" para Google |
 | Sincronizando | Indicador de progreso y estado "Sincronizando…" | — (deshabilitada, evita pulsaciones repetidas) | — |
-| Sincronizado | Estado "Sincronizado", fecha y hora, confirmación visible | "Sincronizar ahora" | "Desconectar cuenta" |
-| Error de conexión | Mensaje claro junto a la acción, con motivo comprensible | "Reintentar" | — |
+| Sincronizado | Estado "Sincronizado", fecha y hora, confirmación visible | "Sincronizar ahora" | "Desconectar cuenta" para Google |
+| Error de conexión | Mensaje claro junto a la acción común, con motivo comprensible | "Reintentar" | — |
 | Requiere reconectar | Aviso de que la conexión caducó o se retiró | "Volver a conectar" (al conectar con éxito, la sincronización pendiente continúa automáticamente, sin volver a pulsar "Sincronizar ahora") | — |
 | Conflicto | Aviso con acceso a la pantalla de resolución | "Resolver conflicto" | — |
 | Confirmar desconexión | Mensaje en línea (sin diálogo modal) | "Desconectar" | "Cancelar" |

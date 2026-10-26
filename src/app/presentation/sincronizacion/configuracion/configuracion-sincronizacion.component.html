@@ -13,6 +13,24 @@
     </div>
   } @else {
     <div class="configuracion-sincronizacion__contenido">
+      @if (hayMetodoActivo && !requiereReconectar()) {
+        <section class="configuracion-sincronizacion__sincronizacion-global" aria-label="Sincronización activa">
+          <div>
+            <strong>Método activo: {{ metodoActivoNombre }}</strong>
+            @if (sincronizando()) {
+              <p role="status" aria-live="polite">Sincronizando tus datos…</p>
+            }
+            @if (mensajeError(); as error) {
+              <p class="configuracion-sincronizacion__error" role="alert">{{ error }}</p>
+            }
+          </div>
+          <button mat-flat-button color="primary" type="button" [disabled]="sincronizando()" (click)="sincronizarAhora()">
+            @if (sincronizando()) { <mat-spinner diameter="18" /> } @else { <mat-icon>sync</mat-icon> }
+            {{ resultadoSincronizacion() === 'error' ? 'Reintentar' : 'Sincronizar ahora' }}
+          </button>
+        </section>
+      }
+
       <section class="configuracion-sincronizacion__tarjeta configuracion-sincronizacion__tarjeta--principal" aria-label="Sincronización con Google">
         <div class="configuracion-sincronizacion__encabezado">
           <div class="configuracion-sincronizacion__icono-google" aria-hidden="true">
@@ -31,10 +49,6 @@
           Si Google muestra un aviso de seguridad sobre esta aplicación, es normal mientras no esté verificada:
           pulsa «Configuración avanzada» y después «Ir a la aplicación».
         </p>
-        @if (mensajeError(); as error) {
-          <p class="configuracion-sincronizacion__error" role="alert">{{ error }}</p>
-        }
-
         @if (metodoGitHubActivo) {
           <div class="configuracion-sincronizacion__resumen" role="status">
             <strong>{{ estadoVisible() }}</strong>
@@ -47,21 +61,14 @@
           <span id="aviso-google-github" class="configuracion-sincronizacion__aviso">
             Olvida primero la configuración de GitHub en las opciones avanzadas.
           </span>
-          @if (sincronizando()) {
-            <div class="configuracion-sincronizacion__progreso" role="status" aria-live="polite">
-              <mat-spinner diameter="20" />
-              <span>Sincronizando tus datos…</span>
-            </div>
-          }
-          <button mat-flat-button color="primary" type="button" [disabled]="sincronizando()" (click)="sincronizarAhora()">
-            @if (sincronizando()) { <mat-spinner diameter="18" /> } @else { <mat-icon>sync</mat-icon> }
-            {{ resultadoSincronizacion() === 'error' ? 'Reintentar' : 'Sincronizar ahora' }}
-          </button>
         } @else if (!cuentaGoogle) {
           <div class="configuracion-sincronizacion__resumen" role="status">
             <strong>Sin configurar</strong>
             <span>Conecta tu cuenta para sincronizar tus datos entre dispositivos.</span>
           </div>
+          @if (mensajeError(); as error) {
+            <p class="configuracion-sincronizacion__error" role="alert">{{ error }}</p>
+          }
           <button mat-flat-button color="primary" type="button" [disabled]="conectando()" (click)="conectarGoogle()">
             @if (conectando()) {
               <mat-spinner diameter="18" />
@@ -101,17 +108,7 @@
               Volver a conectar
             </button>
           } @else {
-            @if (sincronizando()) {
-              <div class="configuracion-sincronizacion__progreso" role="status" aria-live="polite">
-                <mat-spinner diameter="20" />
-                <span>Sincronizando tus datos…</span>
-              </div>
-            }
             <div class="configuracion-sincronizacion__acciones">
-              <button mat-flat-button color="primary" type="button" [disabled]="sincronizando()" (click)="sincronizarAhora()">
-                @if (sincronizando()) { <mat-spinner diameter="18" /> } @else { <mat-icon>sync</mat-icon> }
-                {{ resultadoSincronizacion() === 'error' ? 'Reintentar' : 'Sincronizar ahora' }}
-              </button>
               <button mat-stroked-button type="button" [disabled]="sincronizando()" (click)="confirmandoDesconexion.set(true)">
                 Desconectar cuenta
               </button>

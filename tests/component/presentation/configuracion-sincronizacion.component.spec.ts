@@ -188,11 +188,36 @@ describe('ConfiguracionSincronizacionComponent', () => {
     configurar({ ajustes: ajustes({ tokenGitHub: 'token-x', repositorioGitHub: 'owner/data' }), sincronizar });
     const fixture = await crearComponente();
 
+    const raiz = fixture.nativeElement as HTMLElement;
+    const accionesSincronizacion = raiz.querySelector('.configuracion-sincronizacion__sincronizacion-global');
+    const tarjetaGoogle = raiz.querySelector('.configuracion-sincronizacion__tarjeta--principal');
+    expect(accionesSincronizacion?.textContent).toContain('Método activo: GitHub');
+    expect(tarjetaGoogle?.contains(accionesSincronizacion)).toBe(false);
+
     await fixture.componentInstance.sincronizarAhora();
     fixture.detectChanges();
 
     expect(sincronizar).toHaveBeenCalled();
-    expect(mostrarExito).toHaveBeenCalledWith(expect.stringMatching(/sincroniza/i));
+    expect(mostrarExito).toHaveBeenCalledWith('Sincronización completada. Datos subidos a GitHub.');
+  });
+
+  it('muestra la acción común de sincronización fuera del panel de Google cuando Google está activo', async () => {
+    configurar({
+      ajustes: ajustes({
+        metodoSincronizacion: 'google',
+        cuentaGoogle: 'raquel@example.com',
+      }),
+    });
+    const fixture = await crearComponente();
+    const raiz = fixture.nativeElement as HTMLElement;
+    const accionesSincronizacion = raiz.querySelector('.configuracion-sincronizacion__sincronizacion-global');
+    const tarjetaGoogle = raiz.querySelector('.configuracion-sincronizacion__tarjeta--principal');
+    const botonSincronizar = accionesSincronizacion?.querySelector('button');
+
+    expect(accionesSincronizacion?.textContent).toContain('Método activo: Google');
+    expect(accionesSincronizacion?.textContent).toContain('Sincronizar ahora');
+    expect(tarjetaGoogle?.contains(botonSincronizar ?? null)).toBe(false);
+    expect(tarjetaGoogle?.querySelector('button')?.textContent).not.toContain('Sincronizar ahora');
   });
 
   it('cuando el caso de uso devuelve un conflicto, navega a la pantalla de resolución', async () => {

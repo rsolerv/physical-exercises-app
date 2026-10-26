@@ -20,12 +20,6 @@ interface ModeloCredencialesGitHub {
   repositorio: string;
 }
 
-const ETIQUETAS_ACCION: Record<'subir' | 'descargar' | 'nada', string> = {
-  subir: 'Datos subidos a GitHub.',
-  descargar: 'Datos descargados de GitHub.',
-  nada: 'Ya estaba todo sincronizado.',
-};
-
 /**
  * Configuración y ejecución de la sincronización con GitHub (Historia de
  * Usuario 5): guarda el token (oculto) y el repositorio privado de datos,
@@ -99,6 +93,10 @@ export class ConfiguracionSincronizacionComponent {
 
   protected get hayMetodoActivo(): boolean {
     return this.metodoGoogleActivo || this.metodoGitHubActivo;
+  }
+
+  protected get metodoActivoNombre(): string {
+    return this.metodoGoogleActivo ? 'Google' : 'GitHub';
   }
 
   protected get esConfiguracionGitHubPlegada(): boolean {
@@ -221,7 +219,13 @@ export class ConfiguracionSincronizacionComponent {
       }
       this.resultadoSincronizacion.set('sincronizado');
       this.fechaSincronizacionTemporal.set(new Date());
-      this.mensajeFeedback.mostrarExito(`Sincronización completada. ${ETIQUETAS_ACCION[resultado.accion]}`);
+      const accion =
+        resultado.accion === 'subir'
+          ? `Datos subidos a ${this.metodoActivoNombre}.`
+          : resultado.accion === 'descargar'
+            ? `Datos descargados de ${this.metodoActivoNombre}.`
+            : 'Ya estaba todo sincronizado.';
+      this.mensajeFeedback.mostrarExito(`Sincronización completada. ${accion}`);
     } catch (error) {
       if (error instanceof ErrorAutorizacionGoogle && this.metodoGoogleActivo) {
         this.requiereReconectar.set(true);
