@@ -69,7 +69,7 @@ Hechas con una página de prueba mínima. Cada resultado se anota en [research.m
 2. Pulsa "Desconectar cuenta". **Esperado**: confirmación en línea; al confirmar vuelve a verse "Conectar con Google", los datos locales siguen y, al reconectar la misma cuenta, los datos guardados en Google siguen ahí.
 3. Retira el acceso de la aplicación desde la configuración de tu cuenta de Google y pulsa "Sincronizar ahora". **Esperado**: aviso comprensible y "Volver a conectar"; tras reconectar (como máximo 2 acciones desde el mensaje), la sincronización se completa sola sin perder datos. Repite dejando que caduque la conexión (más de una hora abierta).
 4. Desconecta y conecta una segunda cuenta de Google. **Esperado**: la primera sincronización aplica la regla de primera sincronización y los datos de la primera cuenta no cambian.
-5. Con GitHub configurado y funcionando, abre la pantalla. **Esperado**: GitHub es el método activo y sigue funcionando como antes. Intenta conectar Google: se pide olvidar antes el token de GitHub. Olvida el token y conecta Google.
+5. Con GitHub configurado y funcionando, abre la pantalla. **Esperado**: GitHub es el método activo y sigue funcionando como antes; "Sincronizar ahora" aparece en la acción común, fuera de la tarjeta de Google, e indica GitHub como método activo. Intenta conectar Google: se pide olvidar antes el token de GitHub. Olvida el token y conecta Google.
 
 ## US4 — Copia manual
 
