@@ -53,6 +53,25 @@ describe('GithubSyncAdapter', () => {
     expect(resultado).toEqual({ existe: true, datos: DATOS_VACIOS, sha: 'sha-1' });
   });
 
+  it('leerRemoto() recupera datos.json en formato raw cuando GitHub omite su contenido codificado', async () => {
+    const promesa = adapter.leerRemoto(CREDENCIALES);
+
+    const respuestaMetadatos = httpMock.expectOne(
+      'https://api.github.com/repos/owner/data-physical-exercises/contents/datos.json'
+    );
+    respuestaMetadatos.flush({ content: '', sha: 'sha-grande' });
+    await flushMicrotareas();
+
+    const respuestaRaw = httpMock.expectOne(
+      'https://api.github.com/repos/owner/data-physical-exercises/contents/datos.json'
+    );
+    expect(respuestaRaw.request.responseType).toBe('text');
+    expect(respuestaRaw.request.headers.get('Accept')).toBe('application/vnd.github.raw+json');
+    respuestaRaw.flush(JSON.stringify(DATOS_VACIOS));
+
+    await expect(promesa).resolves.toEqual({ existe: true, datos: DATOS_VACIOS, sha: 'sha-grande' });
+  });
+
   it('leerRemoto() devuelve { existe: false } cuando el repositorio no tiene datos.json todavía', async () => {
     const promesa = adapter.leerRemoto(CREDENCIALES);
 
@@ -124,6 +143,25 @@ describe('GithubSyncAdapter', () => {
 
     const resultado = await promesa;
     expect(resultado).toEqual(imagen);
+  });
+
+  it('leerImagen() recupera una imagen en formato raw cuando GitHub omite su contenido codificado', async () => {
+    const imagen: ImagenArchivoJSON = { id: 'img-1', nombreArchivo: 'foto.png', tipoMime: 'image/png', contenidoBase64: 'QUJD' };
+    const promesa = adapter.leerImagen(CREDENCIALES, 'imagenes/img-1.json');
+
+    const respuestaMetadatos = httpMock.expectOne(
+      'https://api.github.com/repos/owner/data-physical-exercises/contents/imagenes/img-1.json'
+    );
+    respuestaMetadatos.flush({ content: '', sha: 'sha-imagen' });
+    await flushMicrotareas();
+
+    const respuestaRaw = httpMock.expectOne(
+      'https://api.github.com/repos/owner/data-physical-exercises/contents/imagenes/img-1.json'
+    );
+    expect(respuestaRaw.request.responseType).toBe('text');
+    respuestaRaw.flush(JSON.stringify(imagen));
+
+    await expect(promesa).resolves.toEqual(imagen);
   });
 
   it('lanza ErrorConflictoRemoto si el SHA remoto cambió al escribir', async () => {

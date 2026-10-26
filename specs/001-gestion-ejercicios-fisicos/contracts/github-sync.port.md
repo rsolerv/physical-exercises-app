@@ -1,5 +1,6 @@
 # Contrato: GitHubSyncPort
 
+
 **Capa que lo define**: Application (puerto) · **Capa que lo implementa**: Infrastructure (cliente HTTP de la API de contenidos de GitHub)
 
 El puerto solo transporta datos (leer/escribir en el repositorio). La decisión de qué hacer (subir, descargar o pedir al usuario que elija) la toma el caso de uso puro de dominio `decidir-accion-sincronizacion`, y la orquesta el caso de uso de Application `sincronizar-github`.
@@ -9,6 +10,8 @@ interface GitHubSyncPort {
   leerRemoto(credenciales: CredencialesGitHub): Promise<LecturaRemota>;
   // Descarga datos.json del repositorio y su SHA actual.
   // Devuelve { existe: false } si el repositorio aún no contiene datos.
+  // Si la API omite el contenido codificado (por ejemplo, por el tamaño del
+  // fichero), vuelve a solicitarlo en formato raw.
   // Las imágenes no se descargan aquí; se piden bajo demanda con leerImagen(),
   // o todas juntas al aplicar una descarga completa (ver exportar-importar-datos.use-case).
 
@@ -25,7 +28,8 @@ interface GitHubSyncPort {
   // al crear uno nuevo.
 
   leerImagen(credenciales: CredencialesGitHub, ruta: string): Promise<ImagenArchivoJSON>;
-  // Descarga y parsea un documento imagenes/<id>.json (formato "raw" de la API;
+  // Descarga y parsea un documento imagenes/<id>.json; usa formato raw si la
+  // respuesta de metadatos no incluye el contenido codificado.
   // el límite de 5 MB por imagen deja el JSON resultante en torno a 6,7 MB en base64).
 }
 

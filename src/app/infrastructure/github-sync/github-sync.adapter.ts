@@ -17,7 +17,7 @@ import {
 const API_BASE = 'https://api.github.com/repos';
 
 interface ContenidoGitHub {
-  content: string;
+  content?: string;
   sha: string;
 }
 
@@ -35,6 +35,11 @@ function desdeBase64(base64: string): string {
   return decodeURIComponent(escape(atob(base64.replace(/\n/g, ''))));
 }
 
+interface ContenidoRemoto {
+  texto: string;
+  sha: string;
+}
+
 /**
  * Adaptador de `GitHubSyncPort` contra la API de contenidos de GitHub
  * (contracts/github-sync.port.md). Los Observables de `HttpClient` quedan
@@ -47,13 +52,9 @@ export class GithubSyncAdapter implements GitHubSyncPort {
 
   async leerRemoto(credenciales: CredencialesGitHub): Promise<LecturaRemota> {
     try {
-      const respuesta = await firstValueFrom(
-        this.http.get<ContenidoGitHub>(this.urlContenido(credenciales, 'datos.json'), {
-          headers: this.cabeceras(credenciales),
-        })
-      );
-      const datos = JSON.parse(desdeBase64(respuesta.content)) as ExportacionJSON;
-      return { existe: true, datos, sha: respuesta.sha };
+      const contenido = await this.leerContenidoRemoto(credenciales, 'datos.json');
+      const datos = JSON.parse(contenido.texto) as ExportacionJSON;
+      return { existe: true, datos, sha: contenido.sha };
     } catch (error) {
       if (error instanceof HttpErrorResponse && error.status === 404) {
         return { existe: false };
@@ -79,13 +80,29 @@ export class GithubSyncAdapter implements GitHubSyncPort {
 
   async leerImagen(credenciales: CredencialesGitHub, ruta: string): Promise<ImagenArchivoJSON> {
     try {
-      const respuesta = await firstValueFrom(
-        this.http.get<ContenidoGitHub>(this.urlContenido(credenciales, ruta), { headers: this.cabeceras(credenciales) })
-      );
-      return JSON.parse(desdeBase64(respuesta.content)) as ImagenArchivoJSON;
+      const contenido = await this.leerContenidoRemoto(credenciales, ruta);
+      return JSON.parse(contenido.texto) as ImagenArchivoJSON;
     } catch (error) {
       throw this.traducirError(error);
     }
+  }
+
+  private async leerContenidoRemoto(credenciales: CredencialesGitHub, ruta: string): Promise<ContenidoRemoto> {
+    const url = this.urlContenido(credenciales, ruta);
+    const respuesta = await firstValueFrom(
+      this.http.get<ContenidoGitHub>(url, { headers: this.cabeceras(credenciales) })
+    );
+    if (respuesta.content?.trim()) {
+      return { texto: desdeBase64(respuesta.content), sha: respuesta.sha };
+    }
+
+    const texto = await firstValueFrom(
+      this.http.get(url, {
+        headers: this.cabeceras(credenciales, 'application/vnd.github.raw+json'),
+        responseType: 'text',
+      })
+    );
+    return { texto, sha: respuesta.sha };
   }
 
   private async obtenerShaRemoto(credenciales: CredencialesGitHub, ruta: string): Promise<string | null> {
@@ -131,10 +148,13 @@ export class GithubSyncAdapter implements GitHubSyncPort {
     return `${API_BASE}/${credenciales.repositorio}/contents/${ruta}`;
   }
 
-  private cabeceras(credenciales: CredencialesGitHub): HttpHeaders {
+  private cabeceras(
+    credenciales: CredencialesGitHub,
+    accept = 'application/vnd.github+json'
+  ): HttpHeaders {
     return new HttpHeaders({
       Authorization: `Bearer ${credenciales.tokenPAT}`,
-      Accept: 'application/vnd.github+json',
+      Accept: accept,
     });
   }
 
