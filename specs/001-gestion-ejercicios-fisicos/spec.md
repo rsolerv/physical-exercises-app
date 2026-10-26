@@ -4,6 +4,7 @@
 
 
 
+
 **Feature Branch**: `001-gestion-ejercicios-fisicos`
 
 **Created**: 2026-10-14
@@ -90,7 +91,7 @@ Como usuario quiero consultar el catálogo completo, buscar ejercicios por categ
 6. **Given** que una búsqueda no devuelve resultados, **When** el usuario consulta la lista, **Then** ve un estado vacío claro que indica que puede cambiar los criterios de búsqueda.
 7. **Given** que el usuario abre la búsqueda o la ficha de un ejercicio, **When** se muestra la pantalla, **Then** identifica su título y acción principal sin tener que desplazarse para encontrarlos.
 8. **Given** que el usuario busca ejercicios desde cualquier dispositivo, **When** selecciona un resultado, **Then** abre la ficha del ejercicio y puede regresar a "Buscar".
-9. **Given** que el usuario busca ejercicios desde cualquier dispositivo, **When** revisa un resultado, **Then** encuentra su nombre, una descripción legible y las categorías asociadas claramente separadas de la descripción, sin imagen, miniatura ni vista previa del ejercicio.
+9. **Given** que el usuario busca ejercicios desde cualquier dispositivo, **When** revisa un resultado, **Then** encuentra su nombre, una descripción legible y cada categoría asociada una sola vez, claramente separada de la descripción, sin imagen, miniatura ni vista previa del ejercicio.
 10. **Given** que el usuario consulta un ejercicio con imágenes o vídeos, **When** abre su ficha, **Then** los medios se muestran en proporciones coherentes, las imágenes conservan su contenido completo y el vídeo puede iniciarse desde una vista previa identificable.
 11. **Given** que un vídeo asociado no está disponible o una imagen no carga, **When** el usuario consulta la ficha, **Then** se informa de ese medio no disponible sin ocultar el resto de la información del ejercicio.
 12. **Given** que el usuario abre la ficha desde “Hoy”, “Planificación semanal” o “Buscar”, **When** activa “Volver”, **Then** regresa a la pantalla desde la que abrió el ejercicio; si no se conoce el contexto de navegación, regresa a “Buscar”.

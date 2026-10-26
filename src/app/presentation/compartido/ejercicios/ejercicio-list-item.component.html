@@ -7,8 +7,6 @@
   <span matListItemTitle>{{ ejercicio().nombre }}</span>
   <span matListItemLine class="busqueda-ejercicios__descripcion">{{ ejercicio().descripcion }}</span>
   <span matListItemLine class="busqueda-ejercicios__etiquetas">
-    @for (nombre of nombresCategorias(); track nombre) {
-      {{ nombresCategorias().join(', ') }}
-    }
+    {{ nombresCategorias().join(', ') }}
   </span>
 </a>
