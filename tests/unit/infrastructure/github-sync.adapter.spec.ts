@@ -8,6 +8,7 @@ import {
   ErrorAutenticacionGitHub,
   ErrorConflictoRemoto,
   ErrorRedSincronizacion,
+  ErrorValidacion,
 } from '../../../src/app/domain/errores/errores-dominio';
 import type { ExportacionJSON, ImagenArchivoJSON } from '../../../src/app/application/ports/github-sync.port';
 
@@ -162,6 +163,41 @@ describe('GithubSyncAdapter', () => {
     respuestaRaw.flush(JSON.stringify(imagen));
 
     await expect(promesa).resolves.toEqual(imagen);
+  });
+
+  it('leerImagen() decodifica la respuesta de contenidos de GitHub si el servidor no devuelve el raw esperado', async () => {
+    const imagen: ImagenArchivoJSON = { id: 'img-1', nombreArchivo: 'foto.png', tipoMime: 'image/png', contenidoBase64: 'QUJD' };
+    const promesa = adapter.leerImagen(CREDENCIALES, 'imagenes/img-1.json');
+
+    const respuestaMetadatos = httpMock.expectOne(
+      'https://api.github.com/repos/owner/data-physical-exercises/contents/imagenes/img-1.json'
+    );
+    respuestaMetadatos.flush({ content: '', sha: 'sha-imagen' });
+    await flushMicrotareas();
+
+    const respuestaFallback = httpMock.expectOne(
+      'https://api.github.com/repos/owner/data-physical-exercises/contents/imagenes/img-1.json'
+    );
+    respuestaFallback.flush(JSON.stringify({
+      content: aBase64(JSON.stringify(imagen)),
+      encoding: 'base64',
+      sha: 'sha-imagen',
+    }));
+
+    await expect(promesa).resolves.toEqual(imagen);
+  });
+
+  it('leerImagen() rechaza un documento remoto que no contiene contenidoBase64', async () => {
+    const promesa = adapter.leerImagen(CREDENCIALES, 'imagenes/img-1.json');
+    const peticion = httpMock.expectOne(
+      'https://api.github.com/repos/owner/data-physical-exercises/contents/imagenes/img-1.json'
+    );
+    peticion.flush({ content: aBase64(JSON.stringify({ id: 'img-1' })), sha: 'sha-imagen' });
+
+    await expect(promesa).rejects.toThrow(ErrorValidacion);
+    await expect(promesa).rejects.toThrow(
+      'El documento remoto «imagenes/img-1.json» no contiene una imagen con formato válido.'
+    );
   });
 
   it('lanza ErrorConflictoRemoto si el SHA remoto cambió al escribir', async () => {

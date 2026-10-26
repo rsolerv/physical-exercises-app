@@ -5,6 +5,7 @@ import {
   ErrorAutenticacionGitHub,
   ErrorConflictoRemoto,
   ErrorRedSincronizacion,
+  ErrorValidacion,
 } from '../../domain/errores/errores-dominio';
 import {
   GitHubSyncPort,
@@ -38,6 +39,25 @@ function desdeBase64(base64: string): string {
 interface ContenidoRemoto {
   texto: string;
   sha: string;
+}
+
+function esRespuestaContenidoBase64(
+  valor: unknown
+): valor is { content: string; encoding: 'base64'; sha?: string } {
+  if (typeof valor !== 'object' || valor === null) return false;
+  const respuesta = valor as Record<string, unknown>;
+  return respuesta['encoding'] === 'base64' && typeof respuesta['content'] === 'string';
+}
+
+function esImagenArchivoValida(valor: unknown): valor is ImagenArchivoJSON {
+  if (typeof valor !== 'object' || valor === null) return false;
+  const imagen = valor as Record<string, unknown>;
+  return (
+    typeof imagen['id'] === 'string' &&
+    typeof imagen['nombreArchivo'] === 'string' &&
+    typeof imagen['tipoMime'] === 'string' &&
+    typeof imagen['contenidoBase64'] === 'string'
+  );
 }
 
 /**
@@ -81,7 +101,11 @@ export class GithubSyncAdapter implements GitHubSyncPort {
   async leerImagen(credenciales: CredencialesGitHub, ruta: string): Promise<ImagenArchivoJSON> {
     try {
       const contenido = await this.leerContenidoRemoto(credenciales, ruta);
-      return JSON.parse(contenido.texto) as ImagenArchivoJSON;
+      const imagen: unknown = JSON.parse(contenido.texto);
+      if (!esImagenArchivoValida(imagen)) {
+        throw new ErrorValidacion(`El documento remoto «${ruta}» no contiene una imagen con formato válido.`);
+      }
+      return imagen;
     } catch (error) {
       throw this.traducirError(error);
     }
@@ -102,6 +126,10 @@ export class GithubSyncAdapter implements GitHubSyncPort {
         responseType: 'text',
       })
     );
+    const respuestaRaw: unknown = JSON.parse(texto);
+    if (esRespuestaContenidoBase64(respuestaRaw)) {
+      return { texto: desdeBase64(respuestaRaw.content), sha: respuestaRaw.sha ?? respuesta.sha };
+    }
     return { texto, sha: respuesta.sha };
   }
 
