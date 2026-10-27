@@ -1,17 +1,10 @@
-import { Component, DestroyRef, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 
-const TIEMPO_ESPERA_CARGA_MS = 4000;
+type PlataformaEmbed = 'Instagram' | 'TikTok';
 
-/**
- * Previsualización de un enlace web externo dentro de un `<iframe>`
- * sandboxed (FR-016). Si el sitio de destino no permite ser embebido (p. ej.
- * cabeceras `X-Frame-Options`/CSP), no se dispara el evento `load`; tras un
- * tiempo de espera se ofrece como alternativa abrir el enlace en una pestaña
- * nueva (research.md § 8).
- */
 @Component({
   selector: 'app-enlace-embed',
   standalone: true,
@@ -21,14 +14,9 @@ const TIEMPO_ESPERA_CARGA_MS = 4000;
 })
 export class EnlaceEmbedComponent {
   private readonly sanitizador = inject(DomSanitizer);
-  private readonly destroyRef = inject(DestroyRef);
 
   readonly url = input.required<string>();
 
-  protected readonly cargado = signal(false);
-  protected readonly noEmbebible = signal(false);
-
-  protected readonly urlSegura = computed(() => this.sanitizador.bypassSecurityTrustResourceUrl(this.url()));
   protected readonly titulo = computed(() => {
     try {
       return new URL(this.url()).hostname;
@@ -37,21 +25,43 @@ export class EnlaceEmbedComponent {
     }
   });
 
-  constructor() {
-    const temporizador = setTimeout(() => {
-      if (!this.cargado()) {
-        this.noEmbebible.set(true);
+  private readonly enlaceSocial = computed(() => {
+    try {
+      const url = new URL(this.url());
+      const hostname = url.hostname.toLowerCase();
+      const segmentosInstagram = url.pathname.match(/^\/(p|reel|tv)\/([A-Za-z0-9_-]+)\/?$/);
+      if (
+        (hostname === 'instagram.com' || hostname.endsWith('.instagram.com')) &&
+        segmentosInstagram
+      ) {
+        return {
+          plataforma: 'Instagram' as const,
+          url: `https://www.instagram.com/${segmentosInstagram[1]}/${segmentosInstagram[2]}/embed/`,
+        };
       }
-    }, TIEMPO_ESPERA_CARGA_MS);
-    this.destroyRef.onDestroy(() => clearTimeout(temporizador));
-  }
 
-  protected onCargado(): void {
-    this.cargado.set(true);
-    this.noEmbebible.set(false);
-  }
+      const videoTikTok = url.pathname.match(/^\/@[A-Za-z0-9._-]+\/video\/(\d+)\/?$/);
+      if (
+        (hostname === 'tiktok.com' || hostname.endsWith('.tiktok.com')) &&
+        videoTikTok
+      ) {
+        return {
+          plataforma: 'TikTok' as const,
+          url: `https://www.tiktok.com/player/v1/${videoTikTok[1]}?music_info=1&description=1`,
+        };
+      }
+    } catch {
+      return null;
+    }
 
-  protected onError(): void {
-    this.noEmbebible.set(true);
-  }
+    return null;
+  });
+
+  protected readonly plataformaEmbed = computed<PlataformaEmbed | null>(
+    () => this.enlaceSocial()?.plataforma ?? null
+  );
+  protected readonly urlPrevia = computed(() => {
+    const url = this.enlaceSocial()?.url;
+    return url ? this.sanitizador.bypassSecurityTrustResourceUrl(url) : null;
+  });
 }

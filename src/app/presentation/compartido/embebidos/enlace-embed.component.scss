@@ -2,40 +2,42 @@
 
 .enlace-embed {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
   gap: $espaciado-2;
   width: 100%;
-}
-
-.enlace-embed__cabecera {
-  display: flex;
-  flex-direction: column;
-  gap: $espaciado-1;
-  color: var(--mat-sys-on-surface-variant);
-}
-
-.enlace-embed__titulo {
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-title-small);
-}
-
-.enlace-embed__iframe {
-  width: 100%;
-  min-height: 320px;
+  padding: $espaciado-2;
   border: 1px solid var(--mat-sys-outline-variant, #c4c7c5);
   border-radius: 16px;
 }
 
-.enlace-embed__aviso {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: $espaciado-1;
-  margin: 0;
-  color: var(--mat-sys-on-surface-variant, #5f6368);
+.enlace-embed--con-vista-previa {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.enlace-embed__titulo {
+  overflow-wrap: anywhere;
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-title-small);
+}
+
+.enlace-embed__vista-previa {
+  width: 100%;
+  min-height: 480px;
+  border: 0;
+  border-radius: 12px;
+}
+
+.enlace-embed__vista-previa--tiktok {
+  align-self: center;
+  width: min(100%, 325px);
+  min-height: 0;
+  aspect-ratio: 9 / 16;
 }
 
 .enlace-embed__fallback {
-  align-self: flex-start;
+  flex-shrink: 0;
   min-height: 48px;
 }

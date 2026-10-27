@@ -184,11 +184,31 @@ describe('EjercicioFichaComponent', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('app-youtube-embed')).toBeTruthy();
   });
 
-  it('muestra la previsualización embebida para cada enlace web (FR-016)', async () => {
-    configurar({ ejercicio: ejercicio({ enlaces: [{ tipo: 'web', url: 'https://example.com/rutina' }] }) });
+  it('muestra el nombre y el acceso externo para enlaces web sin vista previa (FR-016)', async () => {
+    configurar({ ejercicio: ejercicio({ enlaces: [{ tipo: 'web', url: 'https://github.com/usuario/proyecto' }] }) });
     const fixture = await crearComponente();
+    const raiz = fixture.nativeElement as HTMLElement;
 
-    expect((fixture.nativeElement as HTMLElement).querySelector('app-enlace-embed')).toBeTruthy();
+    const enlace = raiz.querySelector<HTMLAnchorElement>('.enlace-embed__fallback');
+    expect(raiz.querySelector('.enlace-embed__titulo')?.textContent).toContain('github.com');
+    expect(enlace?.getAttribute('href')).toBe('https://github.com/usuario/proyecto');
+    expect(raiz.querySelector('.enlace-embed__iframe')).toBeNull();
+  });
+
+  it('muestra la vista previa de un vídeo TikTok y conserva el acceso externo', async () => {
+    configurar({
+      ejercicio: ejercicio({
+        enlaces: [{ tipo: 'web', url: 'https://www.tiktok.com/@usuario/video/1234567890123456789' }],
+      }),
+    });
+    const raiz = (await crearComponente()).nativeElement as HTMLElement;
+
+    expect(raiz.querySelector<HTMLIFrameElement>('.enlace-embed__vista-previa')?.src).toContain(
+      'https://www.tiktok.com/player/v1/1234567890123456789'
+    );
+    expect(raiz.querySelector<HTMLAnchorElement>('.enlace-embed__fallback')?.href).toBe(
+      'https://www.tiktok.com/@usuario/video/1234567890123456789'
+    );
   });
 
   it('muestra un mensaje cuando el ejercicio no existe', async () => {

@@ -1,18 +1,15 @@
-<div class="enlace-embed">
-  <div class="enlace-embed__cabecera">
-    <span class="enlace-embed__titulo">{{ titulo() }}</span>
-    <span>Atribución: sitio externo</span>
-  </div>
-  <iframe
-    class="enlace-embed__iframe"
-    [src]="urlSegura()"
-    sandbox="allow-scripts allow-popups allow-forms"
-    title="Previsualización del enlace externo"
-    (load)="onCargado()"
-    (error)="onError()"
-  ></iframe>
-  @if (noEmbebible()) {
-    <p class="enlace-embed__aviso">Este sitio no se puede mostrar dentro de la aplicación.</p>
+<div class="enlace-embed" [class.enlace-embed--con-vista-previa]="urlPrevia()">
+  <span class="enlace-embed__titulo">{{ titulo() }}</span>
+  @if (urlPrevia(); as url) {
+    <iframe
+      class="enlace-embed__vista-previa"
+      [class.enlace-embed__vista-previa--tiktok]="plataformaEmbed() === 'TikTok'"
+      [src]="url"
+      [title]="'Vista previa de ' + plataformaEmbed()"
+      loading="lazy"
+      allow="encrypted-media; fullscreen; picture-in-picture"
+      allowfullscreen
+    ></iframe>
   }
   <a class="enlace-embed__fallback" mat-stroked-button [href]="url()" target="_blank" rel="noopener noreferrer">
     <mat-icon>open_in_new</mat-icon>

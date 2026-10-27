@@ -75,7 +75,7 @@ export const ProgresoDiario: Story = {
 
 export const VideoDeYouTube = story('<main style="max-width: 760px; margin: 0 auto; padding: 24px"><app-youtube-embed url="https://www.youtube.com/watch?v=invalid" titulo="Vídeo no disponible" /></main>');
 
-export const VistaPreviaDeEnlace = story('<main style="max-width: 760px; margin: 0 auto; padding: 24px"><app-enlace-embed url="https://example.com" /></main>');
+export const EnlaceWebExterno = story('<main style="max-width: 760px; margin: 0 auto; padding: 24px"><app-enlace-embed url="https://example.com" /></main>');
 
 function story(template: string): Story {
   return { render: () => ({ template }) };
