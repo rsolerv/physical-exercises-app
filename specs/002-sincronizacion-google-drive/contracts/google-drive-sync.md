@@ -1,6 +1,7 @@
 # Contrato: Adaptador de Google (autorización y Drive)
 
 
+
 **Capa**: Infrastructure · **Implementa**: `GoogleAutorizacionPort` (`GoogleIdentityAutorizacion`) y `ProveedorSincronizacionPort` (`ProveedorGoogleDriveSync`) · **Decisiones**: [research.md](../research.md), secciones 1 a 5, 9 y 10
 
 Los Observables de `HttpClient` quedan confinados al adaptador; hacia Application se exponen `Promise`, como en el adaptador de GitHub. Este contrato describe lo que el adaptador hace con servicios externos; la spec describe lo que ve la persona.
@@ -54,7 +55,7 @@ Todos los ficheros llevan `parents: ["appDataFolder"]` al crearse y `mimeType: a
 | `leerImagen(ruta)` | Listado; `GET /files/{id}?alt=media` del nombre traducido |
 | `escribirRemoto(...)` | 1) Para cada imagen que no exista en el listado o con tamaño distinto: subida reanudable (creación o actualización). 2) `GET /files/{id}?fields=version` de `datos.json` y comparación con `versionEsperada`; si no coincide, `ErrorConflictoRemoto`. 3) Subida reanudable de `datos.json` pidiendo `fields=version` en la respuesta, que se devuelve como `versionNueva` |
 
-La subida reanudable usa `POST` (crear) o `PATCH` (actualizar) con `uploadType=resumable` para abrir la sesión y la URL de la cabecera `Location` para enviar el contenido. Si `versionEsperada` es nula y ya existe `datos.json` (otro dispositivo lo creó entre medias), se lanza `ErrorConflictoRemoto`.
+La subida reanudable usa `POST` con `uploadType=resumable` para abrir la sesión tanto al crear como al actualizar; al actualizar incluye `X-HTTP-Method-Override: PATCH` para evitar que el preflight CORS del navegador bloquee el método `PATCH`. La URL de la cabecera `Location` recibe el contenido mediante `PUT`. Si `versionEsperada` es nula y ya existe `datos.json` (otro dispositivo lo creó entre medias), se lanza `ErrorConflictoRemoto`.
 
 Cuando exista más de un fichero con el mismo nombre, se usa el más antiguo (listado ordenado por `createdTime`).
 

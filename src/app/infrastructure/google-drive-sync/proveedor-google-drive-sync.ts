@@ -158,9 +158,9 @@ export class ProveedorGoogleDriveSync extends ProveedorSincronizacionPort {
     const apertura = await this.solicitudRespuesta<unknown>(
       url,
       metadatos,
-      idExistente ? 'PATCH' : 'POST',
+      'POST',
       undefined,
-      undefined,
+      idExistente ? { 'X-HTTP-Method-Override': 'PATCH' } : undefined,
       {
         uploadType: 'resumable',
         ...(devolverVersion ? { fields: 'version' } : {}),

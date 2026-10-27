@@ -121,7 +121,8 @@ describe('ProveedorGoogleDriveSync', () => {
     const aperturaImagenCambiada = http.expectOne(
       (request) => request.urlWithParams.startsWith('https://www.googleapis.com/upload/drive/v3/files/imagen-2-remota'),
     );
-    expect(aperturaImagenCambiada.request.method).toBe('PATCH');
+    expect(aperturaImagenCambiada.request.method).toBe('POST');
+    expect(aperturaImagenCambiada.request.headers.get('X-HTTP-Method-Override')).toBe('PATCH');
     aperturaImagenCambiada.flush(null, {
       headers: { Location: 'https://www.googleapis.com/upload/drive/v3/files?upload_id=changed-image' },
     });
@@ -135,7 +136,8 @@ describe('ProveedorGoogleDriveSync', () => {
     const aperturaDatos = http.expectOne(
       (request) => request.urlWithParams.startsWith('https://www.googleapis.com/upload/drive/v3/files/datos-remotos'),
     );
-    expect(aperturaDatos.request.method).toBe('PATCH');
+    expect(aperturaDatos.request.method).toBe('POST');
+    expect(aperturaDatos.request.headers.get('X-HTTP-Method-Override')).toBe('PATCH');
     aperturaDatos.flush(null, {
       headers: { Location: 'https://www.googleapis.com/upload/drive/v3/files?upload_id=updated-data' },
     });
