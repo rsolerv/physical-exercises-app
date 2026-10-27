@@ -43,10 +43,10 @@ En móvil, las cabeceras no dejan más de 24 px entre el área segura superior y
 
 ### Planificación y constructor
 
-- En móvil, la tira de siete días permite seleccionar un día e identifica actividad, día actual y descanso; el contenido muestra los ejercicios del día seleccionado.
+- Por debajo de 1500 px, la tira de siete días permite seleccionar un día e identifica actividad, día actual y descanso; el contenido muestra los ejercicios del día seleccionado. Desde 1500 px, la cuadrícula permite comparar los siete días sin que se solapen los nombres: las filas de ejercicios se ajustan a varias líneas y las tarjetas crecen según su contenido.
 - Con los datos cargados, cambiar el día seleccionado actualiza el contenido visible en menos de 1 segundo (SC-031).
-- En escritorio y portátiles, la cuadrícula permite comparar los siete días sin que se solapen los nombres: las filas de ejercicios se ajustan a varias líneas y las tarjetas crecen según su contenido.
 - En móvil, el día actual ya está seleccionado y no se añade un rótulo o control redundante "Hoy".
+- En el constructor, los días se muestran en una columna en móvil, dos columnas entre 600 y 1499 px y siete columnas desde 1500 px.
 - En el constructor, el selector de fecha ofrece un calendario que puede abrirse mediante un control visible tanto en móvil como en escritorio; en móvil permanece accesible durante la edición y no queda oculto por el teclado o la navegación. Solo permite seleccionar lunes; dejar la fecha vacía crea una plantilla.
 - La acción "Agregar ejercicio" abre una pantalla independiente desde el día correspondiente. Permite buscar por parte del nombre desde un campo superior, filtrar por categoría y seleccionar varios ejercicios; cada selección se añade inmediatamente al día, sin confirmación adicional. No se admiten duplicados en el mismo día.
 - Los resultados del selector muestran el nombre, la descripción completa y las categorías de cada ejercicio, sin recortarlas.

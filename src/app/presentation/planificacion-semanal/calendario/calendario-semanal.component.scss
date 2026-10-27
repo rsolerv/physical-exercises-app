@@ -125,7 +125,7 @@
   overflow-wrap: anywhere;
 }
 
-@include escritorio {
+@media (min-width: 1500px) {
   .calendario-semanal__dias-movil,
   .calendario-semanal__dia-seleccionado {
     display: none;
