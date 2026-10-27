@@ -101,3 +101,10 @@ Los pasos 4 y 5 dependen de su configuración real y no constan como verificados
 | V2 | La subida reanudable funciona desde el navegador (cabecera `Location` legible) | Subida multiparte también para documentos grandes |
 | V3 | Drive admite escritura condicional con ETag (`If-Match`) | Se mantiene la comprobación previa de `version` |
 | V4 | La pantalla de consentimiento y el estado de publicación no muestran avisos inesperados | Ajustar el texto de FR-024 y la configuración del proyecto |
+
+### Resultados comunicados por el propietario (27-10-2026)
+
+- **V1**: al recuperar la conexión vuelve a aparecer la ventana de confianza de Google; al aceptarla, el flujo continúa correctamente.
+- **V2**: se subió desde el navegador un fichero de aproximadamente 7 MB y terminó correctamente.
+- **V3**: una escritura con `If-Match` y un ETag antiguo fue rechazada por Drive. Esto confirma que se admite el control condicional; queda pendiente aplicarlo al adaptador en lugar de depender únicamente de la comprobación previa de `version`.
+- **V4**: se volvió a mostrar la ventana de confianza; se aceptó y el flujo continuó correctamente.

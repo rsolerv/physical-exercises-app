@@ -1,4 +1,4 @@
----
+---
 
 description: "Implementación de la sincronización con cuenta de Google, el puerto neutro de proveedores y la copia manual en fichero"
 ---
@@ -256,3 +256,8 @@ Task: T027 pruebas de la pantalla en tests/component/presentation/configuracion-
 - Las verificaciones V1–V4 (T003) pueden cambiar detalles del adaptador de Google (renovación del token, subida de documentos grandes o comprobación de versión), no el contrato del puerto.
 - La acción T002 depende del propietario; hasta entonces todo se puede desarrollar y probar con dobles.
 - Confirmar que las pruebas fallan antes de implementar, y hacer commit tras cada tarea o grupo lógico.
+
+## Phase 9: Convergence
+
+- [ ] T056 Aplicar en `proveedor-google-drive-sync.ts` la escritura condicional con `If-Match` tras el resultado positivo de V3; los resultados de V1–V4 se registraron en `research.md` (incluidos T028, T029 y la actualización pendiente de T036) per plan: verificaciones técnicas V1–V4 (partial).
+- [ ] T057 Completar los recorridos manuales pendientes de US1–US4, las comprobaciones de conexión, compatibilidad, accesibilidad, responsive y rendimiento; los resultados comunicados por el propietario están registrados en `quickstart.md`. Quedan por validar el flujo US4, sin conexión, compatibilidad con GitHub y los tiempos exactos de SC-001 y SC-008 (se acepta la prueba de rendimiento con 50 ejercicios) per US1–US4/SC-001–SC-009 (partial).

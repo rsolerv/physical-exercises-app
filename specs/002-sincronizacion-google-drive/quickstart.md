@@ -99,3 +99,13 @@ Las comprobaciones de red (por ejemplo, que no haya solicitudes a Google al arra
 | SC-007 | Exportar e importar: 100 % de los datos; fichero inválido rechazado siempre sin cambios |
 | SC-008 | Tras la caducidad, recuperar la sincronización en 2 acciones como máximo desde el mensaje |
 | SC-009 | Los escenarios de GitHub de la feature 001 conservan sus resultados |
+
+## Resultados de validación (27-10-2026)
+
+Resultados comunicados por el propietario tras pruebas manuales en varios dispositivos:
+
+- Conexión con varias cuentas de Google, subida y descarga de datos: completadas correctamente.
+- Se volvió a mostrar la ventana de confianza de Google; se aceptó y el flujo continuó correctamente.
+- Interfaz comprobada en varias resoluciones y accesibilidad probada.
+- Rendimiento: probada una biblioteca de 50 ejercicios; el propietario confirma que respondió muy rápido y acepta esta prueba como suficiente. No se midió un tiempo exacto ni se probó el conjunto de 100 ejercicios previsto para SC-006.
+- No se registraron tiempos exactos para SC-001 ni SC-008.
