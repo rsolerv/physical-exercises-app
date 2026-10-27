@@ -112,13 +112,17 @@
 .calendario-semanal__fila-ejercicio {
   display: flex;
   width: 100%;
+  min-width: 0;
+  height: auto;
   min-height: 48px;
   justify-content: flex-start;
   gap: $espaciado-1;
   margin-bottom: $espaciado-1;
+  padding-block: $espaciado-1;
   border-radius: 8px;
   text-align: left;
   white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 @include escritorio {
