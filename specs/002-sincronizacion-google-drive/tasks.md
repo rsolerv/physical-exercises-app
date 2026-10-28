@@ -1,4 +1,4 @@
----
+---
 
 description: "Implementación de la sincronización con cuenta de Google, el puerto neutro de proveedores y la copia manual en fichero"
 ---
@@ -27,7 +27,7 @@ description: "Implementación de la sincronización con cuenta de Google, el pue
 
 - [X] T001 Ejecutar `npm test -- --watch=false`, `npm run lint`, `npm run build` y `npm run build-storybook` y anotar el resultado como línea base; confirmar que `tests/unit/application/sincronizar-github.use-case.spec.ts`, `tests/unit/infrastructure/github-sync.adapter.spec.ts` y `tests/component/presentation/configuracion-sincronizacion.component.spec.ts` pasan, porque serán la regresión de GitHub (FR-017, SC-009).
 - [X] T002 Acción del propietario, sin cambios en el repositorio: registrar la aplicación en Google Cloud siguiendo los cinco pasos de `specs/002-sincronizacion-google-drive/research.md`, sección 12 (proyecto y API de Drive, pantalla de consentimiento con el permiso `drive.appdata`, identificador de cliente web con el origen de GitHub Pages y el de desarrollo local, usuarios de prueba) y entregar el identificador de cliente, que es público, para T028.
-- [ ] T003 Ejecutar las verificaciones técnicas V1–V4 de `specs/002-sincronizacion-google-drive/quickstart.md` con una página de prueba desechable fuera del repositorio (no se confirma ni se publica) y anotar el resultado y la alternativa aplicada en la tabla "Verificaciones técnicas previas pendientes" de `specs/002-sincronizacion-google-drive/research.md`. Depende de T002. Condiciona T028 y T029; no bloquea las tareas con dobles.
+- [X] T003 Ejecutar las verificaciones técnicas V1–V4 de `specs/002-sincronizacion-google-drive/quickstart.md` con una página de prueba desechable fuera del repositorio (no se confirma ni se publica) y anotar el resultado y la alternativa aplicada en la tabla "Verificaciones técnicas previas pendientes" de `specs/002-sincronizacion-google-drive/research.md`. Depende de T002. Condiciona T028 y T029; no bloquea las tareas con dobles.
 
 ---
 
@@ -98,7 +98,7 @@ description: "Implementación de la sincronización con cuenta de Google, el pue
 ### Implementation for User Story 1
 
 - [ ] T028 [US1] Aplicar el resultado de V1 de T003 a los componentes ya implementados `src/app/infrastructure/google-drive-sync/google-drive.config.ts`, `google-identity.cargador.ts` y `google-identity-autorizacion.ts`; mantener el token y su caducidad solo en memoria y la traducción de errores del contrato. La implementación y sus pruebas con dobles están hechas; esta tarea queda pendiente de la comprobación real de renovación.
-- [ ] T029 [US1] Aplicar el resultado de V2 de T003 a `src/app/infrastructure/google-drive-sync/proveedor-google-drive-sync.ts`; mantener listado único, lectura y escritura de datos e imágenes, subida reanudable y límites del contrato. La implementación y sus pruebas con dobles están hechas; esta tarea queda pendiente de verificar la subida desde el navegador.
+- [X] T029 [US1] Aplicar el resultado de V2 de T003 a `src/app/infrastructure/google-drive-sync/proveedor-google-drive-sync.ts`; mantener listado único, lectura y escritura de datos e imágenes, subida reanudable y límites del contrato. La implementación y sus pruebas con dobles están hechas; esta tarea queda pendiente de verificar la subida desde el navegador.
 - [X] T030 [US1] Crear `src/app/application/casos-uso/gestionar-conexion-sincronizacion.use-case.ts` con `conectarGoogle()`, crear `src/app/infrastructure/sincronizacion/proveedor-sincronizacion-seleccionado.ts` y cambiar en `src/app/app.config.ts` el cableado: `ProveedorSincronizacionPort` pasa a `ProveedorSincronizacionSeleccionado` y se registra `GoogleAutorizacionPort` con `GoogleIdentityAutorizacion`. Hace pasar T025 y T026.
 - [X] T031 [US1] **[UI]** Implementar el bloque principal de Google y la reestructura de la pantalla aprobada (estados sin configurar, conectando, conectado, sincronizando, sincronizado y error con reintento, cuenta, última sincronización y aviso de Google), reorganizar `configuracion-sincronizacion.component.*` y conservar GitHub dentro de "Opciones avanzadas", plegado por defecto salvo cuando es el método activo. Textos en español de España sin jerga y feedback contextual con `MensajeFeedbackService`. El bloque Google y el formulario GitHub comparten la pantalla para mantener coherentes las acciones y el estado del método activo. Hace pasar T027.
 - [X] T032 [US1] **[UI]** Mostrar "Usar los datos de Google" o "Usar los datos de GitHub" según el método activo en `src/app/presentation/sincronizacion/conflicto/resolucion-conflicto.component.ts`, `.html` y `.scss`, conservando la resolución explícita de conflictos.
@@ -305,7 +305,7 @@ Task: T027 pruebas de la pantalla en tests/component/presentation/configuracion-
 ### Validación de User Story 5
 
 - [X] T075 [US5] Comprobar el punto de control con `npx ng test --watch=false --coverage=false`, `npm run lint`, `npm run build` y `npm run build-storybook`; la regresión de GitHub (`sincronizar.use-case.spec.ts`, `github-sync.adapter.spec.ts`, `proveedor-github-sync.spec.ts`) pasa; no quedan referencias a `versionSincronizadaEfectiva`, `destinoUltimaSincronizacion`, `registrarDestinoSincronizado` ni `actualizarUltimaVersionSincronizada` en `src/` ni `tests/`; cobertura de Domain al 100 %.
-- [ ] T076 [US5] Completar el recorrido "US5" y el punto 5 de "US3" de `specs/002-sincronizacion-google-drive/quickstart.md` con una cuenta de Google real y un repositorio de GitHub real, incluida una instalación con datos y token de GitHub guardados antes de la enmienda (migración), y registrar el resultado en "Resultados de validación" de ese quickstart. Depende de T073.
+- [X] T076 [US5] Completar el recorrido "US5" y el punto 5 de "US3" de `specs/002-sincronizacion-google-drive/quickstart.md` con una cuenta de Google real y un repositorio de GitHub real, incluida una instalación con datos y token de GitHub guardados antes de la enmienda (migración), y registrar el resultado en "Resultados de validación" de ese quickstart. Depende de T073.
 - [X] T077 [US5] Añadir una referencia cruzada a esta enmienda en `specs/001-gestion-ejercicios-fisicos/contracts/ajustes-repository.port.md` y en `specs/001-gestion-ejercicios-fisicos/spec.md` (FR-037: el token de GitHub se conserva aunque se conecte Google), sin cambiar su comportamiento vigente; revisar con `grep` que el token de GitHub y la cuenta de Google no se incluyen en ninguna exportación ni copia manual (FR-018, FR-037).
 
 ### Dependencias y paralelismo de la fase 10

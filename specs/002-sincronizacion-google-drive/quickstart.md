@@ -3,6 +3,10 @@
 
 
 
+
+
+
+
 **Feature**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md) | **Modelo de datos**: [data-model.md](./data-model.md) | **Contratos**: [contracts/](./contracts/)
 
 Guía para validar la feature desde la interfaz, sin inspeccionar código, registros ni la base de datos. Las etiquetas visibles se comprueban en español de España. Las verificaciones técnicas previas (V1–V4) las hace el equipo de desarrollo para confirmar los adaptadores y aplicar las alternativas previstas; los recorridos de las historias los puede hacer una persona sin conocimientos técnicos.
@@ -123,3 +127,4 @@ Resultados comunicados por el propietario tras pruebas manuales en varios dispos
 - Interfaz comprobada en varias resoluciones y accesibilidad probada.
 - Rendimiento: probada una biblioteca de 50 ejercicios; el propietario confirma que respondió muy rápido y acepta esta prueba como suficiente. No se midió un tiempo exacto ni se probó el conjunto de 100 ejercicios previsto para SC-006.
 - No se registraron tiempos exactos para SC-001 ni SC-008.
+- Sincronización con Google y Github conectados ambos y sin conectar correcta. Probado en varios dispositivos. Todos los criterios medibles hasta ahora son correctos.
