@@ -164,13 +164,13 @@
               <span>Última sincronización correcta: {{ fecha }}</span>
             }
           }
+          @if (tieneCredenciales && !metodoGitHubActivo) {
+            <button mat-flat-button color="primary" type="button" [disabled]="sincronizando()" (click)="activarMetodo('github')">
+              <mat-icon>sync</mat-icon>
+              Usar este método
+            </button>
+          }          
         </div>
-        @if (tieneCredenciales && !metodoGitHubActivo) {
-          <button mat-flat-button color="primary" type="button" [disabled]="sincronizando()" (click)="activarMetodo('github')">
-            <mat-icon>sync</mat-icon>
-            Usar este método
-          </button>
-        }
         <form class="configuracion-sincronizacion__formulario" (submit)="$event.preventDefault(); guardarCredenciales()">
           <mat-form-field appearance="outline">
             <mat-label>Repositorio de datos (usuario/repositorio)</mat-label>
