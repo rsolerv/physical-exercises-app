@@ -24,13 +24,13 @@ export class GestionarCategoriaUseCase {
 
   async crear(nombre: string, descripcion?: string): Promise<Categoria> {
     const creada = await this.categoriaRepository.crear(nombre, descripcion);
-    await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
+    await this.ajustesRepository.marcarCambiosLocalesPendientes();
     return creada;
   }
 
   async actualizar(id: string, cambios: { nombre?: string; descripcion?: string }): Promise<Categoria> {
     const actualizada = await this.categoriaRepository.actualizar(id, cambios);
-    await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
+    await this.ajustesRepository.marcarCambiosLocalesPendientes();
     return actualizada;
   }
 
@@ -53,7 +53,7 @@ export class GestionarCategoriaUseCase {
     }));
     await this.ejercicioRepository.quitarCategoriaDeTodos(id);
     await this.categoriaRepository.eliminar(id);
-    await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
+    await this.ajustesRepository.marcarCambiosLocalesPendientes();
     return { categoria, ejercicios };
   }
 
@@ -62,6 +62,6 @@ export class GestionarCategoriaUseCase {
     for (const ejercicio of snapshot.ejercicios) {
       await this.ejercicioRepository.actualizar(ejercicio.id, { categoriaIds: ejercicio.categoriaIds });
     }
-    await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
+    await this.ajustesRepository.marcarCambiosLocalesPendientes();
   }
 }

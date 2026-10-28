@@ -17,9 +17,11 @@ Una sola ruta (`/sincronizacion`, se mantiene `/sincronizacion/conflicto`) con u
 
 | Bloque | Contenido |
 |---|---|
-| 1. Sincronización con Google (principal) | Acción "Conectar con Google" o, si hay conexión, cuenta, estado, última sincronización y acciones |
-| 2. Opciones avanzadas | Sincronización con GitHub con token, plegada por defecto salvo que GitHub sea el método activo |
+| 1. Sincronización con Google (principal) | Acción "Conectar con Google" o, si hay conexión, cuenta, indicador de método activo o conectado, estado, última sincronización y acciones ("Usar este método", "Desconectar cuenta") |
+| 2. Opciones avanzadas | Sincronización con GitHub con token: indicador de método activo o conectado, "Usar este método" y configuración. Plegada por defecto salvo que GitHub sea el método activo o no esté configurada |
 | 3. Copia de seguridad en un archivo ZIP | "Exportar copia de seguridad" e "Importar copia de seguridad" |
+
+Cada método (bloques 1 y 2) muestra una **etiqueta de estado de conexión** con texto e icono: "Método activo", "Conectado" o "Sin configurar". Solo uno puede ser "Método activo". Los dos métodos son independientes: ninguna acción de uno deshabilita ni borra el otro (FR-016, FR-017).
 
 | Dispositivo | Disposición |
 |---|---|
@@ -29,13 +31,16 @@ Una sola ruta (`/sincronizacion`, se mantiene `/sincronizacion/conflicto`) con u
 
 ## Estados del bloque principal
 
-Un solo método está activo (Google o GitHub). La acción de sincronización se presenta en la barra común, fuera del bloque de Google, identificando el método activo. Estados comunes a ambos y casos específicos:
+Hay como máximo un método activo (Google o GitHub) aunque ambos puedan estar conectados. La acción de sincronización se presenta en la barra común, fuera del bloque de Google, identificando el método activo. Estados comunes a ambos y casos específicos:
 
 | Estado | Qué muestra | Acción en la barra común | Otras acciones |
 |---|---|---|---|
 | Sin configurar | Invitación a conectar y texto explicativo | No se muestra | "Conectar con Google"; "Opciones avanzadas" desplegable |
 | Conectando | Indicador de progreso | — (deshabilitada) | — |
 | Conectado, listo | Método activo, cuenta (correo) si es Google, estado y última sincronización si existe | "Sincronizar ahora" | "Desconectar cuenta" para Google |
+| Dos métodos conectados | Etiqueta "Método activo" en uno y "Conectado" en el otro; la barra común indica con cuál se sincroniza | "Sincronizar ahora" (solo con el activo) | "Usar este método" en el no activo; "Desconectar cuenta" y "Olvidar token" en su método |
+| Cambio de método | Confirmación visible en línea: "Ahora sincronizas con Google." / "Ahora sincronizas con GitHub." | "Sincronizar ahora" | — |
+| Sin método activo con uno conectado | Aviso "Elige con qué método quieres sincronizar" | No se muestra | "Usar este método" en el conectado |
 | Sincronizando | Indicador de progreso y estado "Sincronizando…" | — (deshabilitada, evita pulsaciones repetidas) | — |
 | Sincronizado | Estado "Sincronizado", fecha y hora, confirmación visible | "Sincronizar ahora" | "Desconectar cuenta" para Google |
 | Error de conexión | Mensaje claro junto a la acción común, con motivo comprensible | "Reintentar" | — |
@@ -61,14 +66,21 @@ No aparecen las palabras "token", "OAuth" ni "credenciales" en el flujo de Googl
 | Ventana bloqueada | Tu navegador ha bloqueado la ventana de Google. Permítela e inténtalo de nuevo. |
 | Reconexión | La conexión con Google ha caducado. Vuelve a conectar para sincronizar. |
 | Opciones avanzadas | Sincronizar con GitHub (avanzado) |
+| Etiquetas de método | Método activo · Conectado · Sin configurar |
+| Cambiar de método | Usar este método |
+| Aviso de cambio de método | Ahora sincronizas con Google. / Ahora sincronizas con GitHub. |
+| Sin método activo | Elige con qué método quieres sincronizar. |
 | Copia de seguridad | Copia de seguridad en un archivo ZIP |
 
 ## Opciones avanzadas: GitHub
 
-Conserva el comportamiento de la feature 001 (repositorio de datos, token oculto, "Olvidar token", configuración plegada si ya está configurada, errores junto a cada campo). Reglas nuevas:
+Conserva el comportamiento de la feature 001 (repositorio de datos, token oculto, "Olvidar token", configuración plegada si ya está configurada, errores junto a cada campo). Reglas de la enmienda 2026-10-27 (sustituyen a las de "desconectar antes"):
 
-- Si Google está conectado, la sección indica que hay que desconectar la cuenta antes y no permite guardar credenciales (FR-016).
-- Si GitHub es el método activo, el bloque 1 informa de que se sincroniza con GitHub y ofrece "Conectar con Google" deshabilitado hasta olvidar el token, con la misma explicación.
+- Guardar o editar la configuración de GitHub está siempre disponible, con o sin Google conectado, y no desconecta ni modifica Google.
+- "Conectar con Google" está siempre disponible, con o sin GitHub configurado o activo, y no olvida el token de GitHub. En ambos casos, al conectar o guardar por primera vez el método pasa a ser el activo y se muestra el aviso de cambio; editar GitHub ya guardado no cambia el activo.
+- "Usar este método" aparece en el bloque del método conectado que no está activo; al pulsarlo pasa a ser el activo de inmediato, sin confirmación ni datos de acceso, con el aviso "Ahora sincronizas con …" y anuncio accesible.
+- "Olvidar token" y "Desconectar cuenta" solo afectan a su método. Si era el activo, no queda ninguno activo y el otro, si está conectado, ofrece "Usar este método".
+- Si la sesión de Google caducó y GitHub es el método activo, no se muestra ningún aviso de reconexión de Google; "Volver a conectar" solo aparece cuando Google es el método activo (FR-027).
 
 ## Copia de seguridad en un archivo ZIP
 
@@ -98,9 +110,13 @@ Cada historia se muestra dentro del marco real de la aplicación (como las de `s
 | Sincronización: volver a conectar | Conexión caducada |
 | Sincronización: confirmar desconexión | Confirmación en línea |
 | Sincronización: conexión cancelada y ventana bloqueada | Mensajes de FR-014 |
-| Sincronización: GitHub como método activo | Opciones avanzadas desplegadas y Google deshabilitado |
+| Sincronización: GitHub como método activo | Opciones avanzadas desplegadas; "Conectar con Google" disponible (sustituye a la antigua con Google deshabilitado) |
+| Sincronización: Google activo y GitHub conectado | Etiquetas "Método activo" y "Conectado"; "Usar este método" en GitHub |
+| Sincronización: GitHub activo y Google conectado | Etiquetas invertidas; "Usar este método" en Google |
+| Sincronización: cambio de método | Aviso "Ahora sincronizas con …" tras pulsar "Usar este método" |
+| Sincronización: sin método activo con uno conectado | Aviso de elegir método y sin "Sincronizar ahora" |
 | Sincronización: conflicto | Resolución con "Usar los datos de Google" |
 | Copia de seguridad: confirmar importación | Aviso de reemplazo |
 | Copia de seguridad: fichero no válido | Error junto al control |
 
-Las historias se aprueban en conjunto antes de crear los componentes; el resultado aprobado fija la composición, los textos y los estados.
+Las historias se aprueban en conjunto antes de crear los componentes; el resultado aprobado fija la composición, los textos y los estados. La enmienda del 2026-10-27 añade las historias de conexiones simultáneas y modifica la de GitHub activo: el agente `ux-ui-expert` debe actualizar [src/stories/sincronizacion.stories.ts](../../../src/stories/sincronizacion.stories.ts) y obtener una nueva aprobación explícita antes de cambiar los componentes de presentación.

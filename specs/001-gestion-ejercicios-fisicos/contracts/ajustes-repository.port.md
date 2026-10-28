@@ -7,7 +7,7 @@
 
 Puerto de soporte técnico (no es una entidad de negocio del spec) para los ajustes descritos en `data-model.md` → "Ajustes de aplicación".
 
-La [feature 002](../../002-sincronizacion-google-drive/spec.md) amplía este puerto con el método de sincronización activo, la cuenta de Google y el destino de la última sincronización; las reglas y migración vigentes están descritas en su [modelo de datos](../../002-sincronizacion-google-drive/data-model.md). El contrato de GitHub definido aquí conserva su comportamiento.
+La [feature 002](../../002-sincronizacion-google-drive/spec.md) amplía este puerto con métodos de conexión independientes y estado de sincronización por destino; las reglas y migración vigentes están descritas en su [modelo de datos](../../002-sincronizacion-google-drive/data-model.md). Conectar o desconectar Google no borra las credenciales de GitHub (FR-037); el token tampoco se incluye en exportaciones ni copias manuales. El contrato de sincronización con GitHub definido aquí conserva su comportamiento.
 
 La infraestructura almacena la fecha como texto ISO 8601 UTC y la expone como `Date`. La migración se aplica al inicializar el esquema y añade el campo opcional a instalaciones existentes, conservando sus valores anteriores y dejando la fecha como `null`.
 

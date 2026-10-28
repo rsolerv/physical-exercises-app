@@ -18,86 +18,185 @@ describe('AjustesRepositorySqlite', () => {
     repositorio = TestBed.inject(AjustesRepositorySqlite);
   });
 
-  it('por defecto, cambiosLocalesPendientes y catalogoPredefinidoCargado son false', async () => {
-    const ajustes = await repositorio.obtener();
-    expect(ajustes.cambiosLocalesPendientes).toBe(false);
-    expect(ajustes.catalogoPredefinidoCargado).toBe(false);
-    expect(ajustes.tokenGitHub).toBeNull();
-    expect(ajustes.repositorioGitHub).toBeNull();
-    expect(ajustes.ultimaVersionSincronizada).toBeNull();
-    expect(ajustes.ultimaSincronizacionCorrecta).toBeNull();
-    expect(ajustes.metodoSincronizacion).toBeNull();
-    expect(ajustes.cuentaGoogle).toBeNull();
-    expect(ajustes.destinoUltimaSincronizacion).toBeNull();
-  });
-
-  it('registra la fecha correcta como ISO UTC y conserva el valor nulo inicial', async () => {
-    const fecha = new Date('2026-10-20T12:34:56.000Z');
-
-    await repositorio.registrarSincronizacionCorrecta(fecha);
-
-    expect((await repositorio.obtener()).ultimaSincronizacionCorrecta).toEqual(fecha);
-  });
-
-  it('guarda y olvida las credenciales de GitHub (FR-037)', async () => {
-    await repositorio.guardarCredencialesGitHub('ghp_token123', 'owner/data-physical-exercises');
-    let ajustes = await repositorio.obtener();
-    expect(ajustes.tokenGitHub).toBe('ghp_token123');
-    expect(ajustes.repositorioGitHub).toBe('owner/data-physical-exercises');
-    expect(ajustes.metodoSincronizacion).toBe('github');
-
-    await repositorio.olvidarCredencialesGitHub();
-    ajustes = await repositorio.obtener();
-    expect(ajustes.tokenGitHub).toBeNull();
-    expect(ajustes.repositorioGitHub).toBeNull();
-    expect(ajustes.metodoSincronizacion).toBeNull();
-  });
-
-  it('actualiza la última versión sincronizada en la columna existente', async () => {
-    await repositorio.actualizarUltimaVersionSincronizada('version-1');
-    const ajustes = await repositorio.obtener();
-    expect(ajustes.ultimaVersionSincronizada).toBe('version-1');
-  });
-
-  it('conecta Google y no permite activar dos métodos a la vez', async () => {
-    await repositorio.conectarGoogle('persona@example.com');
+  it('por defecto, no hay método activo ni cambios locales pendientes', async () => {
     expect(await repositorio.obtener()).toMatchObject({
+      cambiosLocalesPendientes: false,
+      catalogoPredefinidoCargado: false,
+      tokenGitHub: null,
+      repositorioGitHub: null,
+      ultimaVersionSincronizada: null,
+      ultimaSincronizacionCorrecta: null,
+      metodoSincronizacion: null,
+      cuentaGoogle: null,
+    });
+  });
+
+  it('conserva a la vez GitHub y Google y permite activar cada método', async () => {
+    await repositorio.guardarCredencialesGitHub('ghp_token', 'owner/datos');
+    await repositorio.conectarGoogle('Persona@example.com');
+
+    expect(await repositorio.obtener()).toMatchObject({
+      tokenGitHub: 'ghp_token',
+      repositorioGitHub: 'owner/datos',
       metodoSincronizacion: 'google',
-      cuentaGoogle: 'persona@example.com',
+      cuentaGoogle: 'Persona@example.com',
     });
 
-    await expect(repositorio.guardarCredencialesGitHub('token', 'owner/datos')).rejects.toThrow(ErrorValidacion);
+    await repositorio.activarMetodo('github');
+    expect((await repositorio.obtener()).metodoSincronizacion).toBe('github');
+    await repositorio.activarMetodo('google');
+    expect((await repositorio.obtener()).metodoSincronizacion).toBe('google');
   });
 
-  it('no permite conectar Google mientras GitHub está activo', async () => {
+  it('solo activa GitHub al guardar credenciales por primera vez o al faltar método activo', async () => {
+    await repositorio.guardarCredencialesGitHub('token-1', 'owner/datos');
+    await repositorio.conectarGoogle('persona@example.com');
+    await repositorio.guardarCredencialesGitHub('token-2', 'owner/datos-2');
+    expect((await repositorio.obtener()).metodoSincronizacion).toBe('google');
+
+    await repositorio.olvidarCredencialesGitHub();
+    await repositorio.guardarCredencialesGitHub('token-3', 'owner/datos-3');
+    expect((await repositorio.obtener()).metodoSincronizacion).toBe('github');
+    expect((await repositorio.obtener()).cuentaGoogle).toBe('persona@example.com');
+  });
+
+  it('no activa un método sin conexión', async () => {
+    await expect(repositorio.activarMetodo('google')).rejects.toThrow(ErrorValidacion);
+    await expect(repositorio.activarMetodo('github')).rejects.toThrow(ErrorValidacion);
+  });
+
+  it('al olvidar o desconectar solo borra las credenciales de su método', async () => {
     await repositorio.guardarCredencialesGitHub('token', 'owner/datos');
-    await expect(repositorio.conectarGoogle('persona@example.com')).rejects.toThrow(ErrorValidacion);
-  });
-
-  it('olvidar las credenciales de GitHub no desconecta una cuenta de Google activa', async () => {
     await repositorio.conectarGoogle('persona@example.com');
-
     await repositorio.olvidarCredencialesGitHub();
-
     expect(await repositorio.obtener()).toMatchObject({
+      tokenGitHub: null,
+      repositorioGitHub: null,
       metodoSincronizacion: 'google',
       cuentaGoogle: 'persona@example.com',
     });
-  });
-
-  it('desconectar Google conserva la versión y el destino sincronizados', async () => {
-    await repositorio.conectarGoogle('persona@example.com');
-    await repositorio.actualizarUltimaVersionSincronizada('v-1');
-    await repositorio.registrarDestinoSincronizado('google:persona@example.com');
 
     await repositorio.desconectarGoogle();
-
     expect(await repositorio.obtener()).toMatchObject({
       metodoSincronizacion: null,
       cuentaGoogle: null,
-      ultimaVersionSincronizada: 'v-1',
-      destinoUltimaSincronizacion: 'google:persona@example.com',
     });
+  });
+
+  it('conserva el estado por destino al desconectar y lo deriva del método activo', async () => {
+    const fechaGitHub = new Date('2026-10-20T12:34:56.000Z');
+    const fechaGoogle = new Date('2026-10-21T12:34:56.000Z');
+    await repositorio.guardarCredencialesGitHub('token', 'owner/datos');
+    await repositorio.registrarSincronizacionCompletada('github:owner/datos', 'sha-1', fechaGitHub, false);
+    await repositorio.conectarGoogle('persona@example.com');
+    await repositorio.registrarSincronizacionCompletada('google:persona@example.com', 'v-2', fechaGoogle, false);
+
+    expect(await repositorio.obtener()).toMatchObject({
+      ultimaVersionSincronizada: 'v-2',
+      cambiosLocalesPendientes: false,
+      ultimaSincronizacionCorrecta: fechaGoogle,
+    });
+    await repositorio.activarMetodo('github');
+    expect(await repositorio.obtener()).toMatchObject({
+      ultimaVersionSincronizada: 'sha-1',
+      cambiosLocalesPendientes: false,
+      ultimaSincronizacionCorrecta: fechaGitHub,
+    });
+
+    await repositorio.desconectarGoogle();
+    await repositorio.activarMetodo('github');
+    expect(await repositorio.obtener()).toMatchObject({
+      ultimaVersionSincronizada: 'sha-1',
+      ultimaSincronizacionCorrecta: fechaGitHub,
+    });
+  });
+
+  it('marca pendientes los otros destinos solo cuando la sincronización cambia datos locales', async () => {
+    await repositorio.guardarCredencialesGitHub('token', 'owner/datos');
+    await repositorio.registrarSincronizacionCompletada(
+      'github:owner/datos',
+      'sha-1',
+      new Date('2026-10-20T12:34:56.000Z'),
+      false,
+    );
+    await repositorio.conectarGoogle('persona@example.com');
+    await repositorio.registrarSincronizacionCompletada(
+      'google:persona@example.com',
+      'v-1',
+      new Date('2026-10-21T12:34:56.000Z'),
+      true,
+    );
+
+    await repositorio.activarMetodo('github');
+    expect((await repositorio.obtener()).cambiosLocalesPendientes).toBe(true);
+
+    await repositorio.marcarCambiosLocalesPendientes();
+    expect((await conexion.ejecutar<{ cambios_locales_pendientes: number }>(
+      'SELECT cambios_locales_pendientes FROM sincronizacion_destino ORDER BY destino',
+    )).map((fila) => fila.cambios_locales_pendientes)).toEqual([1, 1]);
+  });
+
+  it('conserva los cambios pendientes por destino al alternar Google y GitHub', async () => {
+    const fecha = new Date('2026-10-22T12:34:56.000Z');
+    await repositorio.guardarCredencialesGitHub('token', 'owner/datos');
+    await repositorio.registrarSincronizacionCompletada('github:owner/datos', 'sha-github', fecha, false);
+    await repositorio.marcarCambiosLocalesPendientes();
+    await repositorio.conectarGoogle('persona@example.com');
+
+    expect(await repositorio.obtener()).toMatchObject({
+      metodoSincronizacion: 'google',
+      ultimaVersionSincronizada: null,
+      cambiosLocalesPendientes: false,
+    });
+    await repositorio.registrarSincronizacionCompletada('google:persona@example.com', 'v-google', fecha, false);
+    await repositorio.activarMetodo('github');
+
+    expect(await repositorio.obtener()).toMatchObject({
+      metodoSincronizacion: 'github',
+      ultimaVersionSincronizada: 'sha-github',
+      cambiosLocalesPendientes: true,
+    });
+  });
+
+  it('conserva los datos de las filas antiguas al migrar y migra la sincronización a su destino', async () => {
+    await conexion.cerrar();
+    const motor: MotorSqlite = await crearMotorSqliteEnMemoria();
+    await motor.ejecutarSinResultado(
+      'CREATE TABLE ajustes_aplicacion (id INTEGER PRIMARY KEY, token_github TEXT, repositorio_github TEXT, ' +
+        'ultimo_sha_sincronizado TEXT, ultima_sincronizacion_correcta TEXT, cambios_locales_pendientes INTEGER NOT NULL DEFAULT 0, ' +
+        'catalogo_predefinido_cargado INTEGER NOT NULL DEFAULT 0, destino_ultima_sincronizacion TEXT)',
+    );
+    await motor.ejecutarSinResultado(
+      'INSERT INTO ajustes_aplicacion (id, token_github, repositorio_github, ultimo_sha_sincronizado, ' +
+        'ultima_sincronizacion_correcta, cambios_locales_pendientes, catalogo_predefinido_cargado, destino_ultima_sincronizacion) ' +
+        'VALUES (1, ?, ?, ?, ?, ?, ?, ?)',
+      ['token-existente', 'owner/datos', 'sha-existente', null, 1, 1, 'github'],
+    );
+    await motor.aplicarEsquema();
+    await motor.aplicarEsquema();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [{ provide: SqliteConexionService, useValue: motor }] });
+
+    const ajustesMigrados = await TestBed.inject(AjustesRepositorySqlite).obtener();
+    const destinos = await motor.ejecutar<{ destino: string; ultima_version: string; cambios_locales_pendientes: number }>(
+      'SELECT destino, ultima_version, cambios_locales_pendientes FROM sincronizacion_destino',
+    );
+
+    expect(ajustesMigrados).toMatchObject({
+      tokenGitHub: 'token-existente',
+      repositorioGitHub: 'owner/datos',
+      metodoSincronizacion: 'github',
+      cambiosLocalesPendientes: true,
+      catalogoPredefinidoCargado: true,
+      ultimaVersionSincronizada: 'sha-existente',
+    });
+    expect(destinos).toMatchObject([
+      { destino: 'github:owner/datos', ultima_version: 'sha-existente', cambios_locales_pendientes: 1 },
+    ]);
+    expect(await motor.ejecutar<{ name: string }>('PRAGMA table_info(ajustes_aplicacion)')).toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: 'ultimo_sha_sincronizado' })]),
+    );
+    await motor.cerrar();
   });
 
   it('rechaza un método de sincronización persistido desconocido', async () => {
@@ -105,49 +204,31 @@ describe('AjustesRepositorySqlite', () => {
     await expect(repositorio.obtener()).rejects.toThrow(ErrorValidacion);
   });
 
-  it('marca y desmarca cambiosLocalesPendientes', async () => {
-    await repositorio.marcarCambiosLocalesPendientes(true);
-    expect((await repositorio.obtener()).cambiosLocalesPendientes).toBe(true);
+  it('marca todos los destinos pendientes tras un cambio local', async () => {
+    await repositorio.registrarSincronizacionCompletada(
+      'github:owner/datos',
+      'sha-1',
+      new Date('2026-10-20T12:34:56.000Z'),
+      false,
+    );
+    await repositorio.registrarSincronizacionCompletada(
+      'google:persona@example.com',
+      'v-1',
+      new Date('2026-10-21T12:34:56.000Z'),
+      false,
+    );
 
-    await repositorio.marcarCambiosLocalesPendientes(false);
-    expect((await repositorio.obtener()).cambiosLocalesPendientes).toBe(false);
+    await repositorio.marcarCambiosLocalesPendientes();
+
+    const filas = await conexion.ejecutar<{ cambios_locales_pendientes: number }>(
+      'SELECT cambios_locales_pendientes FROM sincronizacion_destino ORDER BY destino',
+    );
+    expect(filas.map((fila) => fila.cambios_locales_pendientes)).toEqual([1, 1]);
   });
 
   it('estaCatalogoPredefinidoCargado() y marcarCatalogoPredefinidoCargado()', async () => {
     expect(await repositorio.estaCatalogoPredefinidoCargado()).toBe(false);
     await repositorio.marcarCatalogoPredefinidoCargado();
     expect(await repositorio.estaCatalogoPredefinidoCargado()).toBe(true);
-  });
-
-  it('migra una instalación anterior conservando sus ajustes', async () => {
-    await conexion.cerrar();
-    const motor: MotorSqlite = await crearMotorSqliteEnMemoria();
-    await motor.ejecutarSinResultado(
-      'CREATE TABLE ajustes_aplicacion (id INTEGER PRIMARY KEY, token_github TEXT, repositorio_github TEXT, ' +
-        'ultimo_sha_sincronizado TEXT, cambios_locales_pendientes INTEGER NOT NULL DEFAULT 0, ' +
-        'catalogo_predefinido_cargado INTEGER NOT NULL DEFAULT 0)'
-    );
-    await motor.ejecutarSinResultado(
-      'INSERT INTO ajustes_aplicacion (id, token_github, repositorio_github, ultimo_sha_sincronizado, cambios_locales_pendientes, catalogo_predefinido_cargado) ' +
-        'VALUES (1, ?, ?, ?, ?, ?)',
-      ['token-existente', 'owner/datos', 'sha-existente', 1, 1]
-    );
-    await motor.aplicarEsquema();
-    TestBed.resetTestingModule();
-    TestBed.configureTestingModule({ providers: [{ provide: SqliteConexionService, useValue: motor }] });
-
-    const ajustesMigrados = await TestBed.inject(AjustesRepositorySqlite).obtener();
-
-    expect(ajustesMigrados).toMatchObject({
-      tokenGitHub: 'token-existente',
-      repositorioGitHub: 'owner/datos',
-      ultimaVersionSincronizada: 'sha-existente',
-      metodoSincronizacion: 'github',
-      destinoUltimaSincronizacion: 'github',
-      cambiosLocalesPendientes: true,
-      catalogoPredefinidoCargado: true,
-      ultimaSincronizacionCorrecta: null,
-    });
-    await motor.cerrar();
   });
 });

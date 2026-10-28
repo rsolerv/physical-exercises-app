@@ -32,13 +32,13 @@ export class GestionarProgresoDiarioUseCase {
       realizadoAnterior: registros.some((registro) => registro.ejercicioId === ejercicioId && registro.realizado),
     };
     await this.progresoDiarioRepository.marcar(fecha, ejercicioId, realizado);
-    await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
+    await this.ajustesRepository.marcarCambiosLocalesPendientes();
     return cambio;
   }
 
   async restaurarCambio(cambio: CambioProgreso): Promise<void> {
     await this.progresoDiarioRepository.marcar(cambio.fecha, cambio.ejercicioId, cambio.realizadoAnterior);
-    await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
+    await this.ajustesRepository.marcarCambiosLocalesPendientes();
   }
 
   async obtenerProgresoDeFecha(fecha: Date): Promise<ResultadoPorcentajeDia> {

@@ -6,6 +6,8 @@
 
 **Created**: 2026-10-26
 
+**Last Amended**: 2026-10-27 (conexiones de GitHub y Google guardadas a la vez; ver "Historial de cambios")
+
 **Status**: Draft
 
 **Input**: User description: "Permitir que personas sin cuenta de GitHub ni conocimientos técnicos sincronicen sus datos entre dispositivos identificándose con su cuenta de Google ('Conectar con Google'), sin backend propio, guardando los mismos ficheros JSON que hoy se suben a GitHub en un espacio privado de la aplicación dentro de su cuenta. Cada persona solo ve sus propios datos (no hay datos compartidos entre personas). La aplicación sigue funcionando sin cuenta (local-first), GitHub con token se mantiene como opción avanzada, y se ofrece una copia manual mediante exportar e importar un fichero para quien no quiera conectar ninguna cuenta."
@@ -22,7 +24,8 @@
 - Los datos se guardan en un espacio privado de la aplicación dentro del almacenamiento de la cuenta de Google de la persona. Ese espacio no se mezcla con sus ficheros personales y la aplicación no puede leer ningún otro fichero de su cuenta.
 - Cada persona sincroniza únicamente sus propios datos con su propia cuenta. No existen datos compartidos entre personas, roles ni permisos entre usuarios.
 - La aplicación sigue siendo utilizable por completo sin cuenta y sin conexión; conectar una cuenta es opcional.
-- Solo hay un método de sincronización activo a la vez (Google o GitHub). GitHub con token se mantiene como "opción avanzada" para quien ya lo utilice.
+- Solo hay un método de sincronización **activo** a la vez (Google o GitHub): es el que usa "Sincronizar ahora". Sin embargo, la persona puede tener **guardadas a la vez** la conexión de Google y los datos de acceso de GitHub, y cambiar el método activo con una sola acción, sin desconectar ni volver a introducir nada. GitHub con token se mantiene como "opción avanzada" para quien ya lo utilice.
+- Desconectar un método solo olvida los datos de acceso de ese método; el otro, si estaba guardado, permanece intacto.
 - Quien no quiera conectar ninguna cuenta puede llevar sus datos a otro dispositivo mediante una copia manual en fichero (exportar e importar).
 - La sincronización sigue siendo una acción explícita ("Sincronizar ahora"), nunca automática en segundo plano.
 - Los textos del flujo de Google evitan jerga técnica (no se habla de "token", "OAuth" ni "credenciales") y están en español de España.
@@ -82,8 +85,29 @@ Como persona que usa la sincronización, quiero ver qué cuenta tengo conectada,
 1. **Given** una cuenta conectada, **When** la persona abre la pantalla "Sincronización", **Then** ve el método activo (Google), la cuenta conectada, el estado (sin configurar, sincronizando, sincronizado, error o conflicto) y la última sincronización.
 2. **Given** una cuenta conectada, **When** pulsa "Desconectar cuenta" y confirma, **Then** la aplicación olvida la conexión, vuelve a mostrar "Conectar con Google", y tanto los datos locales como los guardados en su cuenta de Google permanecen sin cambios.
 3. **Given** que la conexión ha caducado, **When** la persona pulsa "Sincronizar ahora", **Then** la aplicación intenta renovarla sin molestarla; si necesita su intervención, muestra un mensaje comprensible y una acción "Volver a conectar", y, al reconectar con éxito, la sincronización pendiente se completa automáticamente sin perder datos y sin volver a pulsar "Sincronizar ahora".
-4. **Given** que la persona quiere usar otra cuenta de Google o cambiar a GitHub, **When** desconecta la actual y conecta la otra, **Then** la primera sincronización con la nueva cuenta o método aplica la regla de primera sincronización (nunca sobrescribe datos existentes sin elección), y los datos guardados en la cuenta o método anterior no se modifican ni se borran.
-5. **Given** que la persona ya tiene configurado GitHub con token, **When** abre la pantalla "Sincronización", **Then** ve que GitHub es el método activo y puede seguir usándolo igual que hasta ahora, o desconectarlo y conectar Google.
+4. **Given** que la persona quiere usar otra cuenta de Google, **When** desconecta la actual y conecta la otra, **Then** la primera sincronización con la nueva cuenta aplica la regla de primera sincronización (nunca sobrescribe datos existentes sin elección), y los datos guardados en la cuenta anterior no se modifican ni se borran.
+5. **Given** que la persona ya tiene configurado GitHub con token, **When** abre la pantalla "Sincronización", **Then** ve que GitHub es el método activo y puede seguir usándolo igual que hasta ahora, y conectar Google sin tener que olvidar el token (ver historia 5).
+
+---
+
+### User Story 5 - Tener guardados GitHub y Google a la vez y cambiar de uno a otro (Priority: P3)
+
+Como persona que usa o ha usado GitHub con token y también quiere conectar su cuenta de Google, quiero que ambas conexiones permanezcan guardadas y poder elegir cuál usa "Sincronizar ahora", para no tener que desconectar y volver a introducir mis datos de acceso cada vez que cambio.
+
+**Why this priority**: Hoy cambiar de método obliga a desconectar el activo, lo que borra los datos de acceso de GitHub y obliga a repetir el proceso técnico para volver. Es una mejora de comodidad sobre la historia 3 y no bloquea el valor principal.
+
+**Independent Test**: Con GitHub configurado y sincronizado, conectar Google desde la pantalla "Sincronización" y comprobar que los datos de GitHub siguen guardados; pulsar "Usar este método" en cada uno y comprobar que cambia el método activo, que "Sincronizar ahora" sincroniza con el activo y que no se ha pedido ningún dato de acceso de nuevo.
+
+**Acceptance Scenarios**:
+
+1. **Given** que GitHub está configurado y es el método activo, **When** la persona conecta su cuenta de Google, **Then** los datos de acceso de GitHub permanecen guardados, ambos métodos aparecen como conectados y la persona ve qué método está activo.
+2. **Given** que Google y GitHub están ambos guardados, **When** la persona pulsa "Usar este método" en el que no está activo, **Then** ese pasa a ser el método activo de inmediato, sin pedir datos de acceso ni confirmaciones técnicas, y recibe una confirmación visible indicando el nuevo método activo.
+3. **Given** que Google y GitHub están ambos guardados, **When** pulsa "Sincronizar ahora", **Then** se sincroniza únicamente con el método activo y el otro destino no se lee ni se modifica.
+4. **Given** que un método guardado se activa por primera vez (o por primera vez desde que se conectó), **When** la persona sincroniza, **Then** se aplica la regla de primera sincronización con ese destino; y si ya lo había usado antes, la decisión (subir, descargar o conflicto) se basa solo en la última sincronización realizada con ese mismo destino, sin falsos conflictos por haber sincronizado con el otro.
+5. **Given** que el método activo es GitHub y la persona ha guardado además Google, **When** edita la configuración de GitHub o pulsa "Olvidar token", **Then** solo cambia GitHub: la conexión de Google permanece guardada y, si se olvidó el token del método activo, no queda ningún método activo hasta que la persona elija uno.
+6. **Given** que Google está conectado y GitHub guardado, **When** pulsa "Desconectar cuenta" y confirma, **Then** se olvida solo la conexión de Google, los datos de acceso de GitHub permanecen guardados y, si Google era el método activo, no queda ningún método activo hasta que elija uno.
+7. **Given** que la sesión de Google ha caducado y GitHub es el método activo, **When** la persona sigue sincronizando con GitHub, **Then** no se le pide reconectar Google; la reconexión solo se solicita al activar Google o al sincronizar con él (FR-013).
+8. **Given** que ambos métodos están guardados, **When** la persona exporta una copia de seguridad o sincroniza, **Then** ni los datos de acceso de GitHub ni la información de la cuenta de Google aparecen en el fichero ni en los datos sincronizados.
 
 ---
 
@@ -113,7 +137,9 @@ Como persona que no quiere conectar ninguna cuenta, quiero exportar mis datos a 
 - ¿Qué ocurre si la persona pulsa "Sincronizar ahora" varias veces seguidas? Solo se ejecuta una sincronización a la vez y se evita duplicar o corromper datos.
 - ¿Qué ocurre si la sincronización se interrumpe a mitad (cierre del navegador o pérdida de conexión)? Los datos locales permanecen intactos, no se marca como sincronizado y la siguiente sincronización puede completarse con normalidad.
 - ¿Qué ocurre si la persona tiene dos cuentas de Google? Elige cuál conectar en la pantalla de Google; la cuenta conectada se muestra siempre en la aplicación para evitar confusiones.
-- ¿Qué ocurre si la persona cambia de método (Google a GitHub o viceversa)? Se desconecta el método activo antes de configurar el otro; los datos de ambos destinos se conservan por separado y el primer sincronizado con el nuevo destino aplica la regla de primera sincronización.
+- ¿Qué ocurre si la persona cambia de método (Google a GitHub o viceversa)? Si ambos están guardados, cambia el método activo con "Usar este método" sin desconectar nada; si el otro método no está guardado, lo conecta y lo activa sin perder el guardado del primero. Los datos de ambos destinos se conservan por separado y cada destino recuerda su propia última sincronización; la primera sincronización con un destino nuevo aplica la regla de primera sincronización.
+- ¿Qué ocurre si ambos destinos contienen datos distintos? Solo se sincroniza con el activo; la aplicación no mezcla ni copia datos entre destinos. Al activar el otro, la primera sincronización ofrece la elección explícita entre datos locales y remotos.
+- ¿Qué ocurre si se olvida o desconecta el método activo y queda el otro guardado? No queda ningún método activo ni se activa el otro automáticamente; la pantalla ofrece "Usar este método" en el que sigue guardado y "Sincronizar ahora" no se ofrece hasta elegir uno.
 - ¿Qué ocurre si Google muestra un aviso de aplicación no verificada o pide confirmaciones adicionales? La aplicación no lo controla; la pantalla de sincronización informa en lenguaje sencillo de que el aviso es normal y qué pulsar para continuar mientras la aplicación no esté verificada por Google.
 - ¿Qué ocurre si el navegador bloquea la ventana de inicio de sesión? Se muestra un mensaje que explica cómo permitirla y la persona puede reintentarlo sin perder datos.
 - ¿Qué ocurre si el fichero de importación pertenece a una versión distinta de la aplicación? Se importa si es compatible; si no, se rechaza con un mensaje claro y sin cambios.
@@ -132,13 +158,16 @@ Como persona que no quiere conectar ninguna cuenta, quiero exportar mis datos a 
 - **FR-008**: La sincronización DEBE incluir los mismos datos que con GitHub: ejercicios, imágenes locales (máximo 5 MB cada una), categorías, planificaciones y progreso diario.
 - **FR-009**: La aplicación DEBE detectar, antes de escribir, que la cuenta de Google ha cambiado desde otro dispositivo desde la última lectura y, en ese caso, NO DEBE sobrescribir: DEBE tratarlo como conflicto o pedir repetir la sincronización, sin pérdida de datos. Si el servicio no ofrece escritura condicional, se acepta que quede una ventana de milisegundos entre la comprobación y la escritura, dado que cada cuenta es de una sola persona y la sincronización es manual.
 - **FR-010**: La aplicación DEBE ejecutar una única sincronización a la vez e ignorar o bloquear pulsaciones repetidas de "Sincronizar ahora" mientras una está en curso.
-- **FR-011**: La pantalla "Sincronización" DEBE mostrar el método activo, la cuenta conectada, el estado (sin configurar, sincronizando, sincronizado, error o conflicto) y la última sincronización cuando exista. "Sincronizar ahora" DEBE ser la acción principal cuando haya una conexión.
-- **FR-012**: La persona DEBE poder desconectar la cuenta con una acción "Desconectar cuenta" que pida confirmación. Al desconectar, la aplicación DEBE olvidar la conexión y NO DEBE borrar ni modificar los datos locales ni los guardados en la cuenta de Google.
+- **FR-011**: La pantalla "Sincronización" DEBE mostrar, para cada método (Google y GitHub), si está conectado o sin configurar y, en Google, la cuenta conectada; DEBE indicar de forma inequívoca cuál es el método activo y mostrar el estado (sin configurar, sincronizando, sincronizado, error o conflicto) y la última sincronización del método activo cuando exista. "Sincronizar ahora" DEBE ser la acción principal cuando haya un método activo.
+- **FR-012**: La persona DEBE poder desconectar la cuenta de Google con una acción "Desconectar cuenta" que pida confirmación. Al desconectar, la aplicación DEBE olvidar la conexión de Google y NO DEBE borrar ni modificar los datos locales ni los guardados en la cuenta de Google, ni los datos de acceso de GitHub guardados.
 - **FR-013**: Si la conexión caduca o es revocada, la aplicación DEBE intentar recuperarla sin molestar a la persona; si necesita su intervención, DEBE mostrar un mensaje comprensible y una acción "Volver a conectar", sin perder datos locales ni dejar la sincronización en un estado inconsistente.
 - **FR-014**: Si la persona cancela el inicio de sesión, rechaza el permiso o el navegador bloquea la ventana de acceso, la aplicación DEBE volver a la pantalla sin cuenta conectada, mostrar un mensaje comprensible y conservar los datos locales.
 - **FR-015**: Ante fallos de conexión o indisponibilidad del servicio, la aplicación DEBE conservar íntegros los datos locales, informar del error junto a la acción de sincronizar y permitir reintentar.
-- **FR-016**: Solo DEBE haber un método de sincronización activo a la vez (Google o GitHub). Para cambiar de método o de cuenta, la persona DEBE desconectar primero el activo. La primera sincronización con el nuevo destino DEBE aplicar la regla de primera sincronización, y los datos del destino anterior NO DEBEN modificarse ni borrarse.
-- **FR-017**: La sincronización con GitHub mediante token DEBE conservarse sin cambios de comportamiento como opción avanzada, presentada de forma secundaria respecto a Google.
+- **FR-016**: Solo DEBE haber un método de sincronización activo a la vez (Google o GitHub), y "Sincronizar ahora" DEBE operar únicamente con el activo. La aplicación DEBE permitir tener guardadas a la vez la conexión de Google y los datos de acceso de GitHub, y DEBE permitir cambiar el método activo con una única acción ("Usar este método") sin desconectar el otro ni volver a introducir datos de acceso. Conectar o configurar un método NO DEBE borrar ni invalidar el otro. Al activar un método, la aplicación DEBE avisar visiblemente del cambio.
+- **FR-025**: Cada método DEBE conservar de forma independiente su referencia de última sincronización, de modo que la decisión de sincronizar (subir, descargar, conflicto o primera sincronización) se base solo en lo sincronizado previamente con ese mismo destino. Un método que nunca se ha sincronizado desde este dispositivo DEBE aplicar la regla de primera sincronización, y los datos de los destinos no activos NO DEBEN leerse, modificarse ni borrarse al sincronizar.
+- **FR-026**: Si se olvida o desconecta el método activo, NO DEBE activarse automáticamente el otro: la aplicación DEBE quedar sin método activo, ofrecer "Usar este método" en el que siga guardado y no ofrecer "Sincronizar ahora" hasta que la persona elija uno.
+- **FR-027**: Si la sesión de un método guardado no activo caduca o es revocada, la aplicación NO DEBE molestar a la persona; solo DEBE pedir reconexión al activar ese método o al sincronizar con él (FR-013).
+- **FR-017**: La sincronización con GitHub mediante token DEBE conservarse sin cambios de comportamiento como opción avanzada, presentada de forma secundaria respecto a Google. Los datos de acceso de GitHub DEBEN seguir guardados mientras la persona no use "Olvidar token", incluso si Google está conectado o es el método activo, y NO DEBEN incluirse en los datos sincronizados ni en las copias manuales (FR-037 de la especificación 001).
 - **FR-018**: Las credenciales o la información de sesión de la cuenta de Google NO DEBEN incluirse en los datos sincronizados ni en los ficheros de copia manual, y DEBEN eliminarse de la aplicación al desconectar la cuenta.
 - **FR-019**: La aplicación DEBE permitir "Exportar copia de seguridad", que descarga sin necesidad de cuenta un archivo ZIP con `datos.json` y la carpeta hermana `imagenes/`; el JSON de datos DEBE conservar las rutas lógicas `imagenes/<id>.json`, y cada imagen DEBE ser un archivo JSON separado con su `ImagenArchivoJSON`.
 - **FR-020**: La aplicación DEBE permitir "Importar copia de seguridad" desde un ZIP con `datos.json` e imágenes bajo `imagenes/`, mostrando antes de aplicarlo un aviso de que reemplazará los datos actuales y exigiendo confirmación. Si el archivo, el JSON o la estructura de directorios no son válidos o son incompatibles, DEBE rechazarlo con un mensaje claro y sin modificar los datos locales.
@@ -149,7 +178,7 @@ Como persona que no quiere conectar ninguna cuenta, quiero exportar mis datos a 
 
 ### Key Entities *(include if feature involves data)*
 
-- **Conexión de sincronización**: representa el método activo (Google, GitHub o ninguno), la cuenta identificada, su estado (sin configurar, sincronizando, sincronizado, error o conflicto), la última sincronización y el estado de la autorización. Solo existe una activa a la vez y nunca se incluye en los datos sincronizados.
+- **Conexión de sincronización**: una por método (Google y GitHub). Cada una representa si está conectada o sin configurar, la cuenta identificada (en Google), el estado de su autorización y su propia referencia de última sincronización. Pueden estar guardadas las dos a la vez; solo una es el **método activo** (o ninguna) y esa es la que usa "Sincronizar ahora". Las conexiones nunca se incluyen en los datos sincronizados ni en las copias manuales.
 - **Copia remota**: conjunto de datos de la persona guardado en su espacio privado de la cuenta de Google (datos principales e imágenes), con la información de versión necesaria para detectar cambios de otro dispositivo.
 - **Copia de seguridad en fichero**: documento descargable que contiene todos los datos de la persona, utilizable para importarlos en otro dispositivo sin cuenta.
 - **Datos de la persona**: ejercicios, categorías, imágenes, planificaciones y progreso diario ya definidos en la especificación 001; no cambian.
@@ -167,6 +196,8 @@ Como persona que no quiere conectar ninguna cuenta, quiero exportar mis datos a 
 - **SC-007**: Una copia exportada e importada en otro dispositivo restaura el 100% de los datos, y un fichero inválido se rechaza en el 100% de los casos sin cambiar los datos locales.
 - **SC-008**: Tras una caducidad de la conexión, la persona recupera la sincronización en como máximo 2 acciones desde el mensaje mostrado.
 - **SC-009**: Los flujos de sincronización con GitHub y sus escenarios de aceptación de la especificación 001 conservan sus resultados tras añadir Google.
+- **SC-010**: Con GitHub y Google guardados, la persona cambia de método activo con una sola acción y sin introducir ningún dato de acceso, en el 100% de las pruebas; y tras conectar Google, el 100% de los datos de acceso de GitHub previamente guardados siguen disponibles.
+- **SC-011**: Al alternar entre métodos ya usados, no aparece ningún falso conflicto cuando no ha habido cambios en el destino ni en el dispositivo desde la última sincronización con ese mismo destino (0 conflictos erróneos en las pruebas).
 
 ## Assumptions
 
@@ -176,11 +207,17 @@ Como persona que no quiere conectar ninguna cuenta, quiero exportar mis datos a 
 - **Un único proveedor nuevo**: el alcance incluye solo Google. La arquitectura deberá poder incorporar otros proveedores en el futuro, pero otros destinos quedan fuera de esta feature.
 - **Datos por persona**: cada cuenta contiene un único conjunto de datos de una sola persona; no se contempla compartirlos ni varios perfiles dentro de una misma cuenta.
 - **Varios usuarios en un dispositivo compartido**: fuera de alcance; cada navegador conserva los datos locales de una única persona.
-- **Sin migración automática entre destinos**: la aplicación no copia datos de GitHub a Google ni viceversa por sí sola; la persona puede desconectar un método, conectar el otro y elegir qué datos conservar en la primera sincronización.
+- **Sin migración automática entre destinos**: la aplicación no copia datos de GitHub a Google ni viceversa por sí sola; la persona activa el otro método y elige qué datos conservar en la primera sincronización con él.
+- **Qué activa un método**: conectar un método por primera vez (alta o reconexión) lo convierte en el método activo y se avisa de ello; editar la configuración de GitHub ya guardada no cambia el método activo. Cambiar entre métodos ya guardados se hace solo con "Usar este método".
+- **Credenciales de GitHub guardadas junto a Google**: se mantiene lo aceptado en la especificación 001 (token guardado sin cifrar en el almacenamiento local del navegador, un único usuario por navegador). La sesión de Google sigue sujeta a caducidad (FR-013), por lo que "estar conectado a Google" significa tener la cuenta vinculada y visible, aunque pueda pedirse una reconexión breve al sincronizar.
 - **Sincronización manual**: igual que en la especificación 001, solo se sincroniza bajo acción explícita.
 - **Conexión de la sesión**: la sesión con Google puede caducar; la recuperación puede requerir una interacción breve de la persona (ver FR-013). Los detalles de renovación se decidieron en el plan.
 - **Detección de cambios remotos (FR-009)**: la comprobación de versión antes de escribir es el mecanismo previsto; si el servicio no admite escritura condicional queda una ventana muy breve, aceptada por tratarse de una cuenta de una sola persona (ver `research.md`, sección 4, y la verificación V3).
 - **Disponibilidad**: la sincronización requiere conexión a internet; el resto de la aplicación no.
 - **Tamaño de datos**: se mantiene el límite de 5 MB por imagen de la especificación 001.
-- **Gobernanza (resuelta)**: la constitución v2.3.0 (2026-10-26) ya permite Google como destino de sincronización y una copia manual portable (ZIP con documentos JSON), además de GitHub, siempre sin backend, con un único destino activo y sin secretos de cliente en el código. Esta feature es coherente con ese texto; cualquier destino adicional exigiría una nueva enmienda.
+- **Gobernanza (resuelta)**: la constitución v2.5.0 permite Google como destino de sincronización y una copia manual portable (ZIP con documentos JSON), además de GitHub, siempre sin backend, con un único destino **activo** y sin secretos de cliente en el código. Guardar a la vez las conexiones de ambos métodos es coherente con ese texto, porque solo uno sincroniza a la vez; cualquier destino adicional exigiría una nueva enmienda.
 - **Dependencia de especificación 001**: se reutilizan sin cambios las reglas de decisión de sincronización, el contenido sincronizado, la pantalla "Sincronización" y los estándares de experiencia de usuario de [la especificación 001](../001-gestion-ejercicios-fisicos/spec.md); al planificar se actualizarán las secciones afectadas de `research.md` y de los contratos de sincronización.
+
+## Historial de cambios
+
+- **2026-10-27**: ampliación dentro del mismo ámbito (Living Spec, sin feature nueva). Se permite tener guardadas a la vez la conexión de Google y los datos de acceso de GitHub, con un único método activo y cambio con una acción. Modifica: Decisiones de producto, historia 3 (escenarios 4 y 5), nueva historia 5, casos límite de cambio de método, FR-011, FR-012, FR-016, FR-017, nuevos FR-025 a FR-027, entidad Conexión de sincronización, SC-010 y SC-011, y supuestos. Los documentos plan.md, data-model.md, contracts/, quickstart.md y 	asks.md quedan pendientes de actualizar con /speckit-plan y /speckit-tasks.

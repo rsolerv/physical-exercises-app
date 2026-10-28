@@ -33,11 +33,46 @@ export class MotorSqlite {
       "UPDATE ajustes_aplicacion SET metodo_sincronizacion = 'github' " +
         'WHERE metodo_sincronizacion IS NULL AND token_github IS NOT NULL AND repositorio_github IS NOT NULL'
     );
-    this.db.exec(
-      "UPDATE ajustes_aplicacion SET destino_ultima_sincronizacion = 'github' " +
-        "WHERE metodo_sincronizacion = 'github' AND destino_ultima_sincronizacion IS NULL " +
-        'AND ultimo_sha_sincronizado IS NOT NULL'
-    );
+    const destinos = this.db.exec({
+      sql: 'SELECT COUNT(*) AS cantidad FROM sincronizacion_destino',
+      returnValue: 'resultRows',
+      rowMode: 'object',
+    }) as { cantidad: number }[];
+    if (destinos[0].cantidad === 0) {
+      const ajustesAnteriores = this.db.exec({
+        sql: 'SELECT ultimo_sha_sincronizado, destino_ultima_sincronizacion, repositorio_github, ' +
+          'cambios_locales_pendientes, ultima_sincronizacion_correcta FROM ajustes_aplicacion WHERE id = 1',
+        returnValue: 'resultRows',
+        rowMode: 'object',
+      }) as {
+        ultimo_sha_sincronizado: string | null;
+        destino_ultima_sincronizacion: string | null;
+        repositorio_github: string | null;
+        cambios_locales_pendientes: number;
+        ultima_sincronizacion_correcta: string | null;
+      }[];
+      const anterior = ajustesAnteriores[0];
+      if (anterior.ultimo_sha_sincronizado && anterior.destino_ultima_sincronizacion) {
+        const destinoAnterior = anterior.destino_ultima_sincronizacion;
+        const destino = destinoAnterior === 'github'
+          ? anterior.repositorio_github
+            ? `github:${anterior.repositorio_github}`
+            : null
+          : destinoAnterior;
+        if (destino) {
+          this.db.exec({
+            sql: 'INSERT OR IGNORE INTO sincronizacion_destino ' +
+              '(destino, ultima_version, cambios_locales_pendientes, ultima_sincronizacion) VALUES (?, ?, ?, ?)',
+            bind: [
+              destino,
+              anterior.ultimo_sha_sincronizado,
+              anterior.cambios_locales_pendientes,
+              anterior.ultima_sincronizacion_correcta ?? new Date().toISOString(),
+            ],
+          });
+        }
+      }
+    }
 
     const columnasCategoria = this.db.exec({
       sql: 'PRAGMA table_info(categoria)',

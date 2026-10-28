@@ -30,6 +30,6 @@ export class CopiaManualUseCase {
       if (!imagen) throw new ErrorValidacion('El fichero está dañado o incompleto.');
       return imagen;
     });
-    await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
+    await this.ajustesRepository.marcarCambiosLocalesPendientes();
   }
 }

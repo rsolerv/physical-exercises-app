@@ -28,7 +28,6 @@ function ajustes(sobrescribir: Partial<AjustesAplicacion> = {}): AjustesAplicaci
     catalogoPredefinidoCargado: true,
     metodoSincronizacion: null,
     cuentaGoogle: null,
-    destinoUltimaSincronizacion: null,
     ...sobrescribir,
   };
   if (resultado.metodoSincronizacion === null && resultado.tokenGitHub && resultado.repositorioGitHub) {
@@ -46,6 +45,7 @@ describe('ConfiguracionSincronizacionComponent', () => {
     obtenerAjustes?: ReturnType<typeof vi.fn>;
     sincronizar?: ReturnType<typeof vi.fn>;
     conectarGoogle?: ReturnType<typeof vi.fn>;
+    activarMetodo?: ReturnType<typeof vi.fn>;
     desconectarGoogle?: ReturnType<typeof vi.fn>;
     olvidarCredencialesGitHub?: ReturnType<typeof vi.fn>;
     guardarCredencialesGitHub?: ReturnType<typeof vi.fn>;
@@ -73,6 +73,7 @@ describe('ConfiguracionSincronizacionComponent', () => {
           provide: GestionarConexionSincronizacionUseCase,
           useValue: {
             conectarGoogle: opciones.conectarGoogle ?? vi.fn().mockResolvedValue({ correo: 'raquel@example.com', nombre: 'Raquel' }),
+            activarMetodo: opciones.activarMetodo ?? vi.fn().mockResolvedValue(undefined),
             desconectar: opciones.desconectarGoogle ?? vi.fn().mockResolvedValue(undefined),
           },
         },
@@ -121,12 +122,12 @@ describe('ConfiguracionSincronizacionComponent', () => {
     expect(textoGoogle).not.toMatch(/token|oauth|credenciales/i);
   });
 
-  it('mantiene abierta la configuración cuando no hay credenciales y comunica estado sin configurar', async () => {
+  it('muestra la configuración de GitHub cuando aún no está configurada', async () => {
     configurar();
     const fixture = await crearComponente();
     const principal = (fixture.nativeElement as HTMLElement).querySelector('.configuracion-sincronizacion__tarjeta--principal');
 
-    expect((fixture.nativeElement as HTMLElement).querySelector('details')?.open).toBe(false);
+    expect((fixture.nativeElement as HTMLElement).querySelector('details')?.open).toBe(true);
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Sin configurar');
     expect(principal?.textContent).toContain('Conectar con Google');
   });
@@ -297,7 +298,7 @@ describe('ConfiguracionSincronizacionComponent', () => {
 
     expect(raiz.textContent).toContain('Sincronización con Google');
     expect(raiz.textContent).toContain('raquel@example.com');
-    expect(raiz.textContent).toContain('Conectado');
+    expect(raiz.textContent).toContain('Método activo');
     expect(raiz.textContent).toContain('Última sincronización correcta');
     expect(raiz.textContent).toContain('Desconectar cuenta');
   });
@@ -394,16 +395,23 @@ describe('ConfiguracionSincronizacionComponent', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('[role="alert"]')?.textContent).toContain('Tu navegador ha bloqueado la ventana de Google');
   });
 
-  it('bloquea Google mientras GitHub sea el método activo', async () => {
-    configurar({ ajustes: ajustes({ tokenGitHub: 'token-x', repositorioGitHub: 'owner/data' }) });
+  it('mantiene ambos métodos conectados e indica cuál está activo', async () => {
+    configurar({
+      ajustes: ajustes({
+        tokenGitHub: 'token-x',
+        repositorioGitHub: 'owner/data',
+        metodoSincronizacion: 'google',
+        cuentaGoogle: 'raquel@example.com',
+      }),
+    });
     const fixture = await crearComponente();
-    const detalles = (fixture.nativeElement as HTMLElement).querySelector('details');
-    const botonGoogle = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('button'))
-      .find((boton) => boton.textContent?.includes('Conectar con Google'));
+    const raiz = fixture.nativeElement as HTMLElement;
 
-    expect(detalles?.open).toBe(true);
-    expect((botonGoogle as HTMLButtonElement).disabled).toBe(true);
-    expect((fixture.nativeElement as HTMLElement).textContent?.toLowerCase()).toContain('olvida primero la configuración de github');
+    expect(raiz.textContent).toContain('Método activo');
+    expect(raiz.textContent).toContain('Conectado');
+    expect(raiz.textContent).toContain('raquel@example.com');
+    expect(raiz.querySelector('details')?.open).toBe(false);
+    expect(Array.from(raiz.querySelectorAll('button')).some((boton) => boton.textContent?.includes('Usar este método'))).toBe(true);
   });
 
   it('muestra un conflicto remoto con la indicación de reintentar sin cambiar los datos locales', async () => {
@@ -419,11 +427,69 @@ describe('ConfiguracionSincronizacionComponent', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('[role="alert"]')?.textContent).toContain('Tus datos de este dispositivo no han cambiado');
   });
 
-  it('bloquea el formulario de GitHub cuando Google es el método activo', async () => {
-    configurar({ ajustes: ajustes({ metodoSincronizacion: 'google', cuentaGoogle: 'raquel@example.com' }) });
+  it('permite conectar Google cuando GitHub es el método activo', async () => {
+    const conectarGoogle = vi.fn().mockResolvedValue({ correo: 'raquel@example.com', nombre: null });
+    configurar({
+      ajustes: ajustes({ metodoSincronizacion: 'github', tokenGitHub: 'token', repositorioGitHub: 'owner/data' }),
+      conectarGoogle,
+    });
     const fixture = await crearComponente();
 
-    expect((fixture.nativeElement as HTMLElement).querySelector('form')).toBeNull();
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Desconecta tu cuenta de Google antes de configurar GitHub');
+    await fixture.componentInstance.conectarGoogle();
+
+    expect(conectarGoogle).toHaveBeenCalledOnce();
+    expect(mostrarExito).toHaveBeenCalledWith('Cuenta de Google conectada.');
+  });
+
+  it('permite guardar GitHub cuando Google está activo y anuncia el cambio de método de forma accesible', async () => {
+    const guardarCredencialesGitHub = vi.fn().mockResolvedValue(undefined);
+    const activarMetodo = vi.fn().mockResolvedValue(undefined);
+    configurar({
+      ajustes: ajustes({ metodoSincronizacion: 'google', cuentaGoogle: 'raquel@example.com' }),
+      guardarCredencialesGitHub,
+      activarMetodo,
+    });
+    const fixture = await crearComponente();
+    const raiz = fixture.nativeElement as HTMLElement;
+    expect(raiz.querySelector('form')).toBeTruthy();
+
+    fixture.componentInstance.modelo.set({ token: 'ghp_example', repositorio: 'owner/data' });
+    await fixture.componentInstance.guardarCredenciales();
+    await fixture.componentInstance.activarMetodo('github');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(guardarCredencialesGitHub).toHaveBeenCalledWith('ghp_example', 'owner/data');
+    expect(activarMetodo).toHaveBeenCalledWith('github');
+    expect(raiz.querySelector('[aria-live="polite"]')?.textContent).toContain('Ahora sincronizas con GitHub.');
+  });
+
+  it('muestra la elección cuando hay un método conectado pero ninguno está activo', async () => {
+    configurar({
+      ajustes: ajustes({ cuentaGoogle: 'raquel@example.com', metodoSincronizacion: null }),
+    });
+    const fixture = await crearComponente();
+    const raiz = fixture.nativeElement as HTMLElement;
+
+    expect(raiz.textContent).toContain('Elige con qué método quieres sincronizar.');
+    expect(raiz.querySelector('button')?.textContent).not.toContain('Sincronizar ahora');
+    expect(Array.from(raiz.querySelectorAll('button')).some((boton) => boton.textContent?.includes('Usar este método'))).toBe(true);
+  });
+
+  it('no muestra la reconexión de Google cuando GitHub es el método activo', async () => {
+    configurar({
+      ajustes: ajustes({
+        metodoSincronizacion: 'github',
+        tokenGitHub: 'token',
+        repositorioGitHub: 'owner/data',
+        cuentaGoogle: 'raquel@example.com',
+      }),
+    });
+    const fixture = await crearComponente();
+    fixture.componentInstance.requiereReconectar.set(true);
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Volver a conectar');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Método activo');
   });
 });

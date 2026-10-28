@@ -99,7 +99,6 @@ export const AJUSTES_SINCRONIZACION_DEMO: AjustesAplicacion = {
   catalogoPredefinidoCargado: true,
   metodoSincronizacion: null,
   cuentaGoogle: null,
-  destinoUltimaSincronizacion: null,
 };
 
 export function ajustesSincronizacionDemo(cambios: Partial<AjustesAplicacion> = {}): AjustesAplicacion {
@@ -177,11 +176,10 @@ export const DEMO_PROVIDERS: Provider[] = [
       obtener: async () => AJUSTES_SINCRONIZACION_DEMO,
       guardarCredencialesGitHub: async () => undefined,
       olvidarCredencialesGitHub: async () => undefined,
-      actualizarUltimaVersionSincronizada: async () => undefined,
       conectarGoogle: async () => undefined,
       desconectarGoogle: async () => undefined,
-      registrarDestinoSincronizado: async () => undefined,
-      registrarSincronizacionCorrecta: async () => undefined,
+      activarMetodo: async () => undefined,
+      registrarSincronizacionCompletada: async () => undefined,
       marcarCambiosLocalesPendientes: async () => undefined,
       estaCatalogoPredefinidoCargado: async () => true,
       marcarCatalogoPredefinidoCargado: async () => undefined,

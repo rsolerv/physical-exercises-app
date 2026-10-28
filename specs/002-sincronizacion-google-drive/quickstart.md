@@ -43,6 +43,7 @@ Hechas con una página de prueba mínima. Cada resultado se anota en [research.m
 1. El agente `ux-ui-expert` crea las historias de [contracts/interfaz-usuario.md](./contracts/interfaz-usuario.md) y las presenta con `npm run storybook`.
 2. Revisa las historias en móvil, tablet y escritorio y responde con tu aprobación o con los fallos y mejoras.
 3. **Esperado**: no se implementan los componentes de la pantalla hasta recibir tu aprobación explícita.
+4. Tras la enmienda del 2026-10-27, revisa también las historias de GitHub y Google conectados a la vez, el cambio de método y el estado sin método activo, y aprueba de nuevo antes de la implementación.
 
 ## US1 — Conectar con Google y sincronizar por primera vez
 
@@ -68,8 +69,19 @@ Hechas con una página de prueba mínima. Cada resultado se anota en [research.m
 1. Con una cuenta conectada, revisa la pantalla. **Esperado**: método (Google), cuenta, estado y última sincronización.
 2. Pulsa "Desconectar cuenta". **Esperado**: confirmación en línea; al confirmar vuelve a verse "Conectar con Google", los datos locales siguen y, al reconectar la misma cuenta, los datos guardados en Google siguen ahí.
 3. Retira el acceso de la aplicación desde la configuración de tu cuenta de Google y pulsa "Sincronizar ahora". **Esperado**: aviso comprensible y "Volver a conectar"; tras reconectar (como máximo 2 acciones desde el mensaje), la sincronización se completa sola sin perder datos. Repite dejando que caduque la conexión (más de una hora abierta).
-4. Desconecta y conecta una segunda cuenta de Google. **Esperado**: la primera sincronización aplica la regla de primera sincronización y los datos de la primera cuenta no cambian.
-5. Con GitHub configurado y funcionando, abre la pantalla. **Esperado**: GitHub es el método activo y sigue funcionando como antes; "Sincronizar ahora" aparece en la acción común, fuera de la tarjeta de Google, e indica GitHub como método activo. Intenta conectar Google: se pide olvidar antes el token de GitHub. Olvida el token y conecta Google.
+4. Desconecta y conecta una segunda cuenta de Google. **Esperado**: la primera sincronización con la nueva cuenta aplica la regla de primera sincronización y los datos de la primera cuenta no cambian.
+5. Con GitHub configurado y funcionando, abre la pantalla. **Esperado**: GitHub es el método activo y sigue funcionando como antes; "Sincronizar ahora" aparece en la acción común, fuera de la tarjeta de Google, e indica GitHub como método activo. "Conectar con Google" está disponible sin olvidar el token (ver US5).
+
+## US5 — GitHub y Google guardados a la vez
+
+1. Con GitHub configurado y sincronizado, pulsa "Conectar con Google" y completa la conexión. **Esperado**: ambos métodos aparecen conectados, Google con "Método activo" y aviso "Ahora sincronizas con Google.", y los datos de GitHub (repositorio y token oculto) siguen guardados al desplegar las opciones avanzadas.
+2. Pulsa "Usar este método" en GitHub. **Esperado**: GitHub pasa a ser el activo de inmediato, sin pedir token ni confirmación; la barra común indica GitHub. Repite hacia Google.
+3. Con Google activo, pulsa "Sincronizar ahora". **Esperado**: se sincroniza solo con Google; el repositorio de GitHub no cambia.
+4. Sin cambios entre medias, alterna entre ambos métodos y sincroniza en cada uno. **Esperado**: sin conflictos ni preguntas (los dos ya se habían sincronizado). Cambia un ejercicio, sincroniza con Google, cambia a GitHub y sincroniza. **Esperado**: se sube el cambio a GitHub sin conflicto.
+5. Con Google activo, edita la configuración de GitHub y guarda. **Esperado**: Google sigue activo. Pulsa "Olvidar token" en GitHub. **Esperado**: Google sigue conectado y activo.
+6. Vuelve a configurar GitHub y actívalo; pulsa "Desconectar cuenta" de Google y confirma. **Esperado**: GitHub sigue guardado y activo, y Google muestra "Conectar con Google". Desconecta ahora el método activo y comprueba **Esperado**: sin método activo, no hay "Sincronizar ahora" y el otro método ofrece "Usar este método" (si sigue conectado).
+7. Con GitHub activo y la sesión de Google caducada (más de una hora abierta), sincroniza con GitHub. **Esperado**: sin avisos de Google. Actívalo y sincroniza. **Esperado**: "Volver a conectar" solo ahora.
+8. Exporta una copia y revisa el ZIP. **Esperado**: sin token ni correo.
 
 ## US4 — Copia manual
 
@@ -99,6 +111,8 @@ Las comprobaciones de red (por ejemplo, que no haya solicitudes a Google al arra
 | SC-007 | Exportar e importar: 100 % de los datos; fichero inválido rechazado siempre sin cambios |
 | SC-008 | Tras la caducidad, recuperar la sincronización en 2 acciones como máximo desde el mensaje |
 | SC-009 | Los escenarios de GitHub de la feature 001 conservan sus resultados |
+| SC-010 | Con ambos métodos guardados, cambiar de método con una acción y sin datos de acceso: 100 %; tras conectar Google, los datos de GitHub siguen guardados: 100 % |
+| SC-011 | Alternar entre métodos ya sincronizados y sin cambios: 0 conflictos erróneos |
 
 ## Resultados de validación (27-10-2026)
 

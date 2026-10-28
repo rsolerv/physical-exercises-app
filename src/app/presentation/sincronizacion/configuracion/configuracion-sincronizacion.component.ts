@@ -67,6 +67,7 @@ export class ConfiguracionSincronizacionComponent {
   readonly guardando = signal(false);
   readonly confirmandoDesconexion = signal(false);
   readonly requiereReconectar = signal(false);
+  readonly mensajeCambioMetodo = signal<string | null>(null);
   readonly mensajeError = signal<string | null>(null);
   readonly errorRepositorio = signal<string | null>(null);
   readonly errorToken = signal<string | null>(null);
@@ -80,8 +81,11 @@ export class ConfiguracionSincronizacionComponent {
   }
 
   protected get cuentaGoogle(): string | null {
-    const ajustes = this.recursoAjustes.value();
-    return ajustes?.metodoSincronizacion === 'google' ? ajustes.cuentaGoogle : null;
+    return this.recursoAjustes.value()?.cuentaGoogle ?? null;
+  }
+
+  protected get tieneCuentaGoogle(): boolean {
+    return this.cuentaGoogle !== null;
   }
 
   protected get metodoGoogleActivo(): boolean {
@@ -100,8 +104,22 @@ export class ConfiguracionSincronizacionComponent {
     return this.metodoGoogleActivo ? 'Google' : 'GitHub';
   }
 
+  protected get hayMetodoConectado(): boolean {
+    return this.tieneCredenciales || this.tieneCuentaGoogle;
+  }
+
+  protected get estadoGoogle(): string {
+    if (!this.tieneCuentaGoogle) return 'Sin configurar';
+    return this.metodoGoogleActivo ? 'Método activo' : 'Conectado';
+  }
+
+  protected get estadoGitHub(): string {
+    if (!this.tieneCredenciales) return 'Sin configurar';
+    return this.metodoGitHubActivo ? 'Método activo' : 'Conectado';
+  }
+
   protected get esConfiguracionGitHubPlegada(): boolean {
-    return !this.metodoGitHubActivo;
+    return this.tieneCredenciales && !this.metodoGitHubActivo;
   }
 
   protected readonly estadoVisible = computed(() => {
@@ -127,6 +145,9 @@ export class ConfiguracionSincronizacionComponent {
 
   async guardarCredenciales(): Promise<void> {
     const { token, repositorio } = this.modelo();
+    const ajustesPrevios = this.recursoAjustes.value();
+    const activaraGitHub =
+      !this.tieneCredenciales || ajustesPrevios?.metodoSincronizacion === null;
     this.errorToken.set(token.trim() ? null : 'Introduce el token de GitHub.');
     this.errorRepositorio.set(
       !repositorio.trim()
@@ -140,6 +161,7 @@ export class ConfiguracionSincronizacionComponent {
     try {
       await this.ajustesRepository.guardarCredencialesGitHub(token.trim(), repositorio.trim());
       this.modelo.update((modelo) => ({ ...modelo, token: '' }));
+      if (activaraGitHub) this.mensajeCambioMetodo.set('Ahora sincronizas con GitHub.');
       this.recursoAjustes.reload();
       this.mensajeFeedback.mostrarExito('Credenciales de GitHub guardadas.');
     } catch (error) {
@@ -163,12 +185,13 @@ export class ConfiguracionSincronizacionComponent {
   }
 
   async conectarGoogle(): Promise<void> {
-    if (this.metodoGitHubActivo) return;
+    const cambiaraMetodo = !this.metodoGoogleActivo;
     this.conectando.set(true);
     this.mensajeError.set(null);
     try {
       await this.gestionarConexion.conectarGoogle();
       this.requiereReconectar.set(false);
+      if (cambiaraMetodo) this.mensajeCambioMetodo.set('Ahora sincronizas con Google.');
       this.recursoAjustes.reload();
       this.mensajeFeedback.mostrarExito('Cuenta de Google conectada.');
       if (this.sincronizacionPendiente()) {
@@ -182,6 +205,18 @@ export class ConfiguracionSincronizacionComponent {
       this.mensajeFeedback.mostrarError(mensaje);
     } finally {
       this.conectando.set(false);
+    }
+  }
+
+  async activarMetodo(metodo: 'github' | 'google'): Promise<void> {
+    try {
+      await this.gestionarConexion.activarMetodo(metodo);
+      this.requiereReconectar.set(false);
+      this.sincronizacionPendiente.set(false);
+      this.mensajeCambioMetodo.set(`Ahora sincronizas con ${metodo === 'google' ? 'Google' : 'GitHub'}.`);
+      this.recursoAjustes.reload();
+    } catch (error) {
+      this.mensajeFeedback.mostrarError(error instanceof Error ? error.message : 'No se ha podido cambiar el método de sincronización.');
     }
   }
 

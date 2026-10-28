@@ -8,7 +8,6 @@ import type { AjustesAplicacion } from '../../../src/app/application/ports/ajust
 import {
   ErrorConexionCancelada,
   ErrorRedSincronizacion,
-  ErrorValidacion,
   ErrorVentanaBloqueada,
 } from '../../../src/app/domain/errores/errores-dominio';
 
@@ -22,7 +21,6 @@ function ajustes(overrides: Partial<AjustesAplicacion> = {}): AjustesAplicacion 
     catalogoPredefinidoCargado: true,
     metodoSincronizacion: null,
     cuentaGoogle: null,
-    destinoUltimaSincronizacion: null,
     ...overrides,
   };
 }
@@ -35,12 +33,18 @@ describe('GestionarConexionSincronizacionUseCase', () => {
   ) {
     const conectarGoogle = vi.fn().mockResolvedValue(undefined);
     const desconectarGoogle = vi.fn().mockResolvedValue(undefined);
+    const activarMetodo = vi.fn().mockResolvedValue(undefined);
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
         {
           provide: AjustesRepositoryPort,
-          useValue: { obtener: vi.fn().mockResolvedValue(ajustesAplicacion), conectarGoogle, desconectarGoogle },
+          useValue: {
+            obtener: vi.fn().mockResolvedValue(ajustesAplicacion),
+            conectarGoogle,
+            desconectarGoogle,
+            activarMetodo,
+          },
         },
         {
           provide: GoogleAutorizacionPort,
@@ -54,6 +58,7 @@ describe('GestionarConexionSincronizacionUseCase', () => {
       conectarGoogle,
       desconectar,
       desconectarGoogle,
+      activarMetodo,
     };
   }
 
@@ -66,18 +71,25 @@ describe('GestionarConexionSincronizacionUseCase', () => {
     expect(conectarGoogle).toHaveBeenCalledWith('persona@example.com');
   });
 
-  it('rechaza GitHub activo antes de abrir la ventana de Google', async () => {
-    const conectar = vi.fn();
-    const { caso, conectarGoogle } = configurar(
+  it('conecta Google con GitHub configurado y conserva sus credenciales', async () => {
+    const { caso, conectar, conectarGoogle } = configurar(
       ajustes({ metodoSincronizacion: 'github', tokenGitHub: 'token', repositorioGitHub: 'owner/datos' }),
-      conectar
     );
 
-    await expect(caso.conectarGoogle()).rejects.toThrow(
-      new ErrorValidacion('Olvida el token de GitHub antes de conectar Google.')
-    );
+    await caso.conectarGoogle();
+
+    expect(conectar).toHaveBeenCalledOnce();
+    expect(conectarGoogle).toHaveBeenCalledWith('persona@example.com');
+  });
+
+  it('activa el método seleccionado sin autorizar ni contactar con proveedores', async () => {
+    const { caso, activarMetodo, conectar, desconectar } = configurar();
+
+    await caso.activarMetodo('github');
+
+    expect(activarMetodo).toHaveBeenCalledWith('github');
     expect(conectar).not.toHaveBeenCalled();
-    expect(conectarGoogle).not.toHaveBeenCalled();
+    expect(desconectar).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -111,6 +123,21 @@ describe('GestionarConexionSincronizacionUseCase', () => {
     );
 
     await expect(caso.desconectar()).resolves.toBeUndefined();
+
+    expect(desconectarGoogle).toHaveBeenCalledOnce();
+  });
+
+  it('desconecta Google sin cambiar las credenciales guardadas de GitHub', async () => {
+    const { caso, desconectarGoogle } = configurar(
+      ajustes({
+        metodoSincronizacion: 'google',
+        cuentaGoogle: 'persona@example.com',
+        tokenGitHub: 'ghp_token',
+        repositorioGitHub: 'owner/datos',
+      }),
+    );
+
+    await caso.desconectar();
 
     expect(desconectarGoogle).toHaveBeenCalledOnce();
   });

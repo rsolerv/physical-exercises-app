@@ -35,7 +35,6 @@ describe('Integración de rutas de sincronización (US5)', () => {
               catalogoPredefinidoCargado: true,
               metodoSincronizacion: null,
               cuentaGoogle: null,
-              destinoUltimaSincronizacion: null,
             }),
             guardarCredencialesGitHub: vi.fn().mockResolvedValue(undefined),
             olvidarCredencialesGitHub: vi.fn().mockResolvedValue(undefined),

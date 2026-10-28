@@ -16,37 +16,37 @@ export class GestionarPlanificacionUseCase {
 
   async crear(datos: DatosNuevaPlanificacion): Promise<Planificacion> {
     const creada = await this.planificacionRepository.crear(datos);
-    await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
+    await this.ajustesRepository.marcarCambiosLocalesPendientes();
     return creada;
   }
 
   async actualizar(id: string, cambios: Partial<DatosNuevaPlanificacion>): Promise<Planificacion> {
     const actualizada = await this.planificacionRepository.actualizar(id, cambios);
-    await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
+    await this.ajustesRepository.marcarCambiosLocalesPendientes();
     return actualizada;
   }
 
   async duplicar(id: string, nuevoNombre: string): Promise<Planificacion> {
     const copia = await this.planificacionRepository.duplicar(id, nuevoNombre);
-    await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
+    await this.ajustesRepository.marcarCambiosLocalesPendientes();
     return copia;
   }
 
   async asignarEjercicioADia(planificacionId: string, dia: DiaSemana, ejercicioId: string): Promise<void> {
     await this.planificacionRepository.asignarEjercicioADia(planificacionId, dia, ejercicioId);
-    await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
+    await this.ajustesRepository.marcarCambiosLocalesPendientes();
   }
 
   async quitarEjercicioDeDia(planificacionId: string, dia: DiaSemana, ejercicioId: string): Promise<void> {
     await this.planificacionRepository.quitarEjercicioDeDia(planificacionId, dia, ejercicioId);
-    await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
+    await this.ajustesRepository.marcarCambiosLocalesPendientes();
   }
 
   /** Crea una planificación concreta a partir de una plantilla, asignándole un lunes (FR-018, FR-019). */
   async crearDesdeTemplate(plantillaId: string, nombre: string, fechaInicio: string): Promise<Planificacion> {
     const copia = await this.planificacionRepository.duplicar(plantillaId, nombre);
     const actualizada = await this.planificacionRepository.actualizar(copia.id, { fechaInicio });
-    await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
+    await this.ajustesRepository.marcarCambiosLocalesPendientes();
     return actualizada;
   }
 }

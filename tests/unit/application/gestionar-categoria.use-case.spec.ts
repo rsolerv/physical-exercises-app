@@ -37,11 +37,10 @@ describe('GestionarCategoriaUseCase', () => {
       obtener: vi.fn(),
       guardarCredencialesGitHub: vi.fn(),
       olvidarCredencialesGitHub: vi.fn(),
-      actualizarUltimaVersionSincronizada: vi.fn(),
       conectarGoogle: vi.fn(),
       desconectarGoogle: vi.fn(),
-      registrarDestinoSincronizado: vi.fn(),
-      registrarSincronizacionCorrecta: vi.fn(),
+      activarMetodo: vi.fn(),
+      registrarSincronizacionCompletada: vi.fn(),
       marcarCambiosLocalesPendientes: vi.fn(),
       estaCatalogoPredefinidoCargado: vi.fn(),
       marcarCatalogoPredefinidoCargado: vi.fn(),
@@ -60,13 +59,13 @@ describe('GestionarCategoriaUseCase', () => {
   it('crea una categoría y marca cambios locales pendientes', async () => {
     const creada = await caso.crear('Rodilla');
     expect(creada.id).toBe('cat-nueva');
-    expect(ajustesRepo.marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
+    expect(ajustesRepo.marcarCambiosLocalesPendientes).toHaveBeenCalledOnce();
   });
 
   it('actualiza una categoría y marca cambios locales pendientes', async () => {
     await caso.actualizar('cat-1', { nombre: 'Rodillas' });
     expect(categoriaRepo.actualizar).toHaveBeenCalledWith('cat-1', { nombre: 'Rodillas' });
-    expect(ajustesRepo.marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
+    expect(ajustesRepo.marcarCambiosLocalesPendientes).toHaveBeenCalledOnce();
   });
 
   it('eliminar retira la categoría de ejercicios con otras categorías antes de borrarla (FR-011)', async () => {
@@ -86,7 +85,7 @@ describe('GestionarCategoriaUseCase', () => {
     expect(ejercicioRepo.quitarCategoriaDeTodos).toHaveBeenCalledWith('cat-1');
     expect(categoriaRepo.eliminar).toHaveBeenCalledWith('cat-1');
     expect(orden).toEqual(['quitarCategoriaDeTodos', 'eliminar']);
-    expect(ajustesRepo.marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
+    expect(ajustesRepo.marcarCambiosLocalesPendientes).toHaveBeenCalledOnce();
   });
 
   it('impide eliminar una categoría que es la única asignada y explica qué ejercicios reasignar', async () => {
@@ -130,7 +129,7 @@ describe('GestionarCategoriaUseCase', () => {
 
     expect(categoriaRepo.restaurar).toHaveBeenCalledWith(snapshot.categoria);
     expect(ejercicioRepo.actualizar).toHaveBeenCalledWith('ej-1', { categoriaIds: ['cat-1', 'cat-2'] });
-    expect(ajustesRepo.marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
+    expect(ajustesRepo.marcarCambiosLocalesPendientes).toHaveBeenCalledOnce();
   });
 
   it('propaga explícitamente los errores al restaurar la categoría', async () => {

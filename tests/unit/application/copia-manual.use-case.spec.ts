@@ -81,7 +81,7 @@ describe('CopiaManualUseCase', () => {
     const resolver = importar.mock.calls[0][1] as (ruta: string) => Promise<ImagenArchivoJSON>;
     await expect(resolver('imagenes/img-1.json')).resolves.toEqual(imagen);
     await expect(resolver('imagenes/inexistente.json')).rejects.toThrow(ErrorValidacion);
-    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
+    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledOnce();
   });
 
   it('rechaza una imagen demasiado grande sin marcar cambios pendientes', async () => {

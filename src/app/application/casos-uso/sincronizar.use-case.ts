@@ -5,7 +5,6 @@ import { ExportarImportarDatosUseCase } from './exportar-importar-datos.use-case
 import type { ExportacionJSON } from '../ports/github-sync.port';
 import { decidirAccionSincronizacion } from '../../domain/sincronizacion/decidir-accion-sincronizacion';
 import { identificarDestinoSincronizacion } from '../../domain/sincronizacion/identificar-destino-sincronizacion';
-import { versionSincronizadaEfectiva } from '../../domain/sincronizacion/version-sincronizada-efectiva';
 import { ErrorValidacion } from '../../domain/errores/errores-dominio';
 
 export type ResultadoSincronizacion =
@@ -36,23 +35,23 @@ export class SincronizarUseCase {
 
   private async sincronizarInterno(): Promise<ResultadoSincronizacion> {
     const ajustes = await this.ajustesRepository.obtener();
-    const destino = identificarDestinoSincronizacion(ajustes.metodoSincronizacion, ajustes.cuentaGoogle);
-    const versionGuardada = versionSincronizadaEfectiva(
-      destino,
-      ajustes.destinoUltimaSincronizacion,
-      ajustes.ultimaVersionSincronizada
+    const destino = identificarDestinoSincronizacion(
+      ajustes.metodoSincronizacion,
+      ajustes.cuentaGoogle,
+      ajustes.repositorioGitHub,
     );
+    if (destino === null) throw new ErrorValidacion('No hay ningún método de sincronización activo.');
     const lecturaRemota = await this.proveedor.leerRemoto();
     const accion = decidirAccionSincronizacion({
       cambiosLocalesPendientes: ajustes.cambiosLocalesPendientes,
-      ultimaVersionSincronizada: versionGuardada,
+      ultimaVersionSincronizada: ajustes.ultimaVersionSincronizada,
       lecturaRemota,
     });
 
     switch (accion.tipo) {
       case 'nada':
         if (!lecturaRemota.existe) throw new ErrorValidacion('No hay una versión remota para validar la sincronización.');
-        await this.registrarExito(lecturaRemota.version, destino);
+        await this.registrarExito(lecturaRemota.version, destino, false);
         return { tipo: 'completada', accion: 'nada' };
       case 'subir': {
         const versionEsperada = lecturaRemota.existe ? lecturaRemota.version : null;
@@ -81,7 +80,11 @@ export class SincronizarUseCase {
     version: string
   ): Promise<{ imagenesOmitidas: number }> {
     const ajustes = await this.ajustesRepository.obtener();
-    const destino = identificarDestinoSincronizacion(ajustes.metodoSincronizacion, ajustes.cuentaGoogle);
+    const destino = identificarDestinoSincronizacion(
+      ajustes.metodoSincronizacion,
+      ajustes.cuentaGoogle,
+      ajustes.repositorioGitHub,
+    );
     if (destino === null) throw new ErrorValidacion('No hay ningún método de sincronización activo.');
     if (opcion === 'conservar_local') {
       await this.subir(version, destino);
@@ -93,7 +96,7 @@ export class SincronizarUseCase {
   private async subir(versionEsperada: string | null, destino: string | null): Promise<void> {
     const { datos, imagenesParaSubir } = await this.exportarImportarDatos.exportar();
     const { versionNueva } = await this.proveedor.escribirRemoto(datos, imagenesParaSubir, versionEsperada);
-    await this.registrarExito(versionNueva, destino);
+    await this.registrarExito(versionNueva, destino, false);
   }
 
   private async aplicarDescarga(datos: ExportacionJSON, version: string, destino: string | null): Promise<number> {
@@ -102,15 +105,12 @@ export class SincronizarUseCase {
       (ruta) => this.proveedor.leerImagen(ruta),
       true
     );
-    await this.registrarExito(version, destino);
+    await this.registrarExito(version, destino, true);
     return imagenesOmitidas;
   }
 
-  private async registrarExito(version: string, destino: string | null): Promise<void> {
+  private async registrarExito(version: string, destino: string | null, datosLocalesCambiados: boolean): Promise<void> {
     if (destino === null) throw new ErrorValidacion('No hay ningún método de sincronización activo.');
-    await this.ajustesRepository.actualizarUltimaVersionSincronizada(version);
-    await this.ajustesRepository.registrarDestinoSincronizado(destino);
-    await this.ajustesRepository.marcarCambiosLocalesPendientes(false);
-    await this.ajustesRepository.registrarSincronizacionCorrecta(new Date());
+    await this.ajustesRepository.registrarSincronizacionCompletada(destino, version, new Date(), datosLocalesCambiados);
   }
 }

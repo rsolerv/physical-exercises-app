@@ -90,4 +90,11 @@ CREATE TABLE IF NOT EXISTS ajustes_aplicacion (
 );
 
 INSERT OR IGNORE INTO ajustes_aplicacion (id) VALUES (1);
+
+CREATE TABLE IF NOT EXISTS sincronizacion_destino (
+  destino TEXT PRIMARY KEY,
+  ultima_version TEXT NOT NULL,
+  cambios_locales_pendientes INTEGER NOT NULL DEFAULT 0,
+  ultima_sincronizacion TEXT NOT NULL
+);
 `;

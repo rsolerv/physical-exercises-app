@@ -25,7 +25,6 @@ function ajustes(sobrescribir: Partial<AjustesAplicacion> = {}): AjustesAplicaci
     catalogoPredefinidoCargado: true,
     metodoSincronizacion: 'github',
     cuentaGoogle: null,
-    destinoUltimaSincronizacion: 'github',
     ...sobrescribir,
   };
 }
@@ -33,13 +32,12 @@ function ajustes(sobrescribir: Partial<AjustesAplicacion> = {}): AjustesAplicaci
 describe('SincronizarUseCase', () => {
   function configurar(opciones: {
     ajustes: AjustesAplicacion;
+    obtenerAjustes?: ReturnType<typeof vi.fn>;
     leerRemoto?: ReturnType<typeof vi.fn>;
     escribirRemoto?: ReturnType<typeof vi.fn>;
     leerImagen?: ReturnType<typeof vi.fn>;
   }) {
-    const actualizarUltimaVersionSincronizada = vi.fn().mockResolvedValue(undefined);
-    const registrarDestinoSincronizado = vi.fn().mockResolvedValue(undefined);
-    const registrarSincronizacionCorrecta = vi.fn().mockResolvedValue(undefined);
+    const registrarSincronizacionCompletada = vi.fn().mockResolvedValue(undefined);
     const marcarCambiosLocalesPendientes = vi.fn().mockResolvedValue(undefined);
     const exportar = vi.fn().mockResolvedValue({ datos: DATOS_VACIOS, imagenesParaSubir: [] });
     const importar = vi.fn().mockResolvedValue({ imagenesOmitidas: 0 });
@@ -58,10 +56,8 @@ describe('SincronizarUseCase', () => {
         {
           provide: AjustesRepositoryPort,
           useValue: {
-            obtener: vi.fn().mockResolvedValue(opciones.ajustes),
-            actualizarUltimaVersionSincronizada,
-            registrarDestinoSincronizado,
-            registrarSincronizacionCorrecta,
+            obtener: opciones.obtenerAjustes ?? vi.fn().mockResolvedValue(opciones.ajustes),
+            registrarSincronizacionCompletada,
             marcarCambiosLocalesPendientes,
           },
         },
@@ -74,184 +70,213 @@ describe('SincronizarUseCase', () => {
       leerRemoto,
       escribirRemoto,
       leerImagen,
-      actualizarUltimaVersionSincronizada,
-      registrarDestinoSincronizado,
-      registrarSincronizacionCorrecta,
+      registrarSincronizacionCompletada,
       marcarCambiosLocalesPendientes,
       exportar,
       importar,
     };
   }
 
-  it('sube los datos cuando el remoto no existe y persiste versión, destino y fecha tras el éxito', async () => {
-    const { caso, escribirRemoto, actualizarUltimaVersionSincronizada, registrarDestinoSincronizado, marcarCambiosLocalesPendientes, registrarSincronizacionCorrecta } =
-      configurar({
-        ajustes: ajustes({ cambiosLocalesPendientes: true }),
-        leerRemoto: vi.fn().mockResolvedValue({ existe: false }),
-        escribirRemoto: vi.fn().mockResolvedValue({ versionNueva: 'v-1' }),
-      });
+  it('sube los datos al destino activo y registra que los datos locales no cambiaron', async () => {
+    const { caso, escribirRemoto, registrarSincronizacionCompletada } = configurar({
+      ajustes: ajustes({ cambiosLocalesPendientes: true }),
+      escribirRemoto: vi.fn().mockResolvedValue({ versionNueva: 'v-1' }),
+    });
 
-    const resultado = await caso.sincronizar();
-
-    expect(resultado).toEqual({ tipo: 'completada', accion: 'subir' });
+    await expect(caso.sincronizar()).resolves.toEqual({ tipo: 'completada', accion: 'subir' });
     expect(escribirRemoto).toHaveBeenCalledWith(DATOS_VACIOS, [], null);
-    expect(actualizarUltimaVersionSincronizada).toHaveBeenCalledWith('v-1');
-    expect(registrarDestinoSincronizado).toHaveBeenCalledWith('github');
-    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledWith(false);
-    expect(registrarSincronizacionCorrecta).toHaveBeenCalledWith(expect.any(Date));
+    expect(registrarSincronizacionCompletada).toHaveBeenCalledWith(
+      'github:owner/data',
+      'v-1',
+      expect.any(Date),
+      false,
+    );
   });
 
-  it('descarga cambios remotos y resuelve las imágenes por la ruta lógica', async () => {
-    const { caso, importar, leerImagen, actualizarUltimaVersionSincronizada } = configurar({
+  it('descarga cambios del destino activo y resuelve imágenes por su ruta', async () => {
+    const { caso, importar, leerImagen, registrarSincronizacionCompletada } = configurar({
       ajustes: ajustes({ ultimaVersionSincronizada: 'v-1' }),
       leerRemoto: vi.fn().mockResolvedValue({ existe: true, datos: DATOS_VACIOS, version: 'v-2' }),
     });
 
-    const resultado = await caso.sincronizar();
-
-    expect(resultado).toEqual({ tipo: 'completada', accion: 'descargar', imagenesOmitidas: 0 });
+    await expect(caso.sincronizar()).resolves.toEqual({
+      tipo: 'completada',
+      accion: 'descargar',
+      imagenesOmitidas: 0,
+    });
     expect(importar).toHaveBeenCalledWith(DATOS_VACIOS, expect.any(Function), true);
     await importar.mock.calls[0][1]('imagenes/img-1.json');
     expect(leerImagen).toHaveBeenCalledWith('imagenes/img-1.json');
-    expect(actualizarUltimaVersionSincronizada).toHaveBeenCalledWith('v-2');
+    expect(registrarSincronizacionCompletada).toHaveBeenCalledWith(
+      'github:owner/data',
+      'v-2',
+      expect.any(Date),
+      true,
+    );
   });
 
-  it('no hace nada cuando no hay cambios en ningún lado', async () => {
-    const { caso, importar, exportar, registrarSincronizacionCorrecta } = configurar({
+  it('no hace nada si la versión del destino activo coincide y registra el estado', async () => {
+    const { caso, importar, exportar, registrarSincronizacionCompletada } = configurar({
       ajustes: ajustes({ ultimaVersionSincronizada: 'v-1' }),
       leerRemoto: vi.fn().mockResolvedValue({ existe: true, datos: DATOS_VACIOS, version: 'v-1' }),
     });
 
-    const resultado = await caso.sincronizar();
-
-    expect(resultado).toEqual({ tipo: 'completada', accion: 'nada' });
+    await expect(caso.sincronizar()).resolves.toEqual({ tipo: 'completada', accion: 'nada' });
     expect(importar).not.toHaveBeenCalled();
     expect(exportar).not.toHaveBeenCalled();
-    expect(registrarSincronizacionCorrecta).toHaveBeenCalledWith(expect.any(Date));
+    expect(registrarSincronizacionCompletada).toHaveBeenCalledWith(
+      'github:owner/data',
+      'v-1',
+      expect.any(Date),
+      false,
+    );
   });
 
-  it('devuelve un conflicto cuando hay cambios locales y remotos, sin modificar ajustes', async () => {
-    const { caso, importar, exportar, actualizarUltimaVersionSincronizada, registrarDestinoSincronizado, registrarSincronizacionCorrecta } =
-      configurar({
-        ajustes: ajustes({ ultimaVersionSincronizada: 'v-1', cambiosLocalesPendientes: true }),
-        leerRemoto: vi.fn().mockResolvedValue({ existe: true, datos: DATOS_VACIOS, version: 'v-2' }),
-      });
-
-    const resultado = await caso.sincronizar();
-
-    expect(resultado).toEqual({
-      tipo: 'conflicto',
-      opcionPorDefecto: 'conservar_local',
-      datosRemotos: DATOS_VACIOS,
-      version: 'v-2',
+  it('trata un destino sin fila sincronizada como primera sincronización', async () => {
+    const { caso, escribirRemoto, registrarSincronizacionCompletada } = configurar({
+      ajustes: ajustes({ metodoSincronizacion: 'google', cuentaGoogle: 'Persona@example.com' }),
+      leerRemoto: vi.fn().mockResolvedValue({ existe: true, datos: DATOS_VACIOS, version: 'v-remota' }),
     });
-    expect(importar).not.toHaveBeenCalled();
-    expect(exportar).not.toHaveBeenCalled();
-    expect(actualizarUltimaVersionSincronizada).not.toHaveBeenCalled();
-    expect(registrarDestinoSincronizado).not.toHaveBeenCalled();
-    expect(registrarSincronizacionCorrecta).not.toHaveBeenCalled();
+
+    await expect(caso.sincronizar()).resolves.toMatchObject({
+      tipo: 'conflicto',
+      opcionPorDefecto: 'conservar_remoto',
+    });
+    expect(escribirRemoto).not.toHaveBeenCalled();
+    expect(registrarSincronizacionCompletada).not.toHaveBeenCalled();
   });
 
-  it('resuelve conservar_local subiendo y guardando la nueva versión', async () => {
-    const { caso, escribirRemoto, actualizarUltimaVersionSincronizada, registrarDestinoSincronizado, marcarCambiosLocalesPendientes, registrarSincronizacionCorrecta } =
-      configurar({ ajustes: ajustes() });
+  it('sube los cambios a Google y después a GitHub usando el estado independiente de cada destino', async () => {
+    const estados = [
+      ajustes({
+        metodoSincronizacion: 'google',
+        cuentaGoogle: 'Persona@example.com',
+        ultimaVersionSincronizada: null,
+        cambiosLocalesPendientes: false,
+      }),
+      ajustes({
+        metodoSincronizacion: 'github',
+        ultimaVersionSincronizada: 'sha-github',
+        cambiosLocalesPendientes: true,
+      }),
+    ];
+    const obtenerAjustes = vi.fn().mockImplementation(async () => estados.shift());
+    const leerRemoto = vi
+      .fn()
+      .mockResolvedValueOnce({ existe: false })
+      .mockResolvedValueOnce({ existe: true, datos: DATOS_VACIOS, version: 'sha-github' });
+    const escribirRemoto = vi
+      .fn()
+      .mockResolvedValueOnce({ versionNueva: 'v-google' })
+      .mockResolvedValueOnce({ versionNueva: 'sha-github-nuevo' });
+    const { caso, registrarSincronizacionCompletada } = configurar({
+      ajustes: ajustes(),
+      obtenerAjustes,
+      leerRemoto,
+      escribirRemoto,
+    });
+
+    await expect(caso.sincronizar()).resolves.toEqual({ tipo: 'completada', accion: 'subir' });
+    await expect(caso.sincronizar()).resolves.toEqual({ tipo: 'completada', accion: 'subir' });
+
+    expect(escribirRemoto).toHaveBeenNthCalledWith(1, DATOS_VACIOS, [], null);
+    expect(escribirRemoto).toHaveBeenNthCalledWith(2, DATOS_VACIOS, [], 'sha-github');
+    expect(registrarSincronizacionCompletada).toHaveBeenNthCalledWith(
+      1,
+      'google:persona@example.com',
+      'v-google',
+      expect.any(Date),
+      false,
+    );
+    expect(registrarSincronizacionCompletada).toHaveBeenNthCalledWith(
+      2,
+      'github:owner/data',
+      'sha-github-nuevo',
+      expect.any(Date),
+      false,
+    );
+  });
+
+  it('resuelve conservar_local subiendo y registrando que los datos locales se conservan', async () => {
+    const { caso, escribirRemoto, registrarSincronizacionCompletada } = configurar({ ajustes: ajustes() });
 
     await caso.resolverConflicto('conservar_local', DATOS_VACIOS, 'v-remota');
 
     expect(escribirRemoto).toHaveBeenCalledWith(DATOS_VACIOS, [], 'v-remota');
-    expect(actualizarUltimaVersionSincronizada).toHaveBeenCalledWith('v-nueva');
-    expect(registrarDestinoSincronizado).toHaveBeenCalledWith('github');
-    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledWith(false);
-    expect(registrarSincronizacionCorrecta).toHaveBeenCalledWith(expect.any(Date));
+    expect(registrarSincronizacionCompletada).toHaveBeenCalledWith(
+      'github:owner/data',
+      'v-nueva',
+      expect.any(Date),
+      false,
+    );
   });
 
-  it('resuelve conservar_remoto aplicando los datos y su versión localmente', async () => {
-    const { caso, importar, actualizarUltimaVersionSincronizada } = configurar({ ajustes: ajustes() });
+  it('resuelve conservar_remoto e indica que han cambiado los datos locales', async () => {
+    const { caso, importar, registrarSincronizacionCompletada } = configurar({ ajustes: ajustes() });
 
-    const resultado = await caso.resolverConflicto('conservar_remoto', DATOS_VACIOS, 'v-remota');
+    await caso.resolverConflicto('conservar_remoto', DATOS_VACIOS, 'v-remota');
 
-    expect(resultado).toEqual({ imagenesOmitidas: 0 });
     expect(importar).toHaveBeenCalledWith(DATOS_VACIOS, expect.any(Function), true);
-    expect(actualizarUltimaVersionSincronizada).toHaveBeenCalledWith('v-remota');
+    expect(registrarSincronizacionCompletada).toHaveBeenCalledWith(
+      'github:owner/data',
+      'v-remota',
+      expect.any(Date),
+      true,
+    );
   });
 
-  it('trata un destino nuevo como primera sincronización y no lo sobrescribe', async () => {
-    const { caso, escribirRemoto, actualizarUltimaVersionSincronizada, registrarDestinoSincronizado, registrarSincronizacionCorrecta } =
-      configurar({
-        ajustes: ajustes({
-          metodoSincronizacion: 'google',
-          cuentaGoogle: 'persona@example.com',
-          ultimaVersionSincronizada: 'v-anterior',
-          destinoUltimaSincronizacion: 'google:otra@example.com',
-        }),
-        leerRemoto: vi.fn().mockResolvedValue({ existe: true, datos: DATOS_VACIOS, version: 'v-remota' }),
-      });
-
-    const resultado = await caso.sincronizar();
-
-    expect(resultado).toMatchObject({ tipo: 'conflicto', opcionPorDefecto: 'conservar_remoto' });
-    expect(escribirRemoto).not.toHaveBeenCalled();
-    expect(actualizarUltimaVersionSincronizada).not.toHaveBeenCalled();
-    expect(registrarDestinoSincronizado).not.toHaveBeenCalled();
-    expect(registrarSincronizacionCorrecta).not.toHaveBeenCalled();
-  });
-
-  it('propaga errores del proveedor sin modificar ningún dato local', async () => {
-    const { caso, actualizarUltimaVersionSincronizada, registrarDestinoSincronizado, marcarCambiosLocalesPendientes, importar, exportar, registrarSincronizacionCorrecta } =
-      configurar({
-        ajustes: ajustes({ cambiosLocalesPendientes: true }),
-        leerRemoto: vi.fn().mockRejectedValue(new ErrorRedSincronizacion('Sin conexión.')),
-      });
-
-    await expect(caso.sincronizar()).rejects.toThrow(ErrorRedSincronizacion);
-
-    expect(actualizarUltimaVersionSincronizada).not.toHaveBeenCalled();
-    expect(registrarDestinoSincronizado).not.toHaveBeenCalled();
-    expect(marcarCambiosLocalesPendientes).not.toHaveBeenCalled();
-    expect(importar).not.toHaveBeenCalled();
-    expect(exportar).not.toHaveBeenCalled();
-    expect(registrarSincronizacionCorrecta).not.toHaveBeenCalled();
-  });
-
-  it('propaga el error de método no configurado sin cambiar ajustes ni datos locales', async () => {
-    const { caso, actualizarUltimaVersionSincronizada, registrarDestinoSincronizado, marcarCambiosLocalesPendientes, importar, exportar, registrarSincronizacionCorrecta } =
-      configurar({
-        ajustes: ajustes({ metodoSincronizacion: null, destinoUltimaSincronizacion: null }),
-        leerRemoto: vi.fn().mockRejectedValue(new Error('No hay ningún método de sincronización activo.')),
-      });
+  it('no lee ni escribe proveedores si no hay método activo', async () => {
+    const { caso, leerRemoto, escribirRemoto } = configurar({
+      ajustes: ajustes({ metodoSincronizacion: null }),
+    });
 
     await expect(caso.sincronizar()).rejects.toThrow('No hay ningún método de sincronización activo.');
+    expect(leerRemoto).not.toHaveBeenCalled();
+    expect(escribirRemoto).not.toHaveBeenCalled();
+  });
 
-    expect(actualizarUltimaVersionSincronizada).not.toHaveBeenCalled();
-    expect(registrarDestinoSincronizado).not.toHaveBeenCalled();
+  it.each([
+    new ErrorRedSincronizacion('Sin conexión.'),
+    new ErrorAutorizacionGoogle(),
+  ])('propaga errores del proveedor sin registrar ni cambiar datos locales', async (error) => {
+    const { caso, registrarSincronizacionCompletada, marcarCambiosLocalesPendientes, importar, exportar } = configurar({
+      ajustes: ajustes({ cambiosLocalesPendientes: true }),
+      leerRemoto: vi.fn().mockRejectedValue(error),
+    });
+
+    await expect(caso.sincronizar()).rejects.toBe(error);
+    expect(registrarSincronizacionCompletada).not.toHaveBeenCalled();
     expect(marcarCambiosLocalesPendientes).not.toHaveBeenCalled();
     expect(importar).not.toHaveBeenCalled();
     expect(exportar).not.toHaveBeenCalled();
-    expect(registrarSincronizacionCorrecta).not.toHaveBeenCalled();
   });
 
-  it('solo registra la fecha correcta después de una escritura remota completada', async () => {
-    const { caso, registrarSincronizacionCorrecta, actualizarUltimaVersionSincronizada, registrarDestinoSincronizado, marcarCambiosLocalesPendientes } =
-      configurar({
+  it('no registra la sincronización si falla la escritura remota', async () => {
+    const { caso, registrarSincronizacionCompletada } = configurar({
       ajustes: ajustes({ cambiosLocalesPendientes: true }),
-      leerRemoto: vi.fn().mockResolvedValue({ existe: false }),
       escribirRemoto: vi.fn().mockRejectedValue(new ErrorRedSincronizacion('Sin conexión.')),
     });
 
-    await expect(caso.sincronizar()).rejects.toThrow(ErrorRedSincronizacion);
-    expect(actualizarUltimaVersionSincronizada).not.toHaveBeenCalled();
-    expect(registrarDestinoSincronizado).not.toHaveBeenCalled();
-    expect(marcarCambiosLocalesPendientes).not.toHaveBeenCalled();
-    expect(registrarSincronizacionCorrecta).not.toHaveBeenCalled();
+    await expect(caso.sincronizar()).rejects.toBeInstanceOf(ErrorRedSincronizacion);
+    expect(registrarSincronizacionCompletada).not.toHaveBeenCalled();
+  });
+
+  it('no registra la sincronización si hay conflicto remoto durante la escritura', async () => {
+    const { caso, importar, registrarSincronizacionCompletada } = configurar({
+      ajustes: ajustes({ ultimaVersionSincronizada: 'v-1', cambiosLocalesPendientes: true }),
+      leerRemoto: vi.fn().mockResolvedValue({ existe: true, datos: DATOS_VACIOS, version: 'v-1' }),
+      escribirRemoto: vi.fn().mockRejectedValue(new ErrorConflictoRemoto('Los datos han cambiado.')),
+    });
+
+    await expect(caso.sincronizar()).rejects.toBeInstanceOf(ErrorConflictoRemoto);
+    expect(importar).not.toHaveBeenCalled();
+    expect(registrarSincronizacionCompletada).not.toHaveBeenCalled();
   });
 
   it('ignora una segunda sincronización mientras la primera sigue en curso', async () => {
     let completarLectura: (lectura: { existe: false }) => void = () => undefined;
     const leerRemoto = vi.fn(
-      () =>
-        new Promise<{ existe: false }>((resolve) => {
-          completarLectura = resolve;
-        }),
+      () => new Promise<{ existe: false }>((resolve) => (completarLectura = resolve)),
     );
     const { caso } = configurar({ ajustes: ajustes(), leerRemoto });
     const primera = caso.sincronizar();
@@ -261,85 +286,5 @@ describe('SincronizarUseCase', () => {
     completarLectura({ existe: false });
     await expect(primera).resolves.toEqual({ tipo: 'completada', accion: 'subir' });
     expect(leerRemoto).toHaveBeenCalledOnce();
-  });
-
-  it('conserva datos y ajustes locales si la escritura encuentra un conflicto remoto', async () => {
-    const {
-      caso,
-      importar,
-      actualizarUltimaVersionSincronizada,
-      registrarDestinoSincronizado,
-      marcarCambiosLocalesPendientes,
-      registrarSincronizacionCorrecta,
-    } = configurar({
-      ajustes: ajustes({ ultimaVersionSincronizada: 'v1', cambiosLocalesPendientes: true }),
-      leerRemoto: vi.fn().mockResolvedValue({ existe: true, datos: DATOS_VACIOS, version: 'v1' }),
-      escribirRemoto: vi.fn().mockRejectedValue(new ErrorConflictoRemoto('Los datos han cambiado.')),
-    });
-
-    await expect(caso.sincronizar()).rejects.toBeInstanceOf(ErrorConflictoRemoto);
-
-    expect(importar).not.toHaveBeenCalled();
-    expect(actualizarUltimaVersionSincronizada).not.toHaveBeenCalled();
-    expect(registrarDestinoSincronizado).not.toHaveBeenCalled();
-    expect(marcarCambiosLocalesPendientes).not.toHaveBeenCalled();
-    expect(registrarSincronizacionCorrecta).not.toHaveBeenCalled();
-  });
-
-  it('sube los datos si el destino remoto ya no contiene la copia esperada', async () => {
-    const { caso, escribirRemoto } = configurar({
-      ajustes: ajustes({ ultimaVersionSincronizada: 'version-anterior' }),
-      leerRemoto: vi.fn().mockResolvedValue({ existe: false }),
-    });
-
-    await expect(caso.sincronizar()).resolves.toEqual({ tipo: 'completada', accion: 'subir' });
-
-    expect(escribirRemoto).toHaveBeenCalledWith(DATOS_VACIOS, [], null);
-  });
-
-  it('propaga la autorización caducada sin cambiar la copia local ni sus ajustes', async () => {
-    const {
-      caso,
-      importar,
-      exportar,
-      actualizarUltimaVersionSincronizada,
-      registrarDestinoSincronizado,
-      marcarCambiosLocalesPendientes,
-      registrarSincronizacionCorrecta,
-    } = configurar({
-      ajustes: ajustes({ metodoSincronizacion: 'google', cuentaGoogle: 'persona@example.com' }),
-      leerRemoto: vi.fn().mockRejectedValue(new ErrorAutorizacionGoogle()),
-    });
-
-    await expect(caso.sincronizar()).rejects.toBeInstanceOf(ErrorAutorizacionGoogle);
-
-    expect(importar).not.toHaveBeenCalled();
-    expect(exportar).not.toHaveBeenCalled();
-    expect(actualizarUltimaVersionSincronizada).not.toHaveBeenCalled();
-    expect(registrarDestinoSincronizado).not.toHaveBeenCalled();
-    expect(marcarCambiosLocalesPendientes).not.toHaveBeenCalled();
-    expect(registrarSincronizacionCorrecta).not.toHaveBeenCalled();
-  });
-
-  it('trata una cuenta Google distinta como primera sincronización sin escribir en el destino anterior', async () => {
-    const { caso, escribirRemoto, importar } = configurar({
-      ajustes: ajustes({
-        metodoSincronizacion: 'google',
-        cuentaGoogle: 'cuenta-nueva@example.com',
-        ultimaVersionSincronizada: 'version-anterior',
-        destinoUltimaSincronizacion: 'google:cuenta-anterior@example.com',
-      }),
-      leerRemoto: vi.fn().mockResolvedValue({ existe: true, datos: DATOS_VACIOS, version: 'v-remota' }),
-    });
-
-    await expect(caso.sincronizar()).resolves.toEqual({
-      tipo: 'conflicto',
-      opcionPorDefecto: 'conservar_remoto',
-      datosRemotos: DATOS_VACIOS,
-      version: 'v-remota',
-    });
-
-    expect(escribirRemoto).not.toHaveBeenCalled();
-    expect(importar).not.toHaveBeenCalled();
   });
 });

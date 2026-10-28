@@ -46,7 +46,7 @@ describe('GestionarProgresoDiarioUseCase', () => {
     await caso.marcar(new Date('2026-10-15'), 'ej-1', true);
 
     expect(marcar).toHaveBeenCalledWith(new Date('2026-10-15'), 'ej-1', true);
-    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
+    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledOnce();
   });
 
   it('desmarca un ejercicio y marca cambios pendientes (FR-024)', async () => {
@@ -56,7 +56,7 @@ describe('GestionarProgresoDiarioUseCase', () => {
     await caso.marcar(new Date('2026-10-15'), 'ej-1', false);
 
     expect(marcar).toHaveBeenCalledWith(new Date('2026-10-15'), 'ej-1', false);
-    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
+    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledOnce();
   });
 
   it('captura el valor previo de realizado para ofrecer una restauración exacta', async () => {
@@ -84,7 +84,7 @@ describe('GestionarProgresoDiarioUseCase', () => {
     });
 
     expect(marcar).toHaveBeenCalledWith(new Date('2026-10-15'), 'ej-1', false);
-    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
+    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledOnce();
   });
 
   it('obtiene el porcentaje del día a partir del dominio cuando hay planificación activa', async () => {

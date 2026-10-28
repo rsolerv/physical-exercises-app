@@ -11,6 +11,7 @@
 
 
 
+
 **Feature**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md) | **Fecha**: 2026-10-20
 
 Este documento no parte de ningún `NEEDS CLARIFICATION` pendiente (la fase de especificación y de clarificación ya resolvieron las ambigüedades funcionales). Documenta en su lugar las decisiones técnicas necesarias para pasar de la especificación al diseño, derivadas de: (a) la instrucción explícita del usuario para esta planificación, y (b) la constitución del proyecto.
@@ -153,6 +154,7 @@ Las decisiones transversales de las secciones 12–18 se incorporan a partir de 
 - **Rationale**: Permite añadir destinos sin tocar el caso de uso ni las reglas de decisión (SOLID) y mantiene las dependencias de capas que exige la constitución. Los contratos y el comportamiento de GitHub quedan intactos y sirven de regresión.
 - **Alternatives considered**: Un caso de uso por proveedor — descartado por duplicar la orquestación y las marcas de ajustes. Generalizar el contrato `GitHubSyncPort` — descartado por arrastrar conceptos de GitHub a otros proveedores.
 - **Referencia Living Spec**: Feature `002-sincronizacion-google-drive`, FR-002, FR-007, FR-016 y FR-017; [research.md](../002-sincronizacion-google-drive/research.md), secciones 1, 6 y 7, y [contracts/proveedor-sincronizacion.port.md](../002-sincronizacion-google-drive/contracts/proveedor-sincronizacion.port.md).
+- **Enmienda 2026-10-27**: la spec 002 (FR-016 y FR-025 a FR-027, historia 5) permite tener guardadas a la vez las conexiones de GitHub y de Google, con un único método **activo**. Decisión técnica: las conexiones son independientes (ninguna operación sobre una borra la otra), el método activo se guarda en ajustes y el estado de sincronización (última versión, cambios locales pendientes y fecha) se guarda **por destino** en la tabla `sincronizacion_destino`, con clave `github:<repositorio>` o `google:<correo>`; sin fila, primera sincronización. Esto sustituye aquí "cambiar de método o de cuenta se trata como una primera sincronización" y la restricción de un solo método guardado. Detalle en [research.md de la feature 002](../002-sincronizacion-google-drive/research.md), sección 7.
 
 ## 23. Scripts de terceros cargados bajo demanda
 

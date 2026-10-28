@@ -54,12 +54,12 @@ Los tres errores de Google son nuevos en `errores-dominio.ts`. Ninguno expone c�
 
 ## Reglas de decisión
 
-Idénticas a las de [la feature 001](../../001-gestion-ejercicios-fisicos/contracts/github-sync.port.md) con estos dos cambios:
+Idénticas a las de [la feature 001](../../001-gestion-ejercicios-fisicos/contracts/github-sync.port.md) con estos cambios:
 
-1. Antes de decidir, `versionSincronizadaEfectiva(destinoActual, destinoGuardado, versionGuardada)` devuelve nulo si el destino cambió (FR-016), lo que produce la primera sincronización (`conflicto` con `conservar_remoto` por defecto si el remoto existe).
+1. Las entradas `cambiosLocalesPendientes` y `ultimaVersionSincronizada` son las de la **fila del destino activo** en `sincronizacion_destino` (ver [data-model.md](../data-model.md)). Si ese destino no tiene fila, la versión es nula, lo que produce la primera sincronización (`conflicto` con `conservar_remoto` por defecto si el remoto existe). Desaparece la función `versionSincronizadaEfectiva`.
 2. En la entrada de `decidirAccionSincronizacion` el campo `ultimoShaSincronizado` pasa a llamarse `ultimaVersionSincronizada` y el de la lectura remota, `version`.
 
-Tras `subir`, resolver con `conservar_local`, `descargar` o resolver con `conservar_remoto`, el caso de uso guarda la nueva versión y el destino de esta sincronización, pone `cambiosLocalesPendientes = false` y registra la fecha. Mientras hay una sincronización en curso, las pulsaciones repetidas se ignoran (FR-010).
+Tras `subir`, resolver con `conservar_local`, `descargar` o resolver con `conservar_remoto`, el caso de uso llama a `registrarSincronizacionCompletada(destino, version, fecha, datosLocalesCambiados)`: `datosLocalesCambiados` es `true` en `descargar` y `conservar_remoto`, y `false` en `subir`, `nada` y `conservar_local`. Los datos de los destinos no activos no se leen ni se modifican (FR-025). Mientras hay una sincronización en curso, las pulsaciones repetidas se ignoran (FR-010).
 
 ## Puerto auxiliar: GoogleAutorizacionPort
 
@@ -80,19 +80,46 @@ abstract class GoogleAutorizacionPort {
 
 ## Puerto auxiliar: AjustesRepositoryPort (cambios)
 
-Se amplía el contrato [ajustes-repository.port.md](../../001-gestion-ejercicios-fisicos/contracts/ajustes-repository.port.md); lo existente no cambia.
+Se amplía el contrato [ajustes-repository.port.md](../../001-gestion-ejercicios-fisicos/contracts/ajustes-repository.port.md). Revisado el 2026-10-27 para conexiones simultáneas (FR-016, FR-025 a FR-027).
 
 ```ts
-// Campos nuevos en AjustesAplicacion
-metodoSincronizacion: 'github' | 'google' | null;
-cuentaGoogle: string | null;
-destinoUltimaSincronizacion: string | null;
-// ultimoShaSincronizado se expone como ultimaVersionSincronizada (misma columna)
+interface AjustesAplicacion {
+  // Sin cambios: tokenGitHub, repositorioGitHub, catalogoPredefinidoCargado
+  metodoSincronizacion: 'github' | 'google' | null; // método activo
+  cuentaGoogle: string | null;                      // se conserva aunque Google no sea el activo
+  // Vista derivada del destino del método activo (null / false / null si no hay activo o fila):
+  ultimaVersionSincronizada: string | null;
+  cambiosLocalesPendientes: boolean;
+  ultimaSincronizacionCorrecta: Date | null;
+  // Se elimina destinoUltimaSincronizacion
+}
 
+abstract guardarCredencialesGitHub(token: string, repositorio: string): Promise<void>;
+// Ya no rechaza si Google está conectado ni toca cuentaGoogle. Activa GitHub solo si no había
+// credenciales guardadas o no había método activo; editar unas ya guardadas no cambia el activo.
+abstract olvidarCredencialesGitHub(): Promise<void>;
+// Borra token y repositorio. Pone metodoSincronizacion a nulo solo si era 'github'.
 abstract conectarGoogle(correo: string): Promise<void>;
-// Rechaza con ErrorValidacion si metodoSincronizacion es 'github'.
+// Ya no rechaza si GitHub está configurado. Guarda cuentaGoogle y activa Google (alta o reconexión).
 abstract desconectarGoogle(): Promise<void>;
-abstract registrarDestinoSincronizado(destino: string): Promise<void>;
-// guardarCredencialesGitHub rechaza con ErrorValidacion si metodoSincronizacion es 'google'
-// y establece metodoSincronizacion = 'github'. olvidarCredencialesGitHub lo pone a nulo.
+// Pone cuentaGoogle a nulo y metodoSincronizacion a nulo solo si era 'google'. No toca GitHub.
+abstract activarMetodo(metodo: 'github' | 'google'): Promise<void>;
+// Nuevo. ErrorValidacion si el método no está conectado.
+abstract registrarSincronizacionCompletada(
+  destino: string, version: string, fecha: Date, datosLocalesCambiados: boolean
+): Promise<void>;
+// Nuevo. Sustituye a actualizarUltimaVersionSincronizada, registrarDestinoSincronizado,
+// registrarSincronizacionCorrecta y marcarCambiosLocalesPendientes(false). Inserta o actualiza la
+// fila del destino (versión, pendientes = false, fecha); si datosLocalesCambiados, marca como
+// pendientes las filas de los demás destinos.
+abstract marcarCambiosLocalesPendientes(): Promise<void>;
+// Sin parámetro: marca pendientes todas las filas de sincronizacion_destino.
 ```
+
+`identificarDestinoSincronizacion(metodo, cuentaGoogle, repositorioGitHub)` (Domain) devuelve `github:<repositorio>`, `google:<correo en minúsculas>` o `null` si el método no está activo o falta el dato; lo usan el repositorio de ajustes y `SincronizarUseCase`.
+
+## Caso de uso `GestionarConexionSincronizacionUseCase` (cambios)
+
+- `conectarGoogle()`: deja de lanzar `ErrorValidacion` si GitHub está configurado.
+- `activarMetodo(metodo)`: nuevo; delega en el repositorio de ajustes. No contacta con el proveedor ni con Google.
+- `desconectar()`: sin cambios de contrato; el efecto sobre GitHub y el método activo lo fija el repositorio (arriba).

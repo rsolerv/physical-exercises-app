@@ -69,7 +69,6 @@ describe('ShellComponent (navegación)', () => {
               catalogoPredefinidoCargado: true,
               metodoSincronizacion: null,
               cuentaGoogle: null,
-              destinoUltimaSincronizacion: null,
             }),
           },
         },

@@ -52,11 +52,10 @@ describe('GestionarEjercicioUseCase', () => {
       obtener: vi.fn(),
       guardarCredencialesGitHub: vi.fn(),
       olvidarCredencialesGitHub: vi.fn(),
-      actualizarUltimaVersionSincronizada: vi.fn(),
       conectarGoogle: vi.fn(),
       desconectarGoogle: vi.fn(),
-      registrarDestinoSincronizado: vi.fn(),
-      registrarSincronizacionCorrecta: vi.fn(),
+      activarMetodo: vi.fn(),
+      registrarSincronizacionCompletada: vi.fn(),
       marcarCambiosLocalesPendientes: vi.fn(),
       estaCatalogoPredefinidoCargado: vi.fn(),
       marcarCatalogoPredefinidoCargado: vi.fn(),
@@ -76,7 +75,7 @@ describe('GestionarEjercicioUseCase', () => {
     const creado = await caso.crear(datosValidos());
     expect(creado.id).toBe('nuevo-id');
     expect(ejercicioRepo.crear).toHaveBeenCalledWith(datosValidos());
-    expect(ajustesRepo.marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
+    expect(ajustesRepo.marcarCambiosLocalesPendientes).toHaveBeenCalledOnce();
   });
 
   it('valida con el dominio antes de guardar: rechaza un ejercicio sin nombre sin llegar al repositorio', async () => {
@@ -87,13 +86,13 @@ describe('GestionarEjercicioUseCase', () => {
   it('actualiza un ejercicio y marca cambios locales pendientes', async () => {
     await caso.actualizar('ej-1', { nombre: 'Nuevo nombre' });
     expect(ejercicioRepo.actualizar).toHaveBeenCalledWith('ej-1', { nombre: 'Nuevo nombre' });
-    expect(ajustesRepo.marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
+    expect(ajustesRepo.marcarCambiosLocalesPendientes).toHaveBeenCalledOnce();
   });
 
   it('elimina un ejercicio y marca cambios locales pendientes', async () => {
     await caso.eliminar('ej-1');
     expect(ejercicioRepo.eliminar).toHaveBeenCalledWith('ej-1');
-    expect(ajustesRepo.marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
+    expect(ajustesRepo.marcarCambiosLocalesPendientes).toHaveBeenCalledOnce();
   });
 
   it('captura datos y días planificados antes de eliminar para poder restaurarlos', async () => {
@@ -133,7 +132,7 @@ describe('GestionarEjercicioUseCase', () => {
 
     expect(ejercicioRepo.restaurar).toHaveBeenCalledWith(ejercicio);
     expect(planificacionRepo.asignarEjercicioADia).toHaveBeenCalledWith('plan-1', 'lunes', 'ej-1');
-    expect(ajustesRepo.marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
+    expect(ajustesRepo.marcarCambiosLocalesPendientes).toHaveBeenCalledOnce();
   });
 
   it('propaga errores al restaurar un ejercicio o sus asignaciones', async () => {

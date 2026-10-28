@@ -31,7 +31,7 @@ describe('GestionarPlanificacionUseCase', () => {
     const resultado = await caso.crear({ nombre: 'Semana', fechaInicio: '2026-10-12', dias: crearDiasVacios() });
 
     expect(resultado.fechaInicio).toBe('2026-10-12');
-    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
+    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledOnce();
   });
 
   it('crea una plantilla (sin fechaInicio) y marca cambios pendientes', async () => {
@@ -41,7 +41,7 @@ describe('GestionarPlanificacionUseCase', () => {
     await caso.crear({ nombre: 'Plantilla', dias: crearDiasVacios() });
 
     expect(crear).toHaveBeenCalledWith(expect.objectContaining({ nombre: 'Plantilla' }));
-    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
+    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledOnce();
   });
 
   it('asigna un ejercicio a un día y marca cambios pendientes', async () => {
@@ -51,7 +51,7 @@ describe('GestionarPlanificacionUseCase', () => {
     await caso.asignarEjercicioADia('plan-1', 'lunes', 'ej-1');
 
     expect(asignarEjercicioADia).toHaveBeenCalledWith('plan-1', 'lunes', 'ej-1');
-    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
+    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledOnce();
   });
 
   it('quita un ejercicio de un día y marca cambios pendientes', async () => {
@@ -61,7 +61,7 @@ describe('GestionarPlanificacionUseCase', () => {
     await caso.quitarEjercicioDeDia('plan-1', 'lunes', 'ej-1');
 
     expect(quitarEjercicioDeDia).toHaveBeenCalledWith('plan-1', 'lunes', 'ej-1');
-    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
+    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledOnce();
   });
 
   it('duplica una planificación y marca cambios pendientes', async () => {
@@ -72,7 +72,7 @@ describe('GestionarPlanificacionUseCase', () => {
 
     expect(duplicar).toHaveBeenCalledWith('plan-1', 'Copia');
     expect(copia.nombre).toBe('Copia');
-    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
+    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledOnce();
   });
 
   it('crea una planificación concreta a partir de una plantilla, asignándole un lunes (FR-018, FR-019)', async () => {
@@ -85,6 +85,6 @@ describe('GestionarPlanificacionUseCase', () => {
     expect(duplicar).toHaveBeenCalledWith('plantilla-1', 'Desde plantilla');
     expect(actualizar).toHaveBeenCalledWith('plan-2', { fechaInicio: '2026-10-12' });
     expect(resultado.fechaInicio).toBe('2026-10-12');
-    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledWith(true);
+    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledOnce();
   });
 });

@@ -71,6 +71,42 @@
   gap: $espaciado-1;
 }
 
+.configuracion-sincronizacion__estado {
+  display: inline-flex;
+  align-items: center;
+  gap: $espaciado-1;
+
+  mat-icon {
+    color: var(--mat-sys-primary);
+  }
+}
+
+.configuracion-sincronizacion__aviso-metodo,
+.configuracion-sincronizacion__cambio-metodo {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: $espaciado-2;
+  border-radius: 12px;
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+}
+
+.configuracion-sincronizacion__aviso-metodo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $espaciado-2;
+
+  button {
+    min-height: 48px;
+  }
+}
+
+.configuracion-sincronizacion__cambio-metodo {
+  border-left: 4px solid var(--mat-sys-primary);
+}
+
 .configuracion-sincronizacion__privacidad,
 .configuracion-sincronizacion__aviso-google,
 .configuracion-sincronizacion__aviso {

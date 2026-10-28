@@ -27,13 +27,13 @@ export class GestionarEjercicioUseCase {
   async crear(datos: DatosNuevoEjercicio): Promise<Ejercicio> {
     validarEjercicio(datos);
     const creado = await this.ejercicioRepository.crear(datos);
-    await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
+    await this.ajustesRepository.marcarCambiosLocalesPendientes();
     return creado;
   }
 
   async actualizar(id: string, cambios: Partial<DatosNuevoEjercicio>): Promise<Ejercicio> {
     const actualizado = await this.ejercicioRepository.actualizar(id, cambios);
-    await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
+    await this.ajustesRepository.marcarCambiosLocalesPendientes();
     return actualizado;
   }
 
@@ -47,7 +47,7 @@ export class GestionarEjercicioUseCase {
         .map((dia) => ({ planificacionId: planificacion.id, dia: dia.diaSemana }))
     );
     await this.ejercicioRepository.eliminar(id);
-    await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
+    await this.ajustesRepository.marcarCambiosLocalesPendientes();
     return { ejercicio, asignaciones };
   }
 
@@ -60,6 +60,6 @@ export class GestionarEjercicioUseCase {
         snapshot.ejercicio.id
       );
     }
-    await this.ajustesRepository.marcarCambiosLocalesPendientes(true);
+    await this.ajustesRepository.marcarCambiosLocalesPendientes();
   }
 }
