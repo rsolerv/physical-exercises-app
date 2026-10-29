@@ -32,7 +32,13 @@
       </mat-chip-listbox>
     }
 
-    <button mat-flat-button type="button" class="importar-ejercicios__boton-buscar" (click)="buscar()">
+    <button
+      mat-flat-button
+      type="button"
+      class="importar-ejercicios__boton-buscar"
+      [disabled]="categoriaId() === null"
+      (click)="buscar()"
+    >
       <mat-icon aria-hidden="true">search</mat-icon>
       Buscar
     </button>
@@ -44,7 +50,7 @@
         icono="cloud_off"
         [mensaje]="mensajeError() ?? 'No se ha podido conectar con el repositorio común.'"
       >
-        <button accion mat-stroked-button type="button" (click)="buscar()">
+        <button accion mat-stroked-button type="button" [disabled]="categoriaId() === null" (click)="buscar()">
           <mat-icon aria-hidden="true">refresh</mat-icon>
           Reintentar
         </button>

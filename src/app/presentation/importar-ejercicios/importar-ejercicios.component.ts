@@ -54,7 +54,11 @@ export class ImportarEjerciciosComponent {
   readonly mensajeError = signal<string | null>(null);
 
   protected readonly recursoCategoriasComunes = resource({
-    loader: () => this.buscarEjerciciosComunes.listarCategorias(),
+    loader: async () => {
+      const categorias = await this.buscarEjerciciosComunes.listarCategorias();
+      if (categorias.length > 0) this.categoriaId.set(categorias[0].id);
+      return categorias;
+    },
   });
   protected readonly recursoCategoriasLocales = resource({
     loader: () => this.categoriaRepository.listarTodas(),
@@ -89,6 +93,8 @@ export class ImportarEjerciciosComponent {
   }
 
   async buscar(): Promise<void> {
+    if (this.categoriaId() === null) return;
+
     this.estado.set('cargando');
     this.mensajeError.set(null);
     try {

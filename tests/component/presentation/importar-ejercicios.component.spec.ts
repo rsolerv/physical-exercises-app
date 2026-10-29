@@ -37,7 +37,9 @@ describe('ImportarEjerciciosComponent', () => {
     mostrarError?: ReturnType<typeof vi.fn>;
   }) {
     const buscar = opciones.buscar ?? vi.fn().mockResolvedValue([]);
-    const listarCategorias = opciones.listarCategoriasComunes ?? vi.fn().mockResolvedValue([]);
+    const listarCategorias =
+      opciones.listarCategoriasComunes ??
+      vi.fn().mockResolvedValue([{ id: 'cat-comun-1', nombre: 'Movilidad' }]);
     const obtenerCategoriasPendientes = opciones.obtenerCategoriasPendientes ?? vi.fn().mockResolvedValue([]);
     const importar = opciones.importar ?? vi.fn().mockResolvedValue({ creados: 0, imagenesOmitidas: 0 });
     const mostrarExito = opciones.mostrarExito ?? vi.fn();
@@ -107,14 +109,47 @@ describe('ImportarEjerciciosComponent', () => {
     expect(buscar).not.toHaveBeenCalled();
   });
 
-  it('al pulsar Buscar sin texto ni categoría, obtiene el catálogo completo (FR-004)', async () => {
+  it('selecciona la primera categoría al entrar y habilita Buscar con una categoría', async () => {
     const { buscar } = configurar({ buscar: vi.fn().mockResolvedValue([ejercicioComun()]) });
     const fixture = await crearComponente();
+    const botonBuscar = fixture.nativeElement.querySelector(
+      '.importar-ejercicios__boton-buscar'
+    ) as HTMLButtonElement;
 
-    await fixture.componentInstance.buscar();
     fixture.detectChanges();
 
-    expect(buscar).toHaveBeenCalledWith('', null);
+    expect(fixture.componentInstance.categoriaId()).toBe('cat-comun-1');
+    expect(botonBuscar.disabled).toBe(false);
+    expect(buscar).not.toHaveBeenCalled();
+  });
+
+  it('deshabilita Buscar al desmarcar todas las categorías y no ejecuta la búsqueda', async () => {
+    const { buscar } = configurar({
+      listarCategoriasComunes: vi.fn().mockResolvedValue([
+        { id: 'cat-comun-1', nombre: 'Movilidad' },
+        { id: 'cat-comun-2', nombre: 'Fuerza' },
+      ]),
+    });
+    const fixture = await crearComponente();
+    const botonBuscar = fixture.nativeElement.querySelector(
+      '.importar-ejercicios__boton-buscar'
+    ) as HTMLButtonElement;
+
+    fixture.componentInstance.alternarCategoriaFiltro('cat-comun-1');
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.categoriaId()).toBeNull();
+    expect(botonBuscar.disabled).toBe(true);
+
+    await fixture.componentInstance.buscar();
+    expect(buscar).not.toHaveBeenCalled();
+
+    fixture.componentInstance.alternarCategoriaFiltro('cat-comun-2');
+    fixture.detectChanges();
+    expect(botonBuscar.disabled).toBe(false);
+
+    await fixture.componentInstance.buscar();
+    expect(buscar).toHaveBeenCalledWith('', 'cat-comun-2');
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Almeja');
   });
 
