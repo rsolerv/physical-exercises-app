@@ -1,9 +1,15 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 2.4.1 → 2.5.0
-Rationale: Se amplía materialmente la regla de copia manual para permitir un
-contenedor ZIP que conserva los documentos JSON y sus rutas de imagen.
+Version change: 2.5.0 → 2.6.0
+Rationale: Se amplía materialmente la regla "sin datos compartidos entre
+personas" para acotar su alcance a la sincronización y copia de seguridad de
+los datos privados de cada persona, y aclarar que no impide un catálogo
+público y de solo contenido de ejercicios en el que importar crea siempre una
+copia local independiente y modificable (sin vínculo de sincronización con el
+catálogo ni con otras personas) y contribuir es una acción explícita y
+puntual sobre un único ejercicio elegido, nunca una sincronización del resto
+de los datos privados.
 
 Modified sections:
 - Arquitectura y Stack Tecnológico — sincronización de datos.
@@ -124,6 +130,18 @@ de invertir en implementación, sin ralentizar correcciones y mejoras menores.
   identificadores públicos de aplicación, nunca secretos. Cada persona
   sincroniza únicamente sus propios datos, sin datos compartidos entre
   personas. Añadir un destino nuevo exige enmendar esta constitución.
+
+  Esta regla rige exclusivamente la sincronización y copia de seguridad de
+  los datos privados de cada persona (ejercicios, categorías,
+  planificaciones, progreso y ajustes) entre sus propios dispositivos. NO
+  impide que la aplicación ofrezca, como función independiente, un catálogo
+  público de ejercicios compartido por todas las personas usuarias, siempre
+  que: (a) importar un ejercicio de ese catálogo DEBA crear siempre una copia
+  local nueva, independiente y libremente modificable, sin ningún vínculo de
+  sincronización posterior con el catálogo ni con las copias de otras
+  personas; y (b) contribuir a ese catálogo DEBA ser una acción explícita y
+  puntual sobre un único ejercicio ya elegido por la persona, nunca una
+  sincronización ni una copia de seguridad del resto de sus datos privados.
 - **Despliegue**: la aplicación se publica exclusivamente en GitHub Pages.
 - **Backend**: no existe backend ni servidor de aplicación propio; toda la
 
@@ -186,4 +204,4 @@ principios antes de pasar a la fase de implementación. Cualquier
 complejidad añadida a la arquitectura de capas definida DEBE justificarse
 por escrito en el plan correspondiente.
 
-**Version**: 2.5.0 | **Ratified**: TODO(RATIFICATION_DATE: fecha original no registrada) | **Last Amended**: 2026-10-26
+**Version**: 2.6.0 | **Ratified**: TODO(RATIFICATION_DATE: fecha original no registrada) | **Last Amended**: 2026-10-29
