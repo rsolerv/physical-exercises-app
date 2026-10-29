@@ -1,4 +1,5 @@
 @use '../../../../../styles/espaciado' as *;
+@use '../../../../../styles/breakpoints' as *;
 
 .estado-vacio {
   display: flex;
@@ -8,6 +9,10 @@
   gap: $espaciado-2;
   margin-top: $espaciado-6;
   color: var(--color-terciario);
+
+  @include movil {
+  margin-top: $espaciado-8;
+  }
 }
 
 .estado-vacio__icono {

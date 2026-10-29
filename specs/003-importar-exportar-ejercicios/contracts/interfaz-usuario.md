@@ -7,6 +7,7 @@ Complementa `spec.md` con el detalle de presentación necesario para implementar
 - Ruta: `/ejercicios/importar`. Entrada de menú "Importar ejercicios" en el grupo "Biblioteca" (junto a "Buscar" y "Gestionar categorías"), visible en escritorio/tablet; en móvil se ubica en el panel "Más", igual que "Gestionar categorías" (FR-001, coherente con `menu-principal.ts` y FR-047 de 001).
 - Cabecera con título "Importar ejercicios", sin acciones principales adicionales en la cabecera (la acción "Importar" vive junto a los resultados, no en la cabecera, ver más abajo).
 - Mismo layout responsive que "Buscar" (buscador de texto arriba, filtro de categoría debajo o al lado según el ancho disponible, resultados en lista vertical sin desbordamiento horizontal), con estas diferencias respecto a "Buscar":
+  - Los resultados comienzan después de la altura real de los filtros y no quedan ocultos por ellos al cambiar el tamaño de pantalla; los filtros pueden permanecer visibles al desplazarse.
   - El filtro de categoría usa una selección **única** (p. ej. `mat-selection-list` en modo single o `mat-radio-group`) sobre las categorías del repositorio común; no existe una opción "Todas" (FR-002).
   - Debajo del buscador y del filtro hay un botón "Buscar" explícito; no se dispara ninguna búsqueda automáticamente al escribir o al cambiar la categoría (FR-003).
   - Antes de la primera búsqueda de la sesión, la zona de resultados muestra un estado inicial neutro (no un estado vacío de "sin resultados"), invitando a buscar.
