@@ -38,7 +38,6 @@ type EstadoBusquedaImportar = 'inicial' | 'cargando' | 'resultados' | 'vacio' | 
   selector: 'proto-importar-ejercicios',
   standalone: true,
   imports: [
-    RouterLink,
     MatButtonModule,
     MatChipsModule,
     MatDialogModule,
