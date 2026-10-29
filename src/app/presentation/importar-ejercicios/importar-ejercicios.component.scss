@@ -6,24 +6,29 @@
 }
 
 .importar-ejercicios__filtros {
-  position: sticky;
+  position: fixed;
   top: 60px;
+  right: 0;
+  left: 260px;
   z-index: 3;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: $espaciado-2;
+  width: auto;
   padding: $espaciado-2 $espaciado-4;
   background: var(--mat-sys-surface);
   border-bottom: 1px solid var(--mat-sys-outline-variant);
 
   @include movil {
     top: 80px;
+    left: 0;
     gap: $espaciado-1;
     padding: $espaciado-2;
   }
 
   @include navegacion-riel {
+    left: 80px;
     padding: $espaciado-2 $espaciado-3;
   }
 }
@@ -44,15 +49,33 @@
   flex-wrap: nowrap;
   width: max-content;
   min-width: 100%;
+
+  @include movil {
+    gap: $espaciado-1;
+    margin-left: 0 !important;
+  }
 }
 
 :host ::ng-deep .importar-ejercicios__categorias mat-chip-option,
 .importar-ejercicios__boton-buscar {
   min-height: 48px;
+
+  @include movil {
+    margin: $espaciado-1 0;
+  }
 }
 
 .importar-ejercicios__cuerpo {
   min-width: 0;
+  padding-top: 328px;
+
+  @include movil {
+    padding-top: 338px;
+  }
+
+  @include navegacion-riel {
+    padding-top: 330px;
+  }
 }
 
 .importar-ejercicios__resultados {

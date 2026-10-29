@@ -75,6 +75,31 @@ describe('ImportarEjerciciosComponent', () => {
     expect(fixture.nativeElement.querySelector('[data-testid="boton-importar"]')).toBeNull();
   });
 
+  it('fija los filtros y reserva espacio para que el listado no quede oculto', async () => {
+    configurar({
+      buscar: vi.fn().mockResolvedValue([ejercicioComun()]),
+      listarCategoriasComunes: vi.fn().mockResolvedValue([{ id: 'cat-comun-1', nombre: 'Movilidad' }]),
+    });
+    const fixture = await crearComponente();
+    const raiz = fixture.nativeElement as HTMLElement;
+    const filtros = raiz.querySelector<HTMLElement>('.importar-ejercicios__filtros');
+    const cuerpo = raiz.querySelector<HTMLElement>('.importar-ejercicios__cuerpo');
+
+    expect(filtros).toBeTruthy();
+    expect(cuerpo).toBeTruthy();
+    if (!filtros || !cuerpo) return;
+
+    expect(getComputedStyle(filtros).position).toBe('fixed');
+    expect(Number.parseFloat(getComputedStyle(cuerpo).paddingTop)).toBeGreaterThanOrEqual(
+      filtros.getBoundingClientRect().height
+    );
+
+    await fixture.componentInstance.buscar();
+    fixture.detectChanges();
+
+    expect(raiz.querySelector('.importar-ejercicios__item')?.textContent).toContain('Almeja');
+  });
+
   it('no busca automáticamente al escribir texto o elegir categoría: solo al pulsar Buscar (FR-003)', async () => {
     const { buscar } = configurar({});
     await crearComponente();
