@@ -66,7 +66,6 @@ Como usuario quiero buscar ejercicios en el catálogo público compartido por to
 
 1. **Given** que el usuario abre "Importar ejercicios" desde el menú principal y hay categorías comunes disponibles, **When** se carga la pantalla, **Then** ve un buscador de texto y la lista de categorías del repositorio común (no las suyas propias), con la primera categoría seleccionada, sin ninguna opción "Todas" y permitiendo seleccionar como máximo una categoría.
 2. **Given** que el usuario ha escrito un texto o mantiene seleccionada una categoría común, **When** pulsa "Buscar", **Then** obtiene un listado de ejercicios del repositorio común que coinciden, cada uno con una casilla de selección.
-2a. **Given** que aparecen resultados de búsqueda, **When** el usuario activa la acción "Ver ejercicio" de uno de ellos, **Then** se abre una ficha remota de solo lectura con sus datos completos y una acción "Importar ejercicio".
 3. **Given** que el usuario desmarca todas las categorías, **When** la pantalla muestra los filtros, **Then** el botón "Buscar" está deshabilitado y no se ejecuta ninguna búsqueda; al seleccionar una categoría, el botón vuelve a habilitarse.
 4. **Given** que el listado de resultados está vacío, **When** se muestra la pantalla, **Then** aparece un estado vacío indicativo, no un error.
 5. **Given** que el usuario marca una o varias casillas de resultados, **When** hay al menos una selección, **Then** aparece un botón "Importar"; si no hay ninguna selección, el botón no se muestra.
@@ -76,6 +75,7 @@ Como usuario quiero buscar ejercicios en el catálogo público compartido por to
 9. **Given** que un ejercicio importado contiene una imagen de tipo archivo cuyo documento remoto falta o es inválido, **When** se completa la importación, **Then** el resto de los datos y las imágenes válidas se importan igualmente y se informa del número de imágenes omitidas.
 10. **Given** que el usuario importa un ejercicio cuyo nombre ya existe en su propia biblioteca, **When** se completa la importación, **Then** el ejercicio se añade igualmente como una entrada nueva e independiente, sin fusionarse ni sobrescribir el existente.
 11. **Given** que no hay conexión o el repositorio común no está disponible durante la búsqueda o la importación, **When** ocurre el fallo, **Then** la aplicación informa del error sin perder datos locales ni dejar una importación a medias.
+12. **Given** que aparecen resultados de búsqueda, **When** el usuario activa "Ver ejercicio" en uno de ellos, **Then** se abre una ficha remota de solo lectura con sus datos completos y la acción "Importar ejercicio"; al volver, conserva los filtros, resultados y selección anteriores.
 
 ---
 

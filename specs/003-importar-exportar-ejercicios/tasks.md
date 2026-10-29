@@ -164,5 +164,5 @@ El propietario solicita añadir a US1 una ficha remota de solo lectura, accesibl
 
 - [X] T024 [US1] Añadir `obtenerEjercicioPorId(id)` al contrato/puerto y lectura raw de `ejercicios/<id>.json` en `RepositorioComunAdapter`, con cobertura para éxito y 404.
 - [X] T025 [US1] Ampliar `BuscarEjerciciosComunesUseCase` para cargar la ficha y sus imágenes de archivo, omitiendo imágenes inválidas y propagando fallos recuperables.
-- [X] T026 [US1] Añadir la ruta de previsualización de solo lectura con acción propia para importar, aplicar mapeo existente, excluir observaciones/edición/eliminación y añadir la acción "Ver ejercicio" a cada resultado.
+- [X] T026 [US1] Añadir la ruta de previsualización de solo lectura con acción propia para importar, aplicar mapeo existente, excluir observaciones/edición/eliminación, añadir "Ver ejercicio" a cada resultado y restaurar filtros/resultados/selección al volver.
 - [X] T027 [US1] Actualizar criterios funcionales y contratos de interfaz/puerto/plan/research; añadir pruebas unitarias y de componente de carga, navegación, ausencia de observaciones e importación.

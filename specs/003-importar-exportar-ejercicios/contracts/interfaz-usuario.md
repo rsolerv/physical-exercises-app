@@ -21,7 +21,7 @@ Complementa `spec.md` con el detalle de presentación necesario para implementar
 - Ruta: `/ejercicios/importar/:id`. Se abre desde la acción secundaria de cada resultado y puede cargar el ejercicio publicado directamente por su identificador, sin credenciales.
 - Presenta nombre, descripción, categorías comunes, imágenes y enlaces multimedia con el mismo estilo de lectura de la ficha local.
 - No muestra observaciones ni acciones para editar o eliminar el ejercicio remoto.
-- Incluye "Volver a los resultados" y la acción principal "Importar ejercicio". Esta última usa el mismo flujo de mapeo de categorías y los mismos mensajes de éxito/error que importar desde la lista; tras completar la importación vuelve a `/ejercicios/importar`.
+- Incluye "Volver a los resultados" y la acción principal "Importar ejercicio". Volver restaura filtros, resultados y selección previos. La importación usa el mismo flujo de mapeo de categorías y los mismos mensajes de éxito/error que importar desde la lista; tras completar vuelve a `/ejercicios/importar`.
 - Estados: carga, no encontrado, error de red con posibilidad de reintentar. Las imágenes de archivo inválidas se omiten en la previsualización y se informa de cuántas no se pudieron mostrar; un error de red al leerlas permite reintentar la carga.
 
 ### Diálogo "Asignar categoría" (nuevo, parte de US1)
