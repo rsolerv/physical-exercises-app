@@ -12,7 +12,7 @@ import type { Planificacion } from '../../../src/app/domain/planificacion/planif
 import type { Ejercicio } from '../../../src/app/domain/ejercicio/ejercicio.entity';
 
 function ejercicio(id: string, nombre: string): Ejercicio {
-  return { id, nombre, descripcion: 'desc', categoriaIds: ['cat-1'], enlaces: [], imagenes: [] };
+  return { id, nombre, descripcion: 'desc', categoriaIds: ['cat-1'], enlaces: [], imagenes: [], subidoRepositorioComun: false };
 }
 
 describe('CalendarioSemanalComponent', () => {

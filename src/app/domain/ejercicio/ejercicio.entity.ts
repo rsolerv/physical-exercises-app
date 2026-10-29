@@ -30,6 +30,9 @@ export interface Ejercicio {
   enlaces: EnlaceEjercicio[];
   imagenes: ImagenEjercicio[];
   observaciones?: string;
+  /** Pasa a `true` tras una subida correcta al repositorio común; nunca vuelve a `false` (FR-021). */
+  subidoRepositorioComun: boolean;
 }
 
-export type DatosNuevoEjercicio = Omit<Ejercicio, 'id'>;
+/** Datos de alta de un ejercicio: `subidoRepositorioComun` siempre arranca en `false`, no se recibe como entrada. */
+export type DatosNuevoEjercicio = Omit<Ejercicio, 'id' | 'subidoRepositorioComun'>;

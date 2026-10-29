@@ -12,6 +12,7 @@ import { GestionarEjercicioUseCase } from '../../../src/app/application/casos-us
 import { ConsultarPlanificacionUseCase } from '../../../src/app/application/casos-uso/consultar-planificacion.use-case';
 import { GestionarPlanificacionUseCase } from '../../../src/app/application/casos-uso/gestionar-planificacion.use-case';
 import { GestionarCategoriaUseCase } from '../../../src/app/application/casos-uso/gestionar-categoria.use-case';
+import { SubirEjercicioComunUseCase } from '../../../src/app/application/casos-uso/subir-ejercicio-comun.use-case';
 import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
 
 describe('Integración de rutas de biblioteca (US1)', () => {
@@ -40,6 +41,7 @@ describe('Integración de rutas de biblioteca (US1)', () => {
         { provide: ConsultarPlanificacionUseCase, useValue: { obtenerDeHoy: vi.fn().mockResolvedValue(null) } },
         { provide: GestionarPlanificacionUseCase, useValue: { asignarEjercicioADia: vi.fn() } },
         { provide: GestionarCategoriaUseCase, useValue: { crear: vi.fn(), actualizar: vi.fn(), eliminar: vi.fn() } },
+        { provide: SubirEjercicioComunUseCase, useValue: { puedeOfrecerSubida: vi.fn().mockResolvedValue(false) } },
         { provide: MensajeFeedbackService, useValue: { mostrarExito: vi.fn(), mostrarError: vi.fn() } },
       ],
     });

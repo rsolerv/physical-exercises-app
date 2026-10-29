@@ -15,6 +15,8 @@ import { AjustesRepositoryPort } from '../../../src/app/application/ports/ajuste
 import { GoogleAutorizacionPort } from '../../../src/app/application/ports/google-autorizacion.port';
 import { GitHubSyncPort } from '../../../src/app/application/ports/github-sync.port';
 import { ProveedorSincronizacionPort } from '../../../src/app/application/ports/proveedor-sincronizacion.port';
+import { RepositorioComunPort } from '../../../src/app/application/ports/repositorio-comun.port';
+import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
 
 const anchoViewportOriginal = window.innerWidth;
 
@@ -48,6 +50,17 @@ describe('ShellComponent (navegación)', () => {
         // Puertos requeridos por las rutas de historias de usuario ya implementadas (p. ej. US1).
         { provide: EjercicioRepositoryPort, useValue: { listarTodos: vi.fn().mockResolvedValue([]) } },
         { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue([]) } },
+        {
+          provide: RepositorioComunPort,
+          useValue: {
+            listarCategorias: vi.fn().mockResolvedValue([]),
+            buscarEjercicios: vi.fn().mockResolvedValue([]),
+            leerImagen: vi.fn(),
+            existeEjercicioPorNombre: vi.fn(),
+            subirEjercicio: vi.fn(),
+          },
+        },
+        { provide: MensajeFeedbackService, useValue: { mostrarExito: vi.fn(), mostrarError: vi.fn() } },
         {
           provide: PlanificacionRepositoryPort,
           useValue: {

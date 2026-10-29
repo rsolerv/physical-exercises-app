@@ -30,6 +30,10 @@ const VERSION_APLICACION = '0.0.0';
         <mat-icon aria-hidden="true">category</mat-icon>
         Gestionar categorías
       </a>
+      <a mat-button routerLink="/ejercicios/importar" matBottomSheetClose (click)="cerrar()">
+        <mat-icon aria-hidden="true">download</mat-icon>
+        Importar ejercicios
+      </a>
       <a mat-button routerLink="/sincronizacion" matBottomSheetClose (click)="cerrar()">
         <mat-icon aria-hidden="true">sync</mat-icon>
         Sincronización

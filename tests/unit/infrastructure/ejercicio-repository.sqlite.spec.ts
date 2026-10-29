@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { SqliteConexionService } from '../../../src/app/infrastructure/persistencia-sqlite/sqlite-conexion.service';
 import { EjercicioRepositorySqlite } from '../../../src/app/infrastructure/persistencia-sqlite/ejercicio-repository.sqlite';
+import { MotorSqlite, crearMotorSqliteEnMemoria } from '../../../src/app/infrastructure/persistencia-sqlite/motor-sqlite';
 import { ErrorValidacion, ErrorNoEncontrado } from '../../../src/app/domain/errores/errores-dominio';
 import type { DatosNuevoEjercicio, Ejercicio } from '../../../src/app/domain/ejercicio/ejercicio.entity';
 
@@ -95,7 +96,7 @@ describe('EjercicioRepositorySqlite', () => {
     expect(await repositorio.obtenerPorId(creado.id)).toBeNull();
   });
 
-  it('restaura un ejercicio con su identificador, datos y categorías originales', async () => {
+  it('restaura un ejercicio con su identificador, datos, categorías y marca de subida originales', async () => {
     const original: Ejercicio = {
       id: 'ejercicio-restaurado',
       ...datos({
@@ -103,6 +104,7 @@ describe('EjercicioRepositorySqlite', () => {
           { id: 'img-archivo', tipo: 'archivo', contenidoBase64: 'QQ==', tipoMime: 'image/png', nombreArchivo: 'a.png' },
         ],
       }),
+      subidoRepositorioComun: true,
     };
     await repositorio.eliminar(original.id);
 
@@ -143,5 +145,43 @@ describe('EjercicioRepositorySqlite', () => {
 
     const ej1 = await repositorio.obtenerPorId(conDosCategorias.id);
     expect(ej1?.categoriaIds).toEqual(['cat-cadera']);
+  });
+
+  it('un ejercicio nuevo tiene subidoRepositorioComun a false por defecto (data-model.md § Ejercicio)', async () => {
+    const creado = await repositorio.crear(datos());
+    expect(creado.subidoRepositorioComun).toBe(false);
+    expect((await repositorio.obtenerPorId(creado.id))?.subidoRepositorioComun).toBe(false);
+  });
+
+  it('marcarSubidoRepositorioComun pone subidoRepositorioComun a true de forma persistente (FR-021)', async () => {
+    const creado = await repositorio.crear(datos());
+    await repositorio.marcarSubidoRepositorioComun(creado.id);
+    expect((await repositorio.obtenerPorId(creado.id))?.subidoRepositorioComun).toBe(true);
+  });
+
+  it('marcarSubidoRepositorioComun no modifica ningún otro campo del ejercicio', async () => {
+    const creado = await repositorio.crear(datos());
+    await repositorio.marcarSubidoRepositorioComun(creado.id);
+    const actualizado = await repositorio.obtenerPorId(creado.id);
+    expect(actualizado).toEqual({ ...creado, subidoRepositorioComun: true });
+  });
+
+  it('migra bases de datos existentes añadiendo la columna subido_repositorio_comun con valor 0 (ALTER TABLE)', async () => {
+    await conexion.cerrar();
+    const motor: MotorSqlite = await crearMotorSqliteEnMemoria();
+    await motor.ejecutarSinResultado(
+      'CREATE TABLE ejercicio (id TEXT PRIMARY KEY, nombre TEXT NOT NULL, descripcion TEXT NOT NULL, observaciones TEXT)',
+    );
+    await motor.ejecutarSinResultado(
+      "INSERT INTO ejercicio (id, nombre, descripcion) VALUES ('ej-antiguo', 'Sentadilla', 'Flexionar las rodillas.')",
+    );
+    await motor.aplicarEsquema();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [{ provide: SqliteConexionService, useValue: motor }] });
+
+    const repositorioMigrado = TestBed.inject(EjercicioRepositorySqlite);
+    const ejercicioMigrado = await repositorioMigrado.obtenerPorId('ej-antiguo');
+    expect(ejercicioMigrado?.subidoRepositorioComun).toBe(false);
+    await motor.cerrar();
   });
 });

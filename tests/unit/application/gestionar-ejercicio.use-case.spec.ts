@@ -35,6 +35,7 @@ describe('GestionarEjercicioUseCase', () => {
       eliminar: vi.fn(),
       restaurar: vi.fn().mockResolvedValue(undefined),
       quitarCategoriaDeTodos: vi.fn(),
+      marcarSubidoRepositorioComun: vi.fn(),
     };
     planificacionRepo = {
       obtenerPorId: vi.fn(),
@@ -96,7 +97,7 @@ describe('GestionarEjercicioUseCase', () => {
   });
 
   it('captura datos y días planificados antes de eliminar para poder restaurarlos', async () => {
-    const ejercicio: Ejercicio = { id: 'ej-1', ...datosValidos() };
+    const ejercicio: Ejercicio = { id: 'ej-1', ...datosValidos(), subidoRepositorioComun: false };
     const planificacion: Planificacion = {
       id: 'plan-1',
       nombre: 'Semana',
@@ -122,7 +123,7 @@ describe('GestionarEjercicioUseCase', () => {
   });
 
   it('restaura el ejercicio y sus asociaciones originales con categorías y planificaciones', async () => {
-    const ejercicio: Ejercicio = { id: 'ej-1', ...datosValidos() };
+    const ejercicio: Ejercicio = { id: 'ej-1', ...datosValidos(), subidoRepositorioComun: false };
     const snapshot = {
       ejercicio,
       asignaciones: [{ planificacionId: 'plan-1', dia: 'lunes' as const }],
@@ -140,7 +141,7 @@ describe('GestionarEjercicioUseCase', () => {
 
     await expect(
       caso.restaurarEliminacion({
-        ejercicio: { id: 'ej-1', ...datosValidos() },
+        ejercicio: { id: 'ej-1', ...datosValidos(), subidoRepositorioComun: false },
         asignaciones: [],
       })
     ).rejects.toThrow('fallo de restauración');

@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, resource, signal } from '@angular/core';
 import { form, required, FormField } from '@angular/forms/signals';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,19 +10,22 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDialog } from '@angular/material/dialog';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { from } from 'rxjs';
 import { GestionarEjercicioUseCase } from '../../application/casos-uso/gestionar-ejercicio.use-case';
 import { ConsultarPlanificacionUseCase } from '../../application/casos-uso/consultar-planificacion.use-case';
 import { GestionarPlanificacionUseCase } from '../../application/casos-uso/gestionar-planificacion.use-case';
+import { SubirEjercicioComunUseCase } from '../../application/casos-uso/subir-ejercicio-comun.use-case';
 import { CategoriaRepositoryPort } from '../../application/ports/categoria-repository.port';
 import { EjercicioRepositoryPort } from '../../application/ports/ejercicio-repository.port';
 import type { Categoria } from '../../domain/categoria/categoria.entity';
-import type { EnlaceEjercicio, ImagenEjercicio, TipoEnlaceEjercicio } from '../../domain/ejercicio/ejercicio.entity';
+import type { Ejercicio, EnlaceEjercicio, ImagenEjercicio, TipoEnlaceEjercicio } from '../../domain/ejercicio/ejercicio.entity';
 import { diaSemanaDeFecha } from '../../domain/planificacion/fecha-semana';
 import type { Planificacion } from '../../domain/planificacion/planificacion.entity';
 import { MensajeFeedbackService } from '../compartido/ui/mensaje-feedback.service';
 import { CabeceraPaginaComponent } from '../compartido/ui/cabecera-pagina/cabecera-pagina.component';
+import { SubirEjercicioComunDialogComponent } from './subir-ejercicio-comun-dialog.component';
 
 const TAMANO_MAXIMO_IMAGEN_BYTES = 5 * 1024 * 1024;
 
@@ -64,6 +67,8 @@ export class EjercicioFormularioComponent {
   private readonly gestionarPlanificacion = inject(GestionarPlanificacionUseCase);
   private readonly categoriaRepository = inject(CategoriaRepositoryPort);
   private readonly ejercicioRepository = inject(EjercicioRepositoryPort);
+  private readonly subirEjercicioComun = inject(SubirEjercicioComunUseCase);
+  private readonly dialog = inject(MatDialog);
   private readonly mensajeFeedback = inject(MensajeFeedbackService);
   private readonly ruta = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -109,6 +114,18 @@ export class EjercicioFormularioComponent {
   readonly cargandoEjercicio = signal(false);
   readonly errorCargaEjercicio = signal<string | null>(null);
   private readonly ultimoGuardado = signal<string | null>(null);
+
+  private readonly ejercicioCargado = signal<Ejercicio | null>(null);
+  private readonly yaSubidoRepositorioComun = signal(false);
+  protected readonly recursoPuedeSubirComun = resource({
+    params: () => this.ejercicioCargado() ?? undefined,
+    loader: ({ params }) => this.subirEjercicioComun.puedeOfrecerSubida(params),
+  });
+  /** Nunca disponible mientras se crea un ejercicio todavía sin guardar. */
+  protected readonly puedeSubirRepositorioComun = computed(
+    () => this.modoEdicion && !this.yaSubidoRepositorioComun() && (this.recursoPuedeSubirComun.value() ?? false)
+  );
+
   readonly estadoGuardado = computed(() => {
     if (this.guardando()) return 'guardando';
     const ultimoGuardado = this.ultimoGuardado();
@@ -165,6 +182,7 @@ export class EjercicioFormularioComponent {
       this.categoriaIdsSeleccionadas.set(ejercicio.categoriaIds);
       this.enlaces.set(ejercicio.enlaces);
       this.imagenes.set(ejercicio.imagenes);
+      this.ejercicioCargado.set(ejercicio);
       this.ultimoGuardado.set(JSON.stringify(this.datosActuales()));
     } catch (error) {
       this.errorCargaEjercicio.set(error instanceof Error ? error.message : 'No se ha podido cargar el ejercicio.');
@@ -256,6 +274,20 @@ export class EjercicioFormularioComponent {
 
   async cancelar(): Promise<void> {
     await this.router.navigate(this.ejercicioId ? ['/ejercicios', this.ejercicioId] : ['/buscar']);
+  }
+
+  abrirDialogoSubirComun(): void {
+    const ejercicio = this.ejercicioCargado();
+    if (!ejercicio) return;
+    const referencia = this.dialog.open(SubirEjercicioComunDialogComponent, { data: { ejercicio } });
+    referencia.afterClosed().subscribe((subidoCorrectamente) => {
+      if (subidoCorrectamente) {
+        this.yaSubidoRepositorioComun.set(true);
+        this.mensajeFeedback.mostrarExito(
+          'Ejercicio enviado. Quedará pendiente de revisión antes de publicarse en el catálogo común.'
+        );
+      }
+    });
   }
 
   async guardar(): Promise<void> {

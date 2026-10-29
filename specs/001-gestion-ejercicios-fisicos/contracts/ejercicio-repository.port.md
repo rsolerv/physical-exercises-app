@@ -4,6 +4,8 @@
 
 Puerto que Application usa para leer y escribir Ejercicios, sin conocer el detalle de SQLite WASM.
 
+La [feature 003](../../003-importar-exportar-ejercicios/spec.md) amplía este puerto con `marcarSubidoRepositorioComun(id)` y con el campo `subidoRepositorioComun` de la entidad `Ejercicio`; el detalle de esa ampliación está en su [modelo de datos](../../003-importar-exportar-ejercicios/data-model.md). El resto de este contrato no cambia.
+
 ```ts
 interface EjercicioRepositoryPort {
   obtenerPorId(id: string): Promise<Ejercicio | null>;

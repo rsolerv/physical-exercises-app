@@ -8,12 +8,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatDialog } from '@angular/material/dialog';
 import { EjercicioRepositoryPort } from '../../application/ports/ejercicio-repository.port';
 import { CategoriaRepositoryPort } from '../../application/ports/categoria-repository.port';
 import { ProgresoDiarioRepositoryPort } from '../../application/ports/progreso-diario-repository.port';
 import { ConsultarPlanificacionUseCase } from '../../application/casos-uso/consultar-planificacion.use-case';
 import { GestionarProgresoDiarioUseCase } from '../../application/casos-uso/gestionar-progreso-diario.use-case';
 import { GestionarEjercicioUseCase } from '../../application/casos-uso/gestionar-ejercicio.use-case';
+import { SubirEjercicioComunUseCase } from '../../application/casos-uso/subir-ejercicio-comun.use-case';
 import type { EliminacionEjercicio } from '../../application/casos-uso/gestionar-ejercicio.use-case';
 import type { CambioProgreso } from '../../application/casos-uso/gestionar-progreso-diario.use-case';
 import type { Categoria } from '../../domain/categoria/categoria.entity';
@@ -24,6 +26,7 @@ import { YoutubeEmbedComponent } from '../compartido/embebidos/youtube-embed.com
 import { EnlaceEmbedComponent } from '../compartido/embebidos/enlace-embed.component';
 import { MensajeFeedbackService } from '../compartido/ui/mensaje-feedback.service';
 import { EstadoCargaComponent } from '../compartido/ui/estado-carga/estado-carga.component';
+import { SubirEjercicioComunDialogComponent } from './subir-ejercicio-comun-dialog.component';
 
 const RUTAS_ORIGEN_EJERCICIO = new Set(['/inicio', '/planificacion', '/buscar']);
 
@@ -61,6 +64,8 @@ export class EjercicioFichaComponent {
   private readonly consultarPlanificacion = inject(ConsultarPlanificacionUseCase);
   private readonly gestionarProgresoDiario = inject(GestionarProgresoDiarioUseCase);
   private readonly gestionarEjercicio = inject(GestionarEjercicioUseCase);
+  private readonly subirEjercicioComun = inject(SubirEjercicioComunUseCase);
+  private readonly dialog = inject(MatDialog);
   private readonly mensajeFeedback = inject(MensajeFeedbackService);
 
   private readonly ejercicioId = this.ruta.snapshot.paramMap.get('id') ?? '';
@@ -92,6 +97,15 @@ export class EjercicioFichaComponent {
   readonly categorias = toSignal(from(this.categoriaRepository.listarTodas()), { initialValue: [] as Categoria[] });
   readonly imagenesConError = signal<ReadonlySet<string>>(new Set());
   readonly errorAlEliminar = signal<string | null>(null);
+
+  private readonly yaSubidoRepositorioComun = signal(false);
+  protected readonly recursoPuedeSubirComun = resource({
+    params: () => this.recursoEjercicio.value() ?? undefined,
+    loader: ({ params }) => this.subirEjercicioComun.puedeOfrecerSubida(params),
+  });
+  protected readonly puedeSubirRepositorioComun = computed(
+    () => !this.yaSubidoRepositorioComun() && (this.recursoPuedeSubirComun.value() ?? false)
+  );
   protected readonly errorCarga = computed(() => {
     const error = this.recursoEjercicio.error();
     if (!error) return null;
@@ -132,6 +146,20 @@ export class EjercicioFichaComponent {
 
   marcarErrorImagen(id: string): void {
     this.imagenesConError.update((actuales) => new Set(actuales).add(id));
+  }
+
+  abrirDialogoSubirComun(): void {
+    const ejercicio = this.recursoEjercicio.value();
+    if (!ejercicio) return;
+    const referencia = this.dialog.open(SubirEjercicioComunDialogComponent, { data: { ejercicio } });
+    referencia.afterClosed().subscribe((subidoCorrectamente) => {
+      if (subidoCorrectamente) {
+        this.yaSubidoRepositorioComun.set(true);
+        this.mensajeFeedback.mostrarExito(
+          'Ejercicio enviado. Quedará pendiente de revisión antes de publicarse en el catálogo común.'
+        );
+      }
+    });
   }
 
   async volver(): Promise<void> {

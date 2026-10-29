@@ -1,0 +1,51 @@
+<h2 mat-dialog-title>Subir al repositorio común</h2>
+
+<mat-dialog-content class="subir-ejercicio-comun-dialog">
+  @if (recursoCategoriasComunes.isLoading()) {
+    <p role="status">Cargando categorías del repositorio común…</p>
+  } @else if (paso() === 'categorias') {
+    @if ((recursoCategoriasComunes.value() ?? []).length === 0) {
+      <p role="alert">
+        El repositorio común no tiene ninguna categoría publicada todavía. No se puede subir el ejercicio.
+      </p>
+    } @else {
+      <p>Elige una o varias categorías comunes para este ejercicio:</p>
+      <mat-selection-list>
+        @for (categoria of recursoCategoriasComunes.value(); track categoria.id) {
+          <mat-list-option
+            [selected]="categoriaIdsSeleccionadas().includes(categoria.id)"
+            (click)="alternarCategoria(categoria.id)"
+          >
+            {{ categoria.nombre }}
+          </mat-list-option>
+        }
+      </mat-selection-list>
+    }
+  } @else if (paso() === 'duplicado') {
+    <p role="alert">Ya existe un ejercicio con este nombre en el repositorio común.</p>
+  } @else if (paso() === 'confirmar' || paso() === 'enviando') {
+    <p>
+      Esta acción no se puede deshacer ni repetir para este ejercicio. ¿Confirmas que quieres enviarlo al
+      repositorio común?
+    </p>
+  }
+
+  @if (error()) {
+    <p role="alert" class="subir-ejercicio-comun-dialog__error">{{ error() }}</p>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="cancelar()">Cancelar</button>
+  @if (paso() === 'categorias') {
+    <button mat-flat-button type="button" [disabled]="!puedeContinuar()" (click)="continuar()">Continuar</button>
+  } @else if (paso() === 'confirmar' || paso() === 'enviando') {
+    <button mat-flat-button type="button" [disabled]="paso() === 'enviando'" (click)="confirmar()">
+      @if (paso() === 'enviando') {
+        <mat-spinner diameter="18" />
+      } @else {
+        Confirmar y enviar
+      }
+    </button>
+  }
+</mat-dialog-actions>

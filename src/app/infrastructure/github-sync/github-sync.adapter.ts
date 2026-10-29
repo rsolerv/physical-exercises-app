@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, type HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import {
   ErrorAutenticacionGitHub,
@@ -14,31 +14,14 @@ import {
   type ImagenArchivoJSON,
   type LecturaRemota,
 } from '../../application/ports/github-sync.port';
-
-const API_BASE = 'https://api.github.com/repos';
+import { API_BASE_GITHUB, aBase64, cabecerasGitHub, leerContenidoGitHub } from './github-contenido.util';
 
 interface ContenidoGitHub {
-  content?: string;
   sha: string;
 }
 
 interface RespuestaEscrituraGitHub {
   content: { sha: string };
-}
-
-function aBase64(texto: string): string {
-  // btoa solo admite Latin1; codificamos primero a UTF-8 para admitir cualquier texto (unescape/encodeURIComponent
-  // es el truco clásico, documentado y sin dependencias adicionales, para ese paso intermedio).
-  return btoa(unescape(encodeURIComponent(texto)));
-}
-
-function desdeBase64(base64: string): string {
-  return decodeURIComponent(escape(atob(base64.replace(/\n/g, ''))));
-}
-
-interface ContenidoRemoto {
-  texto: string;
-  sha: string;
 }
 
 function esImagenArchivoValida(valor: unknown): valor is ImagenArchivoJSON {
@@ -103,25 +86,8 @@ export class GithubSyncAdapter implements GitHubSyncPort {
     }
   }
 
-  private async leerContenidoRemoto(credenciales: CredencialesGitHub, ruta: string): Promise<ContenidoRemoto> {
-    const url = this.urlContenido(credenciales, ruta);
-    const respuesta = await firstValueFrom(
-      this.http.get<ContenidoGitHub>(url, { headers: this.cabeceras(credenciales) })
-    );
-    if (respuesta.content?.trim()) {
-      return { texto: desdeBase64(respuesta.content), sha: respuesta.sha };
-    }
-
-    // Por encima de 1 MB la API de contenidos no devuelve el cuerpo; la API de blobs admite hasta 100 MB.
-    const blob = await firstValueFrom(
-      this.http.get<ContenidoGitHub>(`${API_BASE}/${credenciales.repositorio}/git/blobs/${respuesta.sha}`, {
-        headers: this.cabeceras(credenciales),
-      })
-    );
-    if (!blob.content?.trim()) {
-      throw new ErrorValidacion(`GitHub no ha devuelto el contenido del documento remoto «${ruta}».`);
-    }
-    return { texto: desdeBase64(blob.content), sha: respuesta.sha };
+  private async leerContenidoRemoto(credenciales: CredencialesGitHub, ruta: string): Promise<{ texto: string; sha: string }> {
+    return leerContenidoGitHub(this.http, credenciales.repositorio, ruta, credenciales.tokenPAT);
   }
 
   private async obtenerShaRemoto(credenciales: CredencialesGitHub, ruta: string): Promise<string | null> {
@@ -164,14 +130,11 @@ export class GithubSyncAdapter implements GitHubSyncPort {
   }
 
   private urlContenido(credenciales: CredencialesGitHub, ruta: string): string {
-    return `${API_BASE}/${credenciales.repositorio}/contents/${ruta}`;
+    return `${API_BASE_GITHUB}/${credenciales.repositorio}/contents/${ruta}`;
   }
 
   private cabeceras(credenciales: CredencialesGitHub): HttpHeaders {
-    return new HttpHeaders({
-      Authorization: `Bearer ${credenciales.tokenPAT}`,
-      Accept: 'application/vnd.github+json',
-    });
+    return cabecerasGitHub(credenciales.tokenPAT);
   }
 
   private traducirError(error: unknown): Error {

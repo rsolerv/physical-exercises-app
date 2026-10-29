@@ -1,0 +1,13 @@
+<h2 mat-dialog-title>Crea una categoría antes de importar</h2>
+
+<mat-dialog-content>
+  <p>
+    Para importar ejercicios del repositorio común necesitas tener al menos una categoría propia
+    creada, de forma que puedas elegir a cuál de las tuyas se asigna cada ejercicio importado.
+  </p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="cerrar()">Cerrar</button>
+  <a mat-flat-button routerLink="/ejercicios/categorias" (click)="cerrar()">Gestionar categorías</a>
+</mat-dialog-actions>

@@ -1,0 +1,28 @@
+<h2 mat-dialog-title>Asignar categoría</h2>
+
+<mat-dialog-content class="mapear-categoria-dialog__contenido">
+  <p class="mapear-categoria-dialog__ayuda">
+    Estas categorías del repositorio común no coinciden con ninguna de tus categorías. Elige con cuál
+    de las tuyas quieres asociar cada una antes de continuar.
+  </p>
+
+  @for (categoria of datos.categoriasPendientes; track categoria.id) {
+    <mat-form-field appearance="outline" class="mapear-categoria-dialog__fila">
+      <mat-label>{{ categoria.nombre }}</mat-label>
+      <mat-select
+        [value]="valorElegido(categoria.id)"
+        [attr.aria-label]="'Categoría propia equivalente a ' + categoria.nombre"
+        (selectionChange)="elegir(categoria.id, $event.value)"
+      >
+        @for (propia of datos.categoriasPropias; track propia.id) {
+          <mat-option [value]="propia.id">{{ propia.nombre }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="cancelar()">Cancelar</button>
+  <button mat-flat-button type="button" [disabled]="!puedeContinuar()" (click)="continuar()">Continuar</button>
+</mat-dialog-actions>

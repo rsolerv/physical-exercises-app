@@ -27,6 +27,12 @@ const categorias: EntradaMenuPrincipal = {
   icono: 'category',
   grupo: 'biblioteca',
 };
+const importar: EntradaMenuPrincipal = {
+  etiqueta: 'Importar ejercicios',
+  ruta: '/ejercicios/importar',
+  icono: 'download',
+  grupo: 'biblioteca',
+};
 const sincronizacion: EntradaMenuPrincipal = {
   etiqueta: 'Sincronización',
   ruta: '/sincronizacion',
@@ -34,13 +40,13 @@ const sincronizacion: EntradaMenuPrincipal = {
   grupo: 'sistema',
 };
 
-export const MENU_PRINCIPAL: EntradaMenuPrincipal[] = [hoy, planificacion, buscar, categorias, sincronizacion];
+export const MENU_PRINCIPAL: EntradaMenuPrincipal[] = [hoy, planificacion, buscar, importar, categorias, sincronizacion];
 
 export const MENU_MOVIL: EntradaMenuPrincipal[] = [hoy, planificacion, buscar];
 
 export const SECCIONES_MENU: SeccionMenuPrincipal[] = [
   { etiqueta: 'Entrenar', clase: 'entrenar', entradas: [hoy, planificacion] },
-  { etiqueta: 'Biblioteca', clase: 'biblioteca', entradas: [buscar, categorias] },
+  { etiqueta: 'Biblioteca', clase: 'biblioteca', entradas: [buscar, importar, categorias] },
   { etiqueta: 'Sistema', clase: 'sistema', entradas: [sincronizacion] },
 ];
 

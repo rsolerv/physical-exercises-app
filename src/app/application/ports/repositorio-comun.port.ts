@@ -1,0 +1,71 @@
+import type { EnlaceEjercicio } from '../../domain/ejercicio/ejercicio.entity';
+import type { CredencialesGitHub, ImagenArchivoJSON } from './github-sync.port';
+
+/** Categoría definida en `categorias.json` del repositorio común (data-model.md § Categoría común). */
+export interface CategoriaComun {
+  id: string;
+  nombre: string;
+}
+
+/** Imagen de un ejercicio común: por URL o referenciando un documento `imagenes/<id>.json`. */
+export interface ImagenEjercicioComun {
+  id: string;
+  tipo: 'url' | 'archivo';
+  /** Presente cuando `tipo === 'url'`. */
+  valorUrl?: string;
+  /** Presente cuando `tipo === 'archivo'`: `"imagenes/<id>.json"`. */
+  ruta?: string;
+}
+
+/** Documento `ejercicios/<id>.json` del repositorio común (data-model.md § Ejercicio común). */
+export interface EjercicioComunArchivo {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  /** Referencias a `CategoriaComun`; una o varias. */
+  categoriaIds: string[];
+  enlaces: EnlaceEjercicio[];
+  imagenes: ImagenEjercicioComun[];
+  observaciones?: string;
+}
+
+/**
+ * Puerto que Application usa para leer el catálogo público del repositorio
+ * común (`rsolerv/common-data-physical-exercises`) y para subir un ejercicio
+ * nuevo (contracts/repositorio-comun.port.md). El repositorio y las ramas de
+ * lectura (`main`) y escritura (`requests`) son constantes del adaptador.
+ */
+export abstract class RepositorioComunPort {
+  /** Descarga `categorias.json` de `main`. Devuelve una lista vacía si el fichero no existe todavía. No requiere credenciales. */
+  abstract listarCategorias(): Promise<CategoriaComun[]>;
+
+  /**
+   * Lista `/ejercicios` en `main` y filtra por texto (en nombre/descripción,
+   * sin distinguir mayúsculas/minúsculas) y/o por `categoriaId`. Sin texto ni
+   * categoría, devuelve el catálogo completo (FR-004). No requiere
+   * credenciales (FR-007).
+   */
+  abstract buscarEjercicios(texto: string, categoriaId: string | null): Promise<EjercicioComunArchivo[]>;
+
+  /** Descarga y parsea `imagenes/<id>.json` de `main`. Lanza `ErrorValidacion` si el documento no tiene el formato esperado. */
+  abstract leerImagen(ruta: string): Promise<ImagenArchivoJSON>;
+
+  /**
+   * Comprueba si ya existe un ejercicio con el mismo nombre normalizado en
+   * `main` (FR-017). Requiere credenciales (se llama solo antes de subir). No
+   * consulta los ejercicios pendientes en `requests`.
+   */
+  abstract existeEjercicioPorNombre(credenciales: CredencialesGitHub, nombre: string): Promise<boolean>;
+
+  /**
+   * Crea `ejercicios/<id>.json` en la rama `requests` (y, antes, cada
+   * `imagenes/<id>.json` que corresponda) mediante `PUT` sin `sha` (son
+   * ficheros nuevos, FR-017/FR-019). No escribe en `main` ni gestiona la pull
+   * request ni las reglas de validación automática.
+   */
+  abstract subirEjercicio(
+    credenciales: CredencialesGitHub,
+    ejercicio: EjercicioComunArchivo,
+    imagenesArchivo: ImagenArchivoJSON[]
+  ): Promise<void>;
+}

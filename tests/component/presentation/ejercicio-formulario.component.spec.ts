@@ -7,6 +7,7 @@ import { EjercicioFormularioComponent } from '../../../src/app/presentation/bibl
 import { GestionarEjercicioUseCase } from '../../../src/app/application/casos-uso/gestionar-ejercicio.use-case';
 import { ConsultarPlanificacionUseCase } from '../../../src/app/application/casos-uso/consultar-planificacion.use-case';
 import { GestionarPlanificacionUseCase } from '../../../src/app/application/casos-uso/gestionar-planificacion.use-case';
+import { SubirEjercicioComunUseCase } from '../../../src/app/application/casos-uso/subir-ejercicio-comun.use-case';
 import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
 import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejercicio-repository.port';
 import { diaSemanaDeFecha } from '../../../src/app/domain/planificacion/fecha-semana';
@@ -41,6 +42,7 @@ describe('EjercicioFormularioComponent', () => {
         },
         { provide: ConsultarPlanificacionUseCase, useValue: { obtenerDeHoy } },
         { provide: GestionarPlanificacionUseCase, useValue: { asignarEjercicioADia } },
+        { provide: SubirEjercicioComunUseCase, useValue: { puedeOfrecerSubida: vi.fn().mockResolvedValue(true) } },
         { provide: MensajeFeedbackService, useValue: { mostrarExito, mostrarError } },
       ],
     });
@@ -277,6 +279,7 @@ describe('EjercicioFormularioComponent', () => {
         { provide: GestionarEjercicioUseCase, useValue: { crear: vi.fn(), actualizar: vi.fn() } },
         { provide: ConsultarPlanificacionUseCase, useValue: { obtenerDeHoy } },
         { provide: GestionarPlanificacionUseCase, useValue: { asignarEjercicioADia } },
+        { provide: SubirEjercicioComunUseCase, useValue: { puedeOfrecerSubida: vi.fn().mockResolvedValue(false) } },
         { provide: MensajeFeedbackService, useValue: { mostrarExito, mostrarError } },
       ],
     });
@@ -372,6 +375,7 @@ describe('EjercicioFormularioComponent', () => {
         { provide: GestionarEjercicioUseCase, useValue: { crear: () => Promise.reject(new Error('fallo simulado')) } },
         { provide: ConsultarPlanificacionUseCase, useValue: { obtenerDeHoy } },
         { provide: GestionarPlanificacionUseCase, useValue: { asignarEjercicioADia } },
+        { provide: SubirEjercicioComunUseCase, useValue: { puedeOfrecerSubida: vi.fn().mockResolvedValue(false) } },
         { provide: MensajeFeedbackService, useValue: { mostrarExito, mostrarError } },
       ],
     });
@@ -439,6 +443,7 @@ describe('EjercicioFormularioComponent', () => {
               categoriaIds: ['cat-1'],
               enlaces: [],
               imagenes: [],
+              subidoRepositorioComun: false,
             });
         })
     );
@@ -494,6 +499,7 @@ describe('EjercicioFormularioComponent', () => {
       categoriaIds: ['cat-1'],
       enlaces: [],
       imagenes: [],
+      subidoRepositorioComun: false,
     });
     const fixture = crearComponente();
     await fixture.whenStable();
@@ -530,6 +536,7 @@ describe('EjercicioFormularioComponent', () => {
       categoriaIds: ['cat-1'],
       enlaces: [],
       imagenes: [],
+      subidoRepositorioComun: false,
     });
     const fixture = crearComponente();
     await fixture.whenStable();
@@ -548,15 +555,18 @@ describe('EjercicioFormularioComponent', () => {
   });
 
   describe('modo edición', () => {
-    function configurarEdicion(ejercicioExistente: {
-      id: string;
-      nombre: string;
-      descripcion: string;
-      categoriaIds: string[];
-      enlaces: unknown[];
-      imagenes: unknown[];
-      observaciones?: string;
-    }) {
+    function configurarEdicion(
+      ejercicioExistente: {
+        id: string;
+        nombre: string;
+        descripcion: string;
+        categoriaIds: string[];
+        enlaces: unknown[];
+        imagenes: unknown[];
+        observaciones?: string;
+      },
+      puedeOfrecerSubida: ReturnType<typeof vi.fn> = vi.fn().mockResolvedValue(true)
+    ) {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         providers: [
@@ -572,6 +582,7 @@ describe('EjercicioFormularioComponent', () => {
           },
           { provide: ConsultarPlanificacionUseCase, useValue: { obtenerDeHoy: vi.fn().mockResolvedValue(null) } },
           { provide: GestionarPlanificacionUseCase, useValue: { asignarEjercicioADia: vi.fn() } },
+          { provide: SubirEjercicioComunUseCase, useValue: { puedeOfrecerSubida } },
           { provide: MensajeFeedbackService, useValue: { mostrarExito, mostrarError } },
         ],
       });
@@ -638,5 +649,38 @@ describe('EjercicioFormularioComponent', () => {
       expect(gestionarEjercicio.actualizar).toHaveBeenCalledWith('ej-1', expect.objectContaining({ nombre: 'Sentadilla' }));
       expect(gestionarEjercicio.crear).not.toHaveBeenCalled();
     });
+
+    it('muestra la acción "Subir al repositorio común" al editar un ejercicio elegible (US2)', async () => {
+      configurarEdicion(
+        { id: 'ej-1', nombre: 'Sentadilla', descripcion: 'Flexionar rodillas', categoriaIds: ['cat-1'], enlaces: [], imagenes: [] },
+        vi.fn().mockResolvedValue(true)
+      );
+      const fixture = crearComponente();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect((fixture.nativeElement as HTMLElement).querySelector('.ejercicio-formulario__subir-comun')).toBeTruthy();
+    });
+
+    it('no muestra la acción cuando el ejercicio no es elegible al editar', async () => {
+      configurarEdicion(
+        { id: 'ej-1', nombre: 'Sentadilla', descripcion: 'Flexionar rodillas', categoriaIds: ['cat-1'], enlaces: [], imagenes: [] },
+        vi.fn().mockResolvedValue(false)
+      );
+      const fixture = crearComponente();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect((fixture.nativeElement as HTMLElement).querySelector('.ejercicio-formulario__subir-comun')).toBeNull();
+    });
+  });
+
+  it('no muestra la acción "Subir al repositorio común" mientras se crea un ejercicio nuevo todavía sin guardar', () => {
+    const fixture = crearComponente();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('.ejercicio-formulario__subir-comun')).toBeNull();
   });
 });

@@ -25,6 +25,7 @@ function ejercicio(sobrescribir: Partial<Ejercicio> = {}): Ejercicio {
     categoriaIds: ['cat-1'],
     enlaces: [],
     imagenes: [],
+    subidoRepositorioComun: false,
     ...sobrescribir,
   };
 }

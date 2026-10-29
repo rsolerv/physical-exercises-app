@@ -15,9 +15,11 @@ import { PlanificacionRepositorySqlite } from './infrastructure/persistencia-sql
 import { ProgresoDiarioRepositoryPort } from './application/ports/progreso-diario-repository.port';
 import { ProgresoDiarioRepositorySqlite } from './infrastructure/persistencia-sqlite/progreso-diario-repository.sqlite';
 import { GitHubSyncPort } from './application/ports/github-sync.port';
+import { RepositorioComunPort } from './application/ports/repositorio-comun.port';
 import { ProveedorSincronizacionPort } from './application/ports/proveedor-sincronizacion.port';
 import { GoogleAutorizacionPort } from './application/ports/google-autorizacion.port';
 import { GithubSyncAdapter } from './infrastructure/github-sync/github-sync.adapter';
+import { RepositorioComunAdapter } from './infrastructure/repositorio-comun/repositorio-comun.adapter';
 import { ProveedorGoogleDriveSync } from './infrastructure/google-drive-sync/proveedor-google-drive-sync';
 import { GoogleIdentityAutorizacion } from './infrastructure/google-drive-sync/google-identity-autorizacion';
 import {
@@ -43,6 +45,7 @@ export const appConfig: ApplicationConfig = {
     { provide: PlanificacionRepositoryPort, useExisting: PlanificacionRepositorySqlite },
     { provide: ProgresoDiarioRepositoryPort, useExisting: ProgresoDiarioRepositorySqlite },
     { provide: GitHubSyncPort, useExisting: GithubSyncAdapter },
+    { provide: RepositorioComunPort, useExisting: RepositorioComunAdapter },
     { provide: ProveedorSincronizacionPort, useExisting: ProveedorSincronizacionSeleccionado },
     { provide: GOOGLE_DRIVE_SYNC_PROVIDER, useExisting: ProveedorGoogleDriveSync },
     { provide: GoogleAutorizacionPort, useExisting: GoogleIdentityAutorizacion },

@@ -15,6 +15,7 @@ interface FilaEjercicio {
   nombre: string;
   descripcion: string;
   observaciones: string | null;
+  subido_repositorio_comun: number;
 }
 
 /** Adaptador SQLite del puerto `EjercicioRepositoryPort` (contracts/ejercicio-repository.port.md). */
@@ -58,19 +59,19 @@ export class EjercicioRepositorySqlite implements EjercicioRepositoryPort {
     validarEjercicio(datos);
     const id = crypto.randomUUID();
     await this.guardarEjercicio(id, datos);
-    return { id, ...datos };
+    return { id, ...datos, subidoRepositorioComun: false };
   }
 
   async restaurar(ejercicio: Ejercicio): Promise<void> {
-    const { id, ...datos } = ejercicio;
+    const { id, subidoRepositorioComun, ...datos } = ejercicio;
     validarEjercicio(datos);
-    await this.guardarEjercicio(id, datos);
+    await this.guardarEjercicio(id, datos, subidoRepositorioComun);
   }
 
-  private async guardarEjercicio(id: string, datos: DatosNuevoEjercicio): Promise<void> {
+  private async guardarEjercicio(id: string, datos: DatosNuevoEjercicio, subidoRepositorioComun = false): Promise<void> {
     await this.conexion.ejecutarSinResultado(
-      'INSERT INTO ejercicio (id, nombre, descripcion, observaciones) VALUES (?, ?, ?, ?)',
-      [id, datos.nombre, datos.descripcion, datos.observaciones ?? null]
+      'INSERT INTO ejercicio (id, nombre, descripcion, observaciones, subido_repositorio_comun) VALUES (?, ?, ?, ?, ?)',
+      [id, datos.nombre, datos.descripcion, datos.observaciones ?? null, subidoRepositorioComun ? 1 : 0]
     );
     await this.guardarRelaciones(id, datos);
   }
@@ -95,7 +96,11 @@ export class EjercicioRepositorySqlite implements EjercicioRepositoryPort {
     );
     await this.borrarRelaciones(id);
     await this.guardarRelaciones(id, fusionado);
-    return { id, ...fusionado };
+    return { id, ...fusionado, subidoRepositorioComun: actual.subidoRepositorioComun };
+  }
+
+  async marcarSubidoRepositorioComun(id: string): Promise<void> {
+    await this.conexion.ejecutarSinResultado('UPDATE ejercicio SET subido_repositorio_comun = 1 WHERE id = ?', [id]);
   }
 
   async eliminar(id: string): Promise<void> {
@@ -145,6 +150,7 @@ export class EjercicioRepositorySqlite implements EjercicioRepositoryPort {
           nombreArchivo: i.nombre_archivo ?? undefined,
         })
       ),
+      subidoRepositorioComun: fila.subido_repositorio_comun === 1,
     };
   }
 

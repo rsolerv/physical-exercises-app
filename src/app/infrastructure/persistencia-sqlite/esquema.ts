@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS ejercicio (
   id TEXT PRIMARY KEY,
   nombre TEXT NOT NULL,
   descripcion TEXT NOT NULL,
-  observaciones TEXT
+  observaciones TEXT,
+  subido_repositorio_comun INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS ejercicio_categoria (

@@ -6,7 +6,15 @@ import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejer
 import type { Ejercicio } from '../../../src/app/domain/ejercicio/ejercicio.entity';
 
 function ejercicio(id: string, nombre: string, categoriaIds: string[] = ['cat-1']): Ejercicio {
-  return { id, nombre, descripcion: `Descripción de ${nombre}`, categoriaIds, enlaces: [], imagenes: [] };
+  return {
+    id,
+    nombre,
+    descripcion: `Descripción de ${nombre}`,
+    categoriaIds,
+    enlaces: [],
+    imagenes: [],
+    subidoRepositorioComun: false,
+  };
 }
 
 describe('BuscarEjerciciosUseCase', () => {

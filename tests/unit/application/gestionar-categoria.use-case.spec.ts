@@ -32,6 +32,7 @@ describe('GestionarCategoriaUseCase', () => {
       eliminar: vi.fn(),
       restaurar: vi.fn().mockResolvedValue(undefined),
       quitarCategoriaDeTodos: vi.fn(),
+      marcarSubidoRepositorioComun: vi.fn(),
     };
     ajustesRepo = {
       obtener: vi.fn(),
@@ -108,6 +109,7 @@ describe('GestionarCategoriaUseCase', () => {
       categoriaIds: ['cat-1', 'cat-2'],
       enlaces: [],
       imagenes: [],
+      subidoRepositorioComun: false,
     } satisfies Ejercicio;
     (ejercicioRepo.listarTodos as ReturnType<typeof vi.fn>).mockResolvedValue([ejercicio]);
 

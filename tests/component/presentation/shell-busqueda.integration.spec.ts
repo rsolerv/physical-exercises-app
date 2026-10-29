@@ -11,6 +11,7 @@ import { AjustesRepositoryPort } from '../../../src/app/application/ports/ajuste
 import { GestionarEjercicioUseCase } from '../../../src/app/application/casos-uso/gestionar-ejercicio.use-case';
 import { ConsultarPlanificacionUseCase } from '../../../src/app/application/casos-uso/consultar-planificacion.use-case';
 import { GestionarProgresoDiarioUseCase } from '../../../src/app/application/casos-uso/gestionar-progreso-diario.use-case';
+import { SubirEjercicioComunUseCase } from '../../../src/app/application/casos-uso/subir-ejercicio-comun.use-case';
 import { ProgresoDiarioRepositoryPort } from '../../../src/app/application/ports/progreso-diario-repository.port';
 import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
 import type { Ejercicio } from '../../../src/app/domain/ejercicio/ejercicio.entity';
@@ -22,6 +23,7 @@ const ejercicioConVideo: Ejercicio = {
   categoriaIds: ['cat-1'],
   enlaces: [{ tipo: 'youtube', url: 'https://youtu.be/abc123' }],
   imagenes: [],
+  subidoRepositorioComun: false,
 };
 
 describe('Integración de rutas de búsqueda y componentes embebidos (US2)', () => {
@@ -44,6 +46,7 @@ describe('Integración de rutas de búsqueda y componentes embebidos (US2)', () 
         { provide: GestionarProgresoDiarioUseCase, useValue: { marcar: vi.fn(), restaurarCambio: vi.fn() } },
         { provide: AjustesRepositoryPort, useValue: { marcarCambiosLocalesPendientes: vi.fn().mockResolvedValue(undefined) } },
         { provide: GestionarEjercicioUseCase, useValue: { eliminar: vi.fn() } },
+        { provide: SubirEjercicioComunUseCase, useValue: { puedeOfrecerSubida: vi.fn().mockResolvedValue(false) } },
         {
           provide: MensajeFeedbackService,
           useValue: { mostrarExito: vi.fn(), mostrarExitoConAccion: vi.fn(), mostrarError: vi.fn() },

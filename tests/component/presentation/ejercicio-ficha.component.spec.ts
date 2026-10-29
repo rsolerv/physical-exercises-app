@@ -4,12 +4,15 @@ import { Location } from '@angular/common';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, ActivatedRoute, Router } from '@angular/router';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { MatDialog } from '@angular/material/dialog';
+import { of } from 'rxjs';
 import { EjercicioFichaComponent } from '../../../src/app/presentation/biblioteca-ejercicios/ejercicio-ficha.component';
 import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejercicio-repository.port';
 import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
 import { GestionarEjercicioUseCase } from '../../../src/app/application/casos-uso/gestionar-ejercicio.use-case';
 import { ConsultarPlanificacionUseCase } from '../../../src/app/application/casos-uso/consultar-planificacion.use-case';
 import { GestionarProgresoDiarioUseCase } from '../../../src/app/application/casos-uso/gestionar-progreso-diario.use-case';
+import { SubirEjercicioComunUseCase } from '../../../src/app/application/casos-uso/subir-ejercicio-comun.use-case';
 import { ProgresoDiarioRepositoryPort } from '../../../src/app/application/ports/progreso-diario-repository.port';
 import { crearDiasVacios } from '../../../src/app/domain/planificacion/planificacion.entity';
 import { diaSemanaDeFecha } from '../../../src/app/domain/planificacion/fecha-semana';
@@ -25,6 +28,7 @@ function ejercicio(sobrescribir: Partial<Ejercicio> = {}): Ejercicio {
     categoriaIds: ['cat-1'],
     enlaces: [],
     imagenes: [],
+    subidoRepositorioComun: false,
     ...sobrescribir,
   };
 }
@@ -40,6 +44,8 @@ describe('EjercicioFichaComponent', () => {
     registrosProgreso?: { fecha: string; ejercicioId: string; realizado: boolean }[];
     marcarProgreso?: ReturnType<typeof vi.fn>;
     restaurarProgreso?: ReturnType<typeof vi.fn>;
+    puedeOfrecerSubida?: ReturnType<typeof vi.fn>;
+    dialogOpen?: ReturnType<typeof vi.fn>;
   }) {
     const dias = crearDiasVacios();
     dias.find((dia) => dia.diaSemana === diaSemanaDeFecha(new Date()))!.ejercicioIds = ['ej-1'];
@@ -81,6 +87,10 @@ describe('EjercicioFichaComponent', () => {
         },
         { provide: GestionarEjercicioUseCase, useValue: { eliminar: opciones.eliminar ?? vi.fn().mockResolvedValue(undefined) } },
         {
+          provide: SubirEjercicioComunUseCase,
+          useValue: { puedeOfrecerSubida: opciones.puedeOfrecerSubida ?? vi.fn().mockResolvedValue(true) },
+        },
+        {
           provide: MensajeFeedbackService,
           useValue: {
             mostrarExito: opciones.mostrarExito ?? vi.fn(),
@@ -88,6 +98,7 @@ describe('EjercicioFichaComponent', () => {
             mostrarError: opciones.mostrarError ?? vi.fn(),
           },
         },
+        ...(opciones.dialogOpen ? [{ provide: MatDialog, useValue: { open: opciones.dialogOpen } }] : []),
       ],
     });
   }
@@ -298,5 +309,30 @@ describe('EjercicioFichaComponent', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('No se ha podido eliminar el ejercicio.');
     expect(mostrarError).toHaveBeenCalledWith('No se ha podido eliminar el ejercicio.');
     expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  it('muestra la acción "Subir al repositorio común" cuando el ejercicio es elegible (US2)', async () => {
+    configurar({ ejercicio: ejercicio(), puedeOfrecerSubida: vi.fn().mockResolvedValue(true) });
+    const fixture = await crearComponente();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('.ejercicio-ficha__subir-comun')).toBeTruthy();
+  });
+
+  it('no muestra la acción "Subir al repositorio común" cuando no es elegible (FR-014, FR-015, FR-021)', async () => {
+    configurar({ ejercicio: ejercicio(), puedeOfrecerSubida: vi.fn().mockResolvedValue(false) });
+    const fixture = await crearComponente();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('.ejercicio-ficha__subir-comun')).toBeNull();
+  });
+
+  it('abre el diálogo de subida al pulsar la acción', async () => {
+    const dialogOpen = vi.fn().mockReturnValue({ afterClosed: () => of(false) });
+    configurar({ ejercicio: ejercicio(), puedeOfrecerSubida: vi.fn().mockResolvedValue(true), dialogOpen });
+    const fixture = await crearComponente();
+
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('.ejercicio-ficha__subir-comun')?.click();
+    await fixture.whenStable();
+
+    expect(dialogOpen).toHaveBeenCalled();
   });
 });

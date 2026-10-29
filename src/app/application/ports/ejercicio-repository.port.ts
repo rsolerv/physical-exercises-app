@@ -31,4 +31,7 @@ export abstract class EjercicioRepositoryPort {
    * al menos otra categoría (FR-011).
    */
   abstract quitarCategoriaDeTodos(categoriaId: string): Promise<void>;
+
+  /** Pone `subidoRepositorioComun = true` para ese ejercicio; no modifica ningún otro campo (FR-021). */
+  abstract marcarSubidoRepositorioComun(id: string): Promise<void>;
 }

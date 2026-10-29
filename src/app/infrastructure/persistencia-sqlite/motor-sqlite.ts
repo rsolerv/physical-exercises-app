@@ -74,6 +74,15 @@ export class MotorSqlite {
       }
     }
 
+    const columnasEjercicio = this.db.exec({
+      sql: 'PRAGMA table_info(ejercicio)',
+      returnValue: 'resultRows',
+      rowMode: 'object',
+    }) as { name: string }[];
+    if (!columnasEjercicio.some((columna) => columna.name === 'subido_repositorio_comun')) {
+      this.db.exec('ALTER TABLE ejercicio ADD COLUMN subido_repositorio_comun INTEGER NOT NULL DEFAULT 0');
+    }
+
     const columnasCategoria = this.db.exec({
       sql: 'PRAGMA table_info(categoria)',
       returnValue: 'resultRows',

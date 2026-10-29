@@ -37,6 +37,7 @@ export const EJERCICIOS_DEMO: Ejercicio[] = [
     enlaces: [],
     imagenes: [],
     observaciones: '3 series de 12 repeticiones. Descansa 60 segundos entre series.',
+    subidoRepositorioComun: false,
   },
   {
     id: 'flexion',
@@ -46,6 +47,7 @@ export const EJERCICIOS_DEMO: Ejercicio[] = [
     enlaces: [],
     imagenes: [],
     observaciones: '3 series de 10 repeticiones.',
+    subidoRepositorioComun: false,
   },
   {
     id: 'movilidad-cadera',
@@ -54,6 +56,7 @@ export const EJERCICIOS_DEMO: Ejercicio[] = [
     categoriaIds: ['movilidad'],
     enlaces: [],
     imagenes: [],
+    subidoRepositorioComun: false,
   },
 ];
 

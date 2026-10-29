@@ -1,0 +1,136 @@
+@use '../../../styles/espaciado' as *;
+@use '../../../styles/breakpoints' as *;
+
+.importar-ejercicios {
+  overflow-x: clip;
+}
+
+.importar-ejercicios__filtros {
+  position: fixed;
+  top: 60px;
+  right: 0;
+  left: 260px;
+  z-index: 3;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: $espaciado-2;
+  width: auto;
+  padding: $espaciado-2 $espaciado-4;
+  background: var(--mat-sys-surface);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+  @include movil {
+    top: 80px;
+    left: 0;
+    gap: $espaciado-1;
+    padding: $espaciado-2;
+  }
+
+  @include navegacion-riel {
+    left: 80px;
+    padding: $espaciado-2 $espaciado-3;
+  }
+}
+
+.importar-ejercicios__campo-texto {
+  width: 100%;
+  margin-bottom: -$espaciado-2;
+}
+
+.importar-ejercicios__categorias {
+  display: flex;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+:host ::ng-deep .importar-ejercicios__categorias > .mdc-evolution-chip-set__chips {
+  flex-wrap: nowrap;
+  width: max-content;
+  min-width: 100%;
+}
+
+:host ::ng-deep .importar-ejercicios__categorias mat-chip-option {
+  min-height: 48px;
+}
+
+.importar-ejercicios__boton-buscar {
+  align-self: flex-start;
+  min-height: 48px;
+}
+
+.importar-ejercicios__cuerpo {
+  min-width: 0;
+  padding-top: 328px;
+
+  @include movil {
+    padding-top: 272px;
+  }
+
+  @include navegacion-riel {
+    padding-top: 300px;
+  }
+}
+
+.importar-ejercicios__resultados {
+  min-width: 0;
+  padding-bottom: 96px;
+
+  @include movil {
+    padding-bottom: calc(96px + 72px + env(safe-area-inset-bottom));
+  }
+}
+
+.importar-ejercicios__descripcion {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-top: $espaciado-1;
+  white-space: normal;
+  min-width: 0;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.importar-ejercicios__etiquetas {
+  color: var(--mat-sys-primary);
+  font-size: 12px;
+}
+
+.importar-ejercicios__barra-acciones {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 260px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  gap: $espaciado-2;
+  padding: $espaciado-2 $espaciado-4;
+  background: var(--mat-sys-surface-container);
+  border-top: 1px solid var(--mat-sys-outline-variant);
+  box-shadow: 0 -2px 8px rgb(0 0 0 / 8%);
+
+  @include movil {
+    left: 0;
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    padding: $espaciado-2;
+  }
+
+  @include navegacion-riel {
+    left: 80px;
+    padding: $espaciado-2 $espaciado-3;
+  }
+}
+
+.importar-ejercicios__contador {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--mat-sys-on-surface-variant);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: var(--tipo-metadato, inherit);
+}

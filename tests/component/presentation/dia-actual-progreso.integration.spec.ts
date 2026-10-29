@@ -11,6 +11,7 @@ import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejer
 import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
 import { ProgresoDiarioRepositoryPort } from '../../../src/app/application/ports/progreso-diario-repository.port';
 import { GestionarEjercicioUseCase } from '../../../src/app/application/casos-uso/gestionar-ejercicio.use-case';
+import { SubirEjercicioComunUseCase } from '../../../src/app/application/casos-uso/subir-ejercicio-comun.use-case';
 import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
 import { EjercicioFichaComponent } from '../../../src/app/presentation/biblioteca-ejercicios/ejercicio-ficha.component';
 import { routes } from '../../../src/app/app.routes';
@@ -20,7 +21,7 @@ import type { Planificacion } from '../../../src/app/domain/planificacion/planif
 import type { Ejercicio } from '../../../src/app/domain/ejercicio/ejercicio.entity';
 
 function ejercicio(id: string, nombre: string): Ejercicio {
-  return { id, nombre, descripcion: 'desc', categoriaIds: ['cat-1'], enlaces: [], imagenes: [] };
+  return { id, nombre, descripcion: 'desc', categoriaIds: ['cat-1'], enlaces: [], imagenes: [], subidoRepositorioComun: false };
 }
 
 describe('Integración del progreso diario dentro de la vista "hoy" (US4)', () => {
@@ -110,6 +111,7 @@ describe('Integración del progreso diario dentro de la vista "hoy" (US4)', () =
           },
         },
         { provide: GestionarEjercicioUseCase, useValue: { eliminar: vi.fn().mockResolvedValue(undefined) } },
+        { provide: SubirEjercicioComunUseCase, useValue: { puedeOfrecerSubida: vi.fn().mockResolvedValue(false) } },
         { provide: MensajeFeedbackService, useValue: { mostrarExito: vi.fn(), mostrarError: vi.fn() } },
       ],
     });

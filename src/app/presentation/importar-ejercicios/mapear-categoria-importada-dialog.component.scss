@@ -1,0 +1,14 @@
+@use '../../../styles/espaciado' as *;
+
+.mapear-categoria-dialog__contenido {
+  display: grid;
+  gap: $espaciado-2;
+}
+
+.mapear-categoria-dialog__ayuda {
+  margin-top: 0;
+}
+
+.mapear-categoria-dialog__fila {
+  width: 100%;
+}

@@ -12,7 +12,15 @@ import type { Ejercicio } from '../../../src/app/domain/ejercicio/ejercicio.enti
 import type { Categoria } from '../../../src/app/domain/categoria/categoria.entity';
 
 function ejercicio(id: string, nombre: string): Ejercicio {
-  return { id, nombre, descripcion: `Descripción de ${nombre}`, categoriaIds: ['cat-1'], enlaces: [], imagenes: [] };
+  return {
+    id,
+    nombre,
+    descripcion: `Descripción de ${nombre}`,
+    categoriaIds: ['cat-1'],
+    enlaces: [],
+    imagenes: [],
+    subidoRepositorioComun: false,
+  };
 }
 
 function categoria(id: string, nombre: string): Categoria {

@@ -1,0 +1,17 @@
+@use '../../../styles/espaciado' as *;
+
+.mapear-categoria-dialog__contenido {
+  display: flex;
+  flex-direction: column;
+  gap: $espaciado-1;
+  min-width: 280px;
+}
+
+.mapear-categoria-dialog__ayuda {
+  margin: 0 0 $espaciado-2;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.mapear-categoria-dialog__fila {
+  width: 100%;
+}

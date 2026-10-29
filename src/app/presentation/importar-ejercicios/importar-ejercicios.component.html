@@ -1,0 +1,111 @@
+<section class="importar-ejercicios">
+  <div class="importar-ejercicios__filtros">
+    <app-cabecera-pagina
+      titulo="Importar ejercicios"
+      descripcion="Busca en el repositorio común y añade los ejercicios que quieras a tu biblioteca."
+    />
+
+    <mat-form-field appearance="outline" class="importar-ejercicios__campo-texto">
+      <mat-label>Buscar por nombre o descripción</mat-label>
+      <input matInput [value]="texto()" (input)="texto.set($any($event.target).value)" />
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+
+    @if (recursoCategoriasComunes.error()) {
+      <p class="importar-ejercicios__error" role="alert">
+        No se han podido cargar las categorías del repositorio común.
+      </p>
+    } @else if (categoriasComunes().length > 0) {
+      <mat-chip-listbox
+        class="importar-ejercicios__categorias"
+        aria-label="Filtrar por una categoría del repositorio común"
+        [multiple]="false"
+      >
+        @for (categoria of categoriasComunes(); track categoria.id) {
+          <mat-chip-option
+            [selected]="categoriaId() === categoria.id"
+            (click)="alternarCategoriaFiltro(categoria.id)"
+          >
+            {{ categoria.nombre }}
+          </mat-chip-option>
+        }
+      </mat-chip-listbox>
+    }
+
+    <button mat-flat-button type="button" class="importar-ejercicios__boton-buscar" (click)="buscar()">
+      <mat-icon aria-hidden="true">search</mat-icon>
+      Buscar
+    </button>
+  </div>
+
+  <div class="importar-ejercicios__cuerpo">
+    @if (bloqueoCategorias()) {
+      <app-estado-vacio
+        icono="category"
+        mensaje="Para importar ejercicios, crea antes al menos una categoría propia."
+      >
+        <a accion mat-flat-button routerLink="/ejercicios/categorias">Gestionar categorías</a>
+      </app-estado-vacio>
+    } @else if (estado() === 'error') {
+      <app-estado-vacio
+        icono="cloud_off"
+        [mensaje]="mensajeError() ?? 'No se ha podido conectar con el repositorio común.'"
+      >
+        <button accion mat-stroked-button type="button" (click)="buscar()">
+          <mat-icon aria-hidden="true">refresh</mat-icon>
+          Reintentar
+        </button>
+      </app-estado-vacio>
+    } @else if (estado() === 'cargando') {
+      <app-estado-carga mensaje="Buscando en el repositorio común" [cantidad]="4" />
+    } @else if (estado() === 'inicial') {
+      <app-estado-vacio
+        icono="travel_explore"
+        mensaje="Busca ejercicios del repositorio común por nombre, descripción o categoría."
+      />
+    } @else if (estado() === 'vacio') {
+      <app-estado-vacio icono="search_off" mensaje="No se han encontrado ejercicios con los criterios seleccionados." />
+    } @else {
+      <mat-selection-list
+        class="importar-ejercicios__resultados"
+        aria-label="Resultados del repositorio común"
+        (selectionChange)="onSeleccionCambia($event)"
+      >
+        @for (ejercicio of resultados(); track ejercicio.id) {
+          <mat-list-option
+            class="importar-ejercicios__item"
+            [value]="ejercicio.id"
+            [selected]="seleccionadosIds().has(ejercicio.id)"
+            [togglePosition]="'before'"
+            lines="3"
+          >
+            <span matListItemTitle>{{ ejercicio.nombre }}</span>
+            <span matListItemLine class="importar-ejercicios__descripcion">{{ ejercicio.descripcion }}</span>
+            <span matListItemLine class="importar-ejercicios__etiquetas">
+              {{ nombresCategoriasComunes(ejercicio).join(', ') }}
+            </span>
+          </mat-list-option>
+        }
+      </mat-selection-list>
+    }
+  </div>
+
+  @if (numSeleccionados() > 0) {
+    <div class="importar-ejercicios__barra-acciones" role="region" aria-label="Acciones de importación">
+      <span class="importar-ejercicios__contador">
+        {{ numSeleccionados() }} ejercicio{{ numSeleccionados() === 1 ? '' : 's' }} seleccionado{{
+          numSeleccionados() === 1 ? '' : 's'
+        }}
+      </span>
+      <button
+        mat-flat-button
+        type="button"
+        data-testid="boton-importar"
+        (click)="importar()"
+      >
+        <mat-icon aria-hidden="true">download</mat-icon>
+        Importar ({{ numSeleccionados() }})
+      </button>
+    </div>
+  }
+</section>
