@@ -1,5 +1,4 @@
 import { Component, computed, inject, resource, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog } from '@angular/material/dialog';
@@ -15,6 +14,7 @@ import { EstadoCargaComponent } from '../compartido/ui/estado-carga/estado-carga
 import { EstadoVacioComponent } from '../compartido/ui/estado-vacio/estado-vacio.component';
 import { CabeceraPaginaComponent } from '../compartido/ui/cabecera-pagina/cabecera-pagina.component';
 import { MensajeFeedbackService } from '../compartido/ui/mensaje-feedback.service';
+import { BloqueoCategoriasPropiasDialogComponent } from './bloqueo-categorias-propias-dialog.component';
 import {
   MapearCategoriaImportadaDialogComponent,
   type DatosMapearCategoriaImportadaDialog,
@@ -26,7 +26,6 @@ type EstadoBusquedaImportar = 'inicial' | 'cargando' | 'resultados' | 'vacio' | 
   selector: 'app-importar-ejercicios',
   standalone: true,
   imports: [
-    RouterLink,
     MatButtonModule,
     MatChipsModule,
     MatFormFieldModule,
@@ -44,7 +43,7 @@ export class ImportarEjerciciosComponent {
   private readonly buscarEjerciciosComunes = inject(BuscarEjerciciosComunesUseCase);
   private readonly importarEjerciciosComunes = inject(ImportarEjerciciosComunesUseCase);
   private readonly categoriaRepository = inject(CategoriaRepositoryPort);
-  private readonly dialog = inject(MatDialog, { optional: true });
+  private readonly dialog = inject(MatDialog);
   private readonly mensajeFeedback = inject(MensajeFeedbackService);
 
   readonly texto = signal('');
@@ -53,7 +52,6 @@ export class ImportarEjerciciosComponent {
   readonly resultados = signal<EjercicioComunArchivo[]>([]);
   readonly seleccionadosIds = signal<Set<string>>(new Set());
   readonly mensajeError = signal<string | null>(null);
-  readonly bloqueoCategorias = signal(false);
 
   protected readonly recursoCategoriasComunes = resource({
     loader: () => this.buscarEjerciciosComunes.listarCategorias(),
@@ -93,7 +91,6 @@ export class ImportarEjerciciosComponent {
   async buscar(): Promise<void> {
     this.estado.set('cargando');
     this.mensajeError.set(null);
-    this.bloqueoCategorias.set(false);
     try {
       const resultados = await this.buscarEjerciciosComunes.buscar(this.texto(), this.categoriaId());
       this.resultados.set(resultados);
@@ -112,7 +109,10 @@ export class ImportarEjerciciosComponent {
     try {
       const categoriasLocales = this.categoriasPropias();
       if (categoriasLocales.length === 0) {
-        this.bloqueoCategorias.set(true);
+        this.dialog.open(BloqueoCategoriasPropiasDialogComponent, {
+          width: '420px',
+          maxWidth: 'calc(100vw - 32px)',
+        });
         return;
       }
 
@@ -154,7 +154,6 @@ export class ImportarEjerciciosComponent {
       }
       this.mensajeFeedback.mostrarExito(mensaje);
       this.seleccionadosIds.set(new Set());
-      this.bloqueoCategorias.set(false);
     } catch (error) {
       this.mensajeFeedback.mostrarError(error instanceof Error ? error.message : 'No se ha podido completar la importación.');
     }

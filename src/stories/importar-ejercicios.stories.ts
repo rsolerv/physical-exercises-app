@@ -11,7 +11,7 @@ import { CategoriaRepositoryPort } from '../app/application/ports/categoria-repo
 import { EjercicioRepositoryPort } from '../app/application/ports/ejercicio-repository.port';
 import { AjustesRepositoryPort } from '../app/application/ports/ajustes-repository.port';
 import type { Categoria } from '../app/domain/categoria/categoria.entity';
-import { ImportarEjerciciosComponent } from '../app/presentation/importar-ejercicios/importar-ejercicios.component';
+import { ProtoImportarEjerciciosComponent } from './prototipos/importar-ejercicios/proto-importar-ejercicios.component';
 import {
   CATEGORIAS_PROPIAS_PARCIALES_DEMO,
   type ComportamientoBusquedaComunDemo,
@@ -25,8 +25,9 @@ import {
  * Prototipo de Storybook de la pantalla "Importar ejercicios" (Historia de
  * Usuario 1, specs/003-importar-exportar-ejercicios). Se muestra dentro del
  * marco real de la aplicación (cabecera, navegación y márgenes del `Shell`)
- * navegando a la ruta real `/ejercicios/importar`. El diseño implementado
- * mantiene como referencia las historias aprobadas por el propietario.
+ * navegando a la ruta prevista `/ejercicios/importar`; este prototipo mantiene
+ * los estados y la maquetación que aprobó el propietario como referencia de
+ * la pantalla real implementada en `src/app/presentation/importar-ejercicios/`.
  */
 
 interface DefinicionHistoriaImportar {
@@ -86,11 +87,11 @@ type ClaveHistoriaImportar = keyof typeof DEFINICION_POR_CLAVE;
 @Component({
   selector: 'app-story-importar-ejercicios',
   standalone: true,
-  imports: [ImportarEjerciciosComponent],
-  template: '<app-importar-ejercicios />',
+  imports: [ProtoImportarEjerciciosComponent],
+  template: '<proto-importar-ejercicios />',
 })
 class PantallaImportarEjerciciosStoryComponent implements AfterViewInit {
-  @ViewChild(ImportarEjerciciosComponent) private readonly pantalla!: ImportarEjerciciosComponent;
+  @ViewChild(ProtoImportarEjerciciosComponent) private readonly pantalla!: ProtoImportarEjerciciosComponent;
   protected readonly definicion = inject(HISTORIA_DEMOSTRACION_IMPORTAR);
 
   async ngAfterViewInit(): Promise<void> {
@@ -134,7 +135,7 @@ const meta: Meta = {
     docs: {
       description: {
         component:
-          'Pantalla real de "Importar ejercicios" ' +
+          'Prototipo aprobado de "Importar ejercicios" ' +
           '(contracts/interfaz-usuario.md). Usa la barra de viewports para ver móvil (390 px), ' +
           'tablet (834 px) y escritorio (1280 px).',
       },

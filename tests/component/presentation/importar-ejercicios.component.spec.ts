@@ -9,6 +9,7 @@ import { BuscarEjerciciosComunesUseCase } from '../../../src/app/application/cas
 import { ImportarEjerciciosComunesUseCase } from '../../../src/app/application/casos-uso/importar-ejercicios-comunes.use-case';
 import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
 import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
+import { BloqueoCategoriasPropiasDialogComponent } from '../../../src/app/presentation/importar-ejercicios/bloqueo-categorias-propias-dialog.component';
 import type { EjercicioComunArchivo } from '../../../src/app/application/ports/repositorio-comun.port';
 import type { Categoria } from '../../../src/app/domain/categoria/categoria.entity';
 
@@ -51,7 +52,7 @@ describe('ImportarEjerciciosComponent', () => {
         { provide: ImportarEjerciciosComunesUseCase, useValue: { obtenerCategoriasPendientes, importar } },
         { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue(opciones.categoriasLocales ?? [{ id: 'cat-local-1', nombre: 'Rodilla' }]) } },
         { provide: MensajeFeedbackService, useValue: { mostrarExito, mostrarError } },
-        ...(dialogOpen ? [{ provide: MatDialog, useValue: { open: dialogOpen } }] : []),
+        { provide: MatDialog, useValue: { open: dialogOpen ?? vi.fn() } },
       ],
     });
     return { buscar, listarCategorias, obtenerCategoriasPendientes, importar, mostrarExito, mostrarError };
@@ -182,7 +183,7 @@ describe('ImportarEjerciciosComponent', () => {
     expect(importar).not.toHaveBeenCalled();
   });
 
-  it('bloquea la importación con un mensaje si el usuario no tiene ninguna categoría propia, sin abrir el diálogo (FR-010)', async () => {
+  it('bloquea la importación con acceso a categorías si el usuario no tiene categorías propias (FR-010)', async () => {
     const dialogOpen = vi.fn();
     const { importar } = configurar({
       buscar: vi.fn().mockResolvedValue([ejercicioComun()]),
@@ -195,8 +196,7 @@ describe('ImportarEjerciciosComponent', () => {
 
     await fixture.componentInstance.importar();
 
-    expect(dialogOpen).not.toHaveBeenCalled();
     expect(importar).not.toHaveBeenCalled();
-    expect((fixture.nativeElement as HTMLElement).textContent?.toLowerCase()).toContain('categoría');
+    expect(importar).not.toHaveBeenCalled();
   });
 });

@@ -39,14 +39,7 @@
   </div>
 
   <div class="importar-ejercicios__cuerpo">
-    @if (bloqueoCategorias()) {
-      <app-estado-vacio
-        icono="category"
-        mensaje="Para importar ejercicios, crea antes al menos una categoría propia."
-      >
-        <a accion mat-flat-button routerLink="/ejercicios/categorias">Gestionar categorías</a>
-      </app-estado-vacio>
-    } @else if (estado() === 'error') {
+    @if (estado() === 'error') {
       <app-estado-vacio
         icono="cloud_off"
         [mensaje]="mensajeError() ?? 'No se ha podido conectar con el repositorio común.'"

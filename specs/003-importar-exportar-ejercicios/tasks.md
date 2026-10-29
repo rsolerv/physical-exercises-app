@@ -3,6 +3,8 @@
 
 
 
+
+
 **Input**: Design documents from `specs/003-importar-exportar-ejercicios/`
 
 **Prerequisites**: `plan.md`, `spec.md`, `research.md`, `data-model.md`, `contracts/`
@@ -23,12 +25,12 @@ No se requieren tareas de setup: se reutilizan el proyecto Angular y las herrami
 
 **Purpose**: Tipos y reglas compartidos, y persistencia de la marca local que necesitan las historias.
 
-- [ ] T001 [P] Añadir pruebas Vitest para normalizar nombres y comprobar el requisito mínimo de subida en `tests/unit/domain/normalizar-nombre-ejercicio.spec.ts` y `tests/unit/domain/cumple-requisito-repositorio-comun.spec.ts`.
-- [ ] T002 [P] Añadir pruebas Vitest de conversión en ambos sentidos, categorías y separación/reincorporación de imágenes de archivo en `tests/unit/domain/convertir-ejercicio-comun.spec.ts`.
-- [ ] T003 [P] Añadir pruebas de migración, valor por defecto y marcado persistente en `tests/unit/infrastructure/ejercicio-repository.sqlite.spec.ts`.
-- [ ] T004 Implementar `normalizarNombreEjercicio`, `cumpleRequisitoRepositorioComun`, `aEjercicioComun` y `aDatosNuevoEjercicio` en `src/app/domain/ejercicio/normalizar-nombre-ejercicio.ts`, `src/app/domain/ejercicio/cumple-requisito-repositorio-comun.ts` y `src/app/domain/ejercicio/convertir-ejercicio-comun.ts`; mantener 100 % de cobertura unitaria de estas funciones.
-- [ ] T005 Añadir a `Ejercicio` `subidoRepositorioComun` con el valor por defecto `false` y la regla «Nunca vuelve a `false`» en `src/app/domain/ejercicio/ejercicio.entity.ts`; ampliar `EjercicioRepositoryPort` con `marcarSubidoRepositorioComun(id: string): Promise<void>` en `src/app/application/ports/ejercicio-repository.port.ts`; persistir el campo y migrar SQLite con `subido_repositorio_comun INTEGER NOT NULL DEFAULT 0` en `src/app/infrastructure/persistencia-sqlite/esquema.ts`, `src/app/infrastructure/persistencia-sqlite/motor-sqlite.ts` y `src/app/infrastructure/persistencia-sqlite/ejercicio-repository.sqlite.ts`.
-- [ ] T006 Definir `RepositorioComunPort`, `CategoriaComun`, `EjercicioComunArchivo` e `ImagenEjercicioComun` conforme a `specs/003-importar-exportar-ejercicios/contracts/repositorio-comun.port.md` en `src/app/application/ports/repositorio-comun.port.ts`, reutilizando `ImagenArchivoJSON` y `CredencialesGitHub` de `src/app/application/ports/github-sync.port.ts`.
+- [X] T001 [P] Añadir pruebas Vitest para normalizar nombres y comprobar el requisito mínimo de subida en `tests/unit/domain/normalizar-nombre-ejercicio.spec.ts` y `tests/unit/domain/cumple-requisito-repositorio-comun.spec.ts`.
+- [X] T002 [P] Añadir pruebas Vitest de conversión en ambos sentidos, categorías y separación/reincorporación de imágenes de archivo en `tests/unit/domain/convertir-ejercicio-comun.spec.ts`.
+- [X] T003 [P] Añadir pruebas de migración, valor por defecto y marcado persistente en `tests/unit/infrastructure/ejercicio-repository.sqlite.spec.ts`.
+- [X] T004 Implementar `normalizarNombreEjercicio`, `cumpleRequisitoRepositorioComun`, `aEjercicioComun` y `aDatosNuevoEjercicio` en `src/app/domain/ejercicio/normalizar-nombre-ejercicio.ts`, `src/app/domain/ejercicio/cumple-requisito-repositorio-comun.ts` y `src/app/domain/ejercicio/convertir-ejercicio-comun.ts`; mantener 100 % de cobertura unitaria de estas funciones.
+- [X] T005 Añadir a `Ejercicio` `subidoRepositorioComun` con el valor por defecto `false` y la regla «Nunca vuelve a `false`» en `src/app/domain/ejercicio/ejercicio.entity.ts`; ampliar `EjercicioRepositoryPort` con `marcarSubidoRepositorioComun(id: string): Promise<void>` en `src/app/application/ports/ejercicio-repository.port.ts`; persistir el campo y migrar SQLite con `subido_repositorio_comun INTEGER NOT NULL DEFAULT 0` en `src/app/infrastructure/persistencia-sqlite/esquema.ts`, `src/app/infrastructure/persistencia-sqlite/motor-sqlite.ts` y `src/app/infrastructure/persistencia-sqlite/ejercicio-repository.sqlite.ts`.
+- [X] T006 Definir `RepositorioComunPort`, `CategoriaComun`, `EjercicioComunArchivo` e `ImagenEjercicioComun` conforme a `specs/003-importar-exportar-ejercicios/contracts/repositorio-comun.port.md` en `src/app/application/ports/repositorio-comun.port.ts`, reutilizando `ImagenArchivoJSON` y `CredencialesGitHub` de `src/app/application/ports/github-sync.port.ts`.
 
 **Checkpoint**: Contratos compartidos, conversiones y persistencia listos para las historias.
 
@@ -42,21 +44,22 @@ No se requieren tareas de setup: se reutilizan el proyecto Angular y las herrami
 
 ### Prototipo y aprobación de presentación (obligatorio para la pantalla nueva)
 
-- [ ] T007 [US1] El agente `ux-ui-expert` debe crear o actualizar historias navegables de la pantalla de importación en `src/stories/importar-ejercicios.stories.ts`, dentro del marco real de la aplicación, con datos en español y estados inicial, con resultados, vacío, carga y error a 390 px, 834 px y 1280 px.
-- [ ] T008 [US1] El agente `ux-ui-expert` debe ejecutar y presentar el prototipo de `src/stories/importar-ejercicios.stories.ts` al propietario con URL de vista previa y capturas de los tres tamaños, solicitar aprobación explícita e iterar si procede; registrar la aprobación en `specs/003-importar-exportar-ejercicios/tasks.md` antes de iniciar tareas de presentación.
+- [X] T007 [US1] El agente `ux-ui-expert` debe crear o actualizar historias navegables de la pantalla de importación en `src/stories/importar-ejercicios.stories.ts`, dentro del marco real de la aplicación, con datos en español y estados inicial, con resultados, vacío, carga y error a 390 px, 834 px y 1280 px.
+- [X] T008 [US1] El agente `ux-ui-expert` debe ejecutar y presentar el prototipo de `src/stories/importar-ejercicios.stories.ts` al propietario con URL de vista previa y capturas de los tres tamaños, solicitar aprobación explícita e iterar si procede; registrar la aprobación en `specs/003-importar-exportar-ejercicios/tasks.md` antes de iniciar tareas de presentación.
+  - **Aprobación registrada**: el propietario aprobó la maquetación de Storybook en la conversación del 2026-10-29 antes de iniciar la implementación de Presentation.
 
 ### Pruebas de User Story 1
 
-- [ ] T009 [P] [US1] Añadir pruebas de búsqueda e importación para catálogo completo, filtro de texto/categoría, mapeo de categorías, imágenes omitidas y fallo sin importación parcial en `tests/unit/application/buscar-ejercicios-comunes.use-case.spec.ts` y `tests/unit/application/importar-ejercicios-comunes.use-case.spec.ts`.
-- [ ] T010 [P] [US1] Añadir pruebas del adaptador para lectura de categorías, búsqueda pública por `main`, filtrado y lectura/validación de imágenes en `tests/unit/infrastructure/repositorio-comun.adapter.spec.ts`.
-- [ ] T011 [P] [US1] Añadir pruebas de componentes para búsqueda explícita, selección, contador/visibilidad de «Importar», estados de pantalla y asignación/cancelación de categorías en `tests/component/presentation/importar-ejercicios.component.spec.ts` y `tests/component/presentation/mapear-categoria-importada-dialog.component.spec.ts`.
+- [X] T009 [P] [US1] Añadir pruebas de búsqueda e importación para catálogo completo, filtro de texto/categoría, mapeo de categorías, imágenes omitidas y fallo sin importación parcial en `tests/unit/application/buscar-ejercicios-comunes.use-case.spec.ts` y `tests/unit/application/importar-ejercicios-comunes.use-case.spec.ts`.
+- [X] T010 [P] [US1] Añadir pruebas del adaptador para lectura de categorías, búsqueda pública por `main`, filtrado y lectura/validación de imágenes en `tests/unit/infrastructure/repositorio-comun.adapter.spec.ts`.
+- [X] T011 [P] [US1] Añadir pruebas de componentes para búsqueda explícita, selección, contador/visibilidad de «Importar», estados de pantalla y asignación/cancelación de categorías en `tests/component/presentation/importar-ejercicios.component.spec.ts` y `tests/component/presentation/mapear-categoria-importada-dialog.component.spec.ts`.
 
 ### Implementación de User Story 1
 
-- [ ] T012 [P] [US1] Implementar en `src/app/infrastructure/repositorio-comun/repositorio-comun.adapter.ts` la lectura pública de categorías e índices de ejercicios desde `main`, descarga raw y filtrado por texto/categoría; respetar las llamadas y ramas definidas en `specs/003-importar-exportar-ejercicios/contracts/repositorio-comun.port.md`.
-- [ ] T013 [P] [US1] Implementar `BuscarEjerciciosComunesUseCase` e `ImportarEjerciciosComunesUseCase` en `src/app/application/casos-uso/buscar-ejercicios-comunes.use-case.ts` y `src/app/application/casos-uso/importar-ejercicios-comunes.use-case.ts`; resolver mapeos por nombre, omitir solo imágenes de archivo inválidas e informar el recuento omitido.
-- [ ] T014 [US1] Implementar la pantalla y el diálogo de mapeo aprobados en `src/app/presentation/importar-ejercicios/importar-ejercicios.component.ts`, `src/app/presentation/importar-ejercicios/importar-ejercicios.component.html`, `src/app/presentation/importar-ejercicios/mapear-categoria-importada-dialog.component.ts` y `src/app/presentation/importar-ejercicios/mapear-categoria-importada-dialog.component.html`; usar selección única de categoría común, botón de búsqueda explícito y Angular Material.
-- [ ] T015 [US1] Integrar el adaptador y los casos de uso en `src/app/app.config.ts`, registrar `/ejercicios/importar` en `src/app/app.routes.ts` y añadir «Importar ejercicios» al menú adaptable en `src/app/presentation/compartido/shell/menu-principal.ts`.
+- [X] T012 [P] [US1] Implementar en `src/app/infrastructure/repositorio-comun/repositorio-comun.adapter.ts` la lectura pública de categorías e índices de ejercicios desde `main`, descarga raw y filtrado por texto/categoría; respetar las llamadas y ramas definidas en `specs/003-importar-exportar-ejercicios/contracts/repositorio-comun.port.md`.
+- [X] T013 [P] [US1] Implementar `BuscarEjerciciosComunesUseCase` e `ImportarEjerciciosComunesUseCase` en `src/app/application/casos-uso/buscar-ejercicios-comunes.use-case.ts` y `src/app/application/casos-uso/importar-ejercicios-comunes.use-case.ts`; resolver mapeos por nombre, omitir solo imágenes de archivo inválidas e informar el recuento omitido.
+- [X] T014 [US1] Implementar la pantalla y el diálogo de mapeo aprobados en `src/app/presentation/importar-ejercicios/importar-ejercicios.component.ts`, `src/app/presentation/importar-ejercicios/importar-ejercicios.component.html`, `src/app/presentation/importar-ejercicios/mapear-categoria-importada-dialog.component.ts` y `src/app/presentation/importar-ejercicios/mapear-categoria-importada-dialog.component.html`; usar selección única de categoría común, botón de búsqueda explícito y Angular Material.
+- [X] T015 [US1] Integrar el adaptador y los casos de uso en `src/app/app.config.ts`, registrar `/ejercicios/importar` en `src/app/app.routes.ts` y añadir «Importar ejercicios» al menú adaptable en `src/app/presentation/compartido/shell/menu-principal.ts`.
 
 **Checkpoint**: La historia se puede validar por sí sola mediante `specs/003-importar-exportar-ejercicios/quickstart.md`.
 
@@ -70,17 +73,17 @@ No se requieren tareas de setup: se reutilizan el proyecto Angular y las herrami
 
 ### Pruebas de User Story 2
 
-- [ ] T016 [P] [US2] Añadir pruebas para la lectura compartida de GitHub y para comprobar nombres solo en `main`, enviar ficheros nuevos a `requests` y detener la subida del ejercicio si falla una imagen en `tests/unit/infrastructure/repositorio-comun.adapter.spec.ts` y `tests/unit/infrastructure/github-contenido.util.spec.ts`.
-- [ ] T017 [P] [US2] Añadir pruebas del caso de uso para credenciales, requisito mínimo, duplicado, confirmación, subida correcta y marcado local solo tras el éxito en `tests/unit/application/subir-ejercicio-comun.use-case.spec.ts`.
-- [ ] T018 [P] [US2] Añadir pruebas de visibilidad y flujo del diálogo, selección múltiple, bloqueo por duplicado, cancelación y errores reintentables en `tests/component/presentation/subir-ejercicio-comun-dialog.component.spec.ts`, `tests/component/presentation/ejercicio-ficha.component.spec.ts` y `tests/component/presentation/ejercicio-formulario.component.spec.ts`.
+- [X] T016 [P] [US2] Añadir pruebas para la lectura compartida de GitHub y para comprobar nombres solo en `main`, enviar ficheros nuevos a `requests` y detener la subida del ejercicio si falla una imagen en `tests/unit/infrastructure/repositorio-comun.adapter.spec.ts` y `tests/unit/infrastructure/github-contenido.util.spec.ts`.
+- [X] T017 [P] [US2] Añadir pruebas del caso de uso para credenciales, requisito mínimo, duplicado, confirmación, subida correcta y marcado local solo tras el éxito en `tests/unit/application/subir-ejercicio-comun.use-case.spec.ts`.
+- [X] T018 [P] [US2] Añadir pruebas de visibilidad y flujo del diálogo, selección múltiple, bloqueo por duplicado, cancelación y errores reintentables en `tests/component/presentation/subir-ejercicio-comun-dialog.component.spec.ts`, `tests/component/presentation/ejercicio-ficha.component.spec.ts` y `tests/component/presentation/ejercicio-formulario.component.spec.ts`.
 
 ### Implementación de User Story 2
 
-- [ ] T019 [US2] Extraer la lectura de contenido GitHub, fallback de blobs y codificación/decodificación base64 a `src/app/infrastructure/github-sync/github-contenido.util.ts`; actualizar `src/app/infrastructure/github-sync/github-sync.adapter.ts` para reutilizar el utilitario sin alterar el comportamiento existente.
-- [ ] T020 [US2] Completar `RepositorioComunAdapter` en `src/app/infrastructure/repositorio-comun/repositorio-comun.adapter.ts` con la comprobación de nombre normalizado exclusivamente en `main` y creación de documentos de ejercicio e imágenes en `requests`, sin dejar un ejercicio enviado si falla antes una imagen.
-- [ ] T021 [US2] Implementar `SubirEjercicioComunUseCase` en `src/app/application/casos-uso/subir-ejercicio-comun.use-case.ts`; exigir credenciales y requisitos de dominio, comprobar duplicados antes de confirmar y llamar a `marcarSubidoRepositorioComun` únicamente después de completar la subida.
-- [ ] T022 [US2] Implementar el diálogo de selección y confirmación y sus estados de error en `src/app/presentation/biblioteca-ejercicios/subir-ejercicio-comun-dialog.component.ts` y `src/app/presentation/biblioteca-ejercicios/subir-ejercicio-comun-dialog.component.html`; integrar la acción condicionada por credenciales, elegibilidad y marca persistente en `src/app/presentation/biblioteca-ejercicios/ejercicio-ficha.component.ts`, `src/app/presentation/biblioteca-ejercicios/ejercicio-ficha.component.html`, `src/app/presentation/biblioteca-ejercicios/ejercicio-formulario.component.ts` y `src/app/presentation/biblioteca-ejercicios/ejercicio-formulario.component.html`.
-- [ ] T023 [P] [US2] Actualizar la explicación del permiso del token de GitHub para incluir el repositorio común y mantener la guía en español en `src/app/presentation/sincronizacion/configuracion/configuracion-sincronizacion.component.html` y `src/app/presentation/sincronizacion/configuracion/configuracion-sincronizacion.component.ts`.
+- [X] T019 [US2] Extraer la lectura de contenido GitHub, fallback de blobs y codificación/decodificación base64 a `src/app/infrastructure/github-sync/github-contenido.util.ts`; actualizar `src/app/infrastructure/github-sync/github-sync.adapter.ts` para reutilizar el utilitario sin alterar el comportamiento existente.
+- [X] T020 [US2] Completar `RepositorioComunAdapter` en `src/app/infrastructure/repositorio-comun/repositorio-comun.adapter.ts` con la comprobación de nombre normalizado exclusivamente en `main` y creación de documentos de ejercicio e imágenes en `requests`, sin dejar un ejercicio enviado si falla antes una imagen.
+- [X] T021 [US2] Implementar `SubirEjercicioComunUseCase` en `src/app/application/casos-uso/subir-ejercicio-comun.use-case.ts`; exigir credenciales y requisitos de dominio, comprobar duplicados antes de confirmar y llamar a `marcarSubidoRepositorioComun` únicamente después de completar la subida.
+- [X] T022 [US2] Implementar el diálogo de selección y confirmación y sus estados de error en `src/app/presentation/biblioteca-ejercicios/subir-ejercicio-comun-dialog.component.ts` y `src/app/presentation/biblioteca-ejercicios/subir-ejercicio-comun-dialog.component.html`; integrar la acción condicionada por credenciales, elegibilidad y marca persistente en `src/app/presentation/biblioteca-ejercicios/ejercicio-ficha.component.ts`, `src/app/presentation/biblioteca-ejercicios/ejercicio-ficha.component.html`, `src/app/presentation/biblioteca-ejercicios/ejercicio-formulario.component.ts` y `src/app/presentation/biblioteca-ejercicios/ejercicio-formulario.component.html`.
+- [X] T023 [P] [US2] Actualizar la explicación del permiso del token de GitHub para incluir el repositorio común y mantener la guía en español en `src/app/presentation/sincronizacion/configuracion/configuracion-sincronizacion.component.html` y `src/app/presentation/sincronizacion/configuracion/configuracion-sincronizacion.component.ts`.
 
 **Checkpoint**: La subida se puede validar por sí sola mediante los escenarios 3 y 4 de `specs/003-importar-exportar-ejercicios/quickstart.md`.
 
@@ -90,8 +93,9 @@ No se requieren tareas de setup: se reutilizan el proyecto Angular y las herrami
 
 **Purpose**: Verificación integral y coherencia documental.
 
-- [ ] T024 [P] Actualizar `specs/001-gestion-ejercicios-fisicos/research.md` con la decisión transversal de reutilizar credenciales de GitHub para el repositorio común, referenciando `specs/003-importar-exportar-ejercicios/research.md`, y confirmar que la guía de permisos en `src/app/presentation/sincronizacion/configuracion/configuracion-sincronizacion.component.html` coincide con esa decisión.
-- [ ] T025 Ejecutar las pruebas unitarias y de componentes de `tests/unit/` y `tests/component/presentation/`, el lint del proyecto, la compilación de Storybook para `src/stories/importar-ejercicios.stories.ts` y la comprobación manual completa de `specs/003-importar-exportar-ejercicios/quickstart.md`; corregir cualquier regresión en los archivos afectados.
+- [X] T024 [P] Actualizar `specs/001-gestion-ejercicios-fisicos/research.md` con la decisión transversal de reutilizar credenciales de GitHub para el repositorio común, referenciando `specs/003-importar-exportar-ejercicios/research.md`, y confirmar que la guía de permisos en `src/app/presentation/sincronizacion/configuracion/configuracion-sincronizacion.component.html` coincide con esa decisión.
+- [X] T025 Ejecutar las pruebas unitarias y de componentes de `tests/unit/` y `tests/component/presentation/`, el lint del proyecto y las compilaciones de producción de la aplicación y Storybook; corregir cualquier regresión en los archivos afectados.
+- [ ] T026 Ejecutar manualmente todos los escenarios de `specs/003-importar-exportar-ejercicios/quickstart.md`, incluido el envío a `requests`; requiere una instalación local con un token GitHub propio con permisos sobre el repositorio común, credencial que no está disponible en esta sesión.
 
 ---
 

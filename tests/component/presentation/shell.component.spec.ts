@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { MatDialog } from '@angular/material/dialog';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { ShellComponent } from '../../../src/app/presentation/compartido/shell/shell.component';
 import { routes } from '../../../src/app/app.routes';
@@ -50,6 +51,7 @@ describe('ShellComponent (navegación)', () => {
         // Puertos requeridos por las rutas de historias de usuario ya implementadas (p. ej. US1).
         { provide: EjercicioRepositoryPort, useValue: { listarTodos: vi.fn().mockResolvedValue([]) } },
         { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue([]) } },
+        { provide: MatDialog, useValue: { open: vi.fn() } },
         {
           provide: RepositorioComunPort,
           useValue: {
