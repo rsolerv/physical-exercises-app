@@ -75,6 +75,8 @@
 
 .importar-ejercicios__resultados {
   min-width: 0;
+  display: grid;
+  gap: $espaciado-2;
   padding-bottom: 96px;
 
   @include movil {
@@ -85,7 +87,8 @@
 .importar-ejercicios__descripcion {
   display: -webkit-box;
   overflow: hidden;
-  margin-top: $espaciado-1;
+  margin: $espaciado-1 0;
+  color: var(--mat-sys-on-surface-variant);
   white-space: normal;
   min-width: 0;
   -webkit-box-orient: vertical;
@@ -94,8 +97,49 @@
 }
 
 .importar-ejercicios__etiquetas {
+  margin: 0;
   color: var(--mat-sys-primary);
-  font-size: 12px;
+  font: var(--mat-sys-label-large);
+}
+
+.importar-ejercicios__item {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: $espaciado-2;
+  min-width: 0;
+  padding: $espaciado-2 $espaciado-3;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 16px;
+  background: var(--mat-sys-surface-container-low);
+}
+
+.importar-ejercicios__contenido-item {
+  min-width: 0;
+}
+
+.importar-ejercicios__nombre {
+  margin: 0;
+  font: var(--mat-sys-title-medium);
+}
+
+.importar-ejercicios__acciones-item {
+  display: flex;
+  align-items: center;
+
+  button {
+    min-height: 48px;
+  }
+}
+
+@include movil {
+  .importar-ejercicios__item {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+
+  .importar-ejercicios__acciones-item {
+    grid-column: 2;
+  }
 }
 
 .importar-ejercicios__barra-acciones {

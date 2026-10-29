@@ -11,10 +11,18 @@ Complementa `spec.md` con el detalle de presentación necesario para implementar
   - El filtro de categoría usa una selección **única** (p. ej. `mat-selection-list` en modo single o `mat-radio-group`) sobre las categorías del repositorio común; la primera categoría queda seleccionada al cargar la pantalla y no existe una opción "Todas" (FR-002).
   - Debajo del buscador y del filtro hay un botón "Buscar" explícito. Está deshabilitado cuando no hay ninguna categoría seleccionada; no se dispara ninguna búsqueda automáticamente al escribir o al cambiar la categoría (FR-003).
   - Antes de la primera búsqueda de la sesión, la zona de resultados muestra un estado inicial neutro (no un estado vacío de "sin resultados"), invitando a buscar.
-  - Cada resultado se presenta igual que en "Buscar" (nombre, descripción, categorías comunes) más una casilla de selección (`mat-checkbox`) a su izquierda (FR-005). No se abre una ficha de detalle al pulsar el resultado (a diferencia de "Buscar"): el único destino de la interacción es marcar/desmarcar la casilla.
+  - Cada resultado se presenta igual que en "Buscar" (nombre, descripción, categorías comunes) más una casilla de selección (`mat-checkbox`) a su izquierda (FR-005). La casilla y la acción secundaria "Ver ejercicio" son controles independientes: abrir la ficha no cambia la selección.
   - Mientras `seleccionados.length === 0`, no se muestra el botón "Importar"; en cuanto hay al menos un seleccionado, aparece fijo y accesible sin desplazamiento adicional (p. ej. en una barra inferior de acciones o flotante), con el recuento de seleccionados (FR-006).
 - Al pulsar "Importar": si hay categorías sin mapear, se abre el diálogo "Asignar categoría" (ver más abajo) antes de aplicar ningún cambio; si no hay ninguna que mapear, se aplica directamente y se muestra una notificación de éxito con el número de ejercicios importados (y, si corresponde, el número de imágenes omitidas, FR-011).
 - Estados: carga (mientras se realiza la búsqueda, con un indicador reconocible, FR-040 de 001), vacío (sin resultados, con mensaje orientativo), error (red o repositorio no disponible, con mensaje y posibilidad de reintentar, FR-023).
+
+## Ficha remota "Previsualizar ejercicio" (ampliación de US1)
+
+- Ruta: `/ejercicios/importar/:id`. Se abre desde la acción secundaria de cada resultado y puede cargar el ejercicio publicado directamente por su identificador, sin credenciales.
+- Presenta nombre, descripción, categorías comunes, imágenes y enlaces multimedia con el mismo estilo de lectura de la ficha local.
+- No muestra observaciones ni acciones para editar o eliminar el ejercicio remoto.
+- Incluye "Volver a los resultados" y la acción principal "Importar ejercicio". Esta última usa el mismo flujo de mapeo de categorías y los mismos mensajes de éxito/error que importar desde la lista; tras completar la importación vuelve a `/ejercicios/importar`.
+- Estados: carga, no encontrado, error de red con posibilidad de reintentar. Las imágenes de archivo inválidas se omiten en la previsualización y se informa de cuántas no se pudieron mostrar; un error de red al leerlas permite reintentar la carga.
 
 ### Diálogo "Asignar categoría" (nuevo, parte de US1)
 

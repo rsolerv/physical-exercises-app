@@ -65,27 +65,36 @@
     } @else if (estado() === 'vacio') {
       <app-estado-vacio icono="search_off" mensaje="No se han encontrado ejercicios con los criterios seleccionados." />
     } @else {
-      <mat-selection-list
+      <mat-list
         class="importar-ejercicios__resultados"
         aria-label="Resultados del repositorio común"
-        (selectionChange)="onSeleccionCambia($event)"
       >
         @for (ejercicio of resultados(); track ejercicio.id) {
-          <mat-list-option
-            class="importar-ejercicios__item"
-            [value]="ejercicio.id"
-            [selected]="seleccionadosIds().has(ejercicio.id)"
-            [togglePosition]="'before'"
-            lines="3"
-          >
+          <mat-list-item class="importar-ejercicios__item" lines="3">
+            <mat-checkbox
+              matListItemIcon
+              [checked]="seleccionadosIds().has(ejercicio.id)"
+              [attr.aria-label]="'Seleccionar ' + ejercicio.nombre"
+              (change)="alternarSeleccion(ejercicio.id)"
+            />
             <span matListItemTitle>{{ ejercicio.nombre }}</span>
             <span matListItemLine class="importar-ejercicios__descripcion">{{ ejercicio.descripcion }}</span>
             <span matListItemLine class="importar-ejercicios__etiquetas">
               {{ nombresCategoriasComunes(ejercicio).join(', ') }}
             </span>
-          </mat-list-option>
+            <button
+              type="button"
+              mat-icon-button
+              matListItemMeta
+              (click)="abrirPrevisualizacion(ejercicio.id)"
+              [attr.aria-label]="'Ver ejercicio ' + ejercicio.nombre"
+              title="Ver ejercicio"
+            >
+              <mat-icon aria-hidden="true">visibility</mat-icon>
+            </button>
+          </mat-list-item>
         }
-      </mat-selection-list>
+      </mat-list>
     }
   </div>
 

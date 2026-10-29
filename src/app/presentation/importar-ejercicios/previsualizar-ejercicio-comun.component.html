@@ -1,0 +1,87 @@
+<section class="previsualizar-ejercicio-comun">
+  @if (recursoVistaPrevia.isLoading() || recursoCategorias.isLoading()) {
+    <app-estado-carga mensaje="Cargando ejercicio del repositorio común" [cantidad]="2" />
+  } @else if (errorCarga(); as error) {
+    <app-estado-vacio icono="cloud_off" [mensaje]="error">
+      <button accion mat-stroked-button type="button" (click)="reintentar()">
+        <mat-icon aria-hidden="true">refresh</mat-icon>
+        Reintentar
+      </button>
+    </app-estado-vacio>
+  } @else if (recursoVistaPrevia.value(); as vistaPrevia) {
+    <app-cabecera-pagina [titulo]="vistaPrevia.ejercicio.nombre">
+      <div acciones class="previsualizar-ejercicio-comun__acciones">
+        <button mat-button type="button" (click)="volverAResultados()">
+          <mat-icon aria-hidden="true">arrow_back</mat-icon>
+          Volver a los resultados
+        </button>
+        <button mat-flat-button type="button" (click)="importar()">
+          <mat-icon aria-hidden="true">download</mat-icon>
+          Importar ejercicio
+        </button>
+      </div>
+    </app-cabecera-pagina>
+
+    <p class="previsualizar-ejercicio-comun__descripcion">{{ vistaPrevia.ejercicio.descripcion }}</p>
+
+    @if (imagenes().length > 0 || enlacesYoutube().length > 0 || enlacesWeb().length > 0) {
+      <section class="previsualizar-ejercicio-comun__medios" aria-label="Medios del ejercicio">
+        @if (enlacesYoutube().length > 0) {
+          <div class="previsualizar-ejercicio-comun__videos">
+            @for (enlace of enlacesYoutube(); track enlace.url) {
+              <app-youtube-embed [url]="enlace.url" [titulo]="'YouTube: ' + vistaPrevia.ejercicio.nombre" />
+            }
+          </div>
+        }
+        @if (imagenes().length > 0) {
+          <div class="previsualizar-ejercicio-comun__imagenes" aria-label="Imágenes del ejercicio">
+            @for (imagen of imagenes(); track imagen.id) {
+              @if (imagenesConError().has(imagen.id)) {
+                <p class="previsualizar-ejercicio-comun__error-imagen" role="alert">
+                  No se ha podido cargar esta imagen.
+                </p>
+              } @else {
+                <a
+                  class="previsualizar-ejercicio-comun__imagen-ampliada"
+                  [href]="imagen.src"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  [attr.aria-label]="'Abrir imagen ampliada del ejercicio ' + vistaPrevia.ejercicio.nombre"
+                >
+                  <img
+                    class="previsualizar-ejercicio-comun__imagen"
+                    [src]="imagen.src"
+                    [alt]="'Imagen del ejercicio ' + vistaPrevia.ejercicio.nombre"
+                    (error)="marcarErrorImagen(imagen.id)"
+                  />
+                </a>
+              }
+            }
+          </div>
+        }
+        @if (enlacesWeb().length > 0) {
+          <div class="previsualizar-ejercicio-comun__enlaces">
+            @for (enlace of enlacesWeb(); track enlace.url) {
+              <app-enlace-embed [url]="enlace.url" />
+            }
+          </div>
+        }
+      </section>
+    }
+
+    @if (vistaPrevia.imagenesOmitidas > 0) {
+      <p class="previsualizar-ejercicio-comun__aviso-imagenes" role="status">
+        No se han podido previsualizar {{ vistaPrevia.imagenesOmitidas }}
+        imagen{{ vistaPrevia.imagenesOmitidas === 1 ? '' : 'es' }} del repositorio común.
+      </p>
+    }
+
+    <mat-chip-set class="previsualizar-ejercicio-comun__categorias" aria-label="Categorías del ejercicio">
+      @for (nombre of categoriasDelEjercicio(); track nombre) {
+        <mat-chip>{{ nombre }}</mat-chip>
+      }
+    </mat-chip-set>
+  } @else {
+    <app-estado-vacio icono="error_outline" mensaje="El ejercicio del repositorio común no se ha encontrado." />
+  }
+</section>

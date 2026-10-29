@@ -74,6 +74,17 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
     });
   }
 
+  async obtenerEjercicioPorId(id: string): Promise<EjercicioComunArchivo | null> {
+    try {
+      return await firstValueFrom(
+        this.http.get<EjercicioComunArchivo>(`${RAW_BASE}/${RAMA_LECTURA}/ejercicios/${encodeURIComponent(id)}.json`)
+      );
+    } catch (error) {
+      if (error instanceof HttpErrorResponse && error.status === 404) return null;
+      throw this.traducirError(error);
+    }
+  }
+
   async leerImagen(ruta: string): Promise<ImagenArchivoJSON> {
     try {
       const documento = await firstValueFrom(this.http.get<unknown>(`${RAW_BASE}/${RAMA_LECTURA}/${ruta}`));

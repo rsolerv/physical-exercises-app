@@ -1,5 +1,6 @@
 import type { CategoriaComun, EjercicioComunArchivo } from '../../../app/application/ports/repositorio-comun.port';
 import type { Categoria } from '../../../app/domain/categoria/categoria.entity';
+import { ErrorValidacion } from '../../../app/domain/errores/errores-dominio';
 
 /** Categorías comunes de demostración (categorias.json del repositorio común). */
 export const CATEGORIAS_COMUNES_DEMO: CategoriaComun[] = [
@@ -18,8 +19,14 @@ export const EJERCICIOS_COMUNES_DEMO: EjercicioComunArchivo[] = [
     descripcion:
       'Túmbate de lado con las rodillas flexionadas y separa la rodilla superior manteniendo los pies juntos, activando el glúteo medio.',
     categoriaIds: ['comun-cadera'],
-    enlaces: [],
-    imagenes: [],
+    enlaces: [{ tipo: 'youtube', url: 'https://www.youtube.com/watch?v=LZ7ci0drcqw' }],
+    imagenes: [
+      {
+        id: 'almeja-demo',
+        tipo: 'url',
+        valorUrl: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1200&q=80',
+      },
+    ],
   },
   {
     id: 'puente-gluteo',
@@ -114,9 +121,19 @@ export const CATEGORIAS_PROPIAS_COMPLETAS_DEMO: Categoria[] = [
 ];
 
 export type ComportamientoBusquedaComunDemo = 'normal' | 'vacio' | 'error' | 'pendiente';
+export type ComportamientoVistaPreviaDemo =
+  | 'normal'
+  | 'cargando'
+  | 'no-encontrado'
+  | 'error'
+  | 'imagen-invalida'
+  | 'error-imagen';
 
 /** Adaptador de demostración de `RepositorioComunPort`, con comportamiento configurable por historia. */
-export function crearRepositorioComunDemo(comportamiento: ComportamientoBusquedaComunDemo = 'normal') {
+export function crearRepositorioComunDemo(
+  comportamiento: ComportamientoBusquedaComunDemo = 'normal',
+  comportamientoVistaPrevia: ComportamientoVistaPreviaDemo = 'normal'
+) {
   return {
     listarCategorias: async () => CATEGORIAS_COMUNES_DEMO,
     buscarEjercicios: async (texto: string, categoriaId: string | null): Promise<EjercicioComunArchivo[]> => {
@@ -136,8 +153,43 @@ export function crearRepositorioComunDemo(comportamiento: ComportamientoBusqueda
         return coincideTexto && coincideCategoria;
       });
     },
-    leerImagen: async () => {
-      throw new Error('No implementado en el prototipo de Storybook.');
+    obtenerEjercicioPorId: async (id: string): Promise<EjercicioComunArchivo | null> => {
+      if (comportamientoVistaPrevia === 'cargando') return new Promise<EjercicioComunArchivo | null>(() => undefined);
+      if (comportamientoVistaPrevia === 'error') {
+        throw new Error('No se ha podido conectar con el repositorio común.');
+      }
+      if (comportamientoVistaPrevia === 'no-encontrado') return null;
+
+      const ejercicio = EJERCICIOS_COMUNES_DEMO.find((item) => item.id === id);
+      if (!ejercicio) return null;
+      if (comportamientoVistaPrevia === 'imagen-invalida' || comportamientoVistaPrevia === 'error-imagen') {
+        return {
+          ...ejercicio,
+          imagenes: [
+            ...ejercicio.imagenes,
+            {
+              id: `archivo-${id}`,
+              tipo: 'archivo',
+              ruta: `imagenes/archivo-${id}.json`,
+            },
+          ],
+        };
+      }
+      return ejercicio;
+    },
+    leerImagen: async (ruta: string) => {
+      if (comportamientoVistaPrevia === 'imagen-invalida') {
+        throw new ErrorValidacion('El documento de imagen no tiene un formato válido.');
+      }
+      if (comportamientoVistaPrevia === 'error-imagen') {
+        throw new Error('No se ha podido descargar una imagen del repositorio común.');
+      }
+      return {
+        id: ruta.split('/').pop()?.replace('.json', '') ?? 'imagen-demo',
+        nombreArchivo: 'ejercicio.svg',
+        tipoMime: 'image/svg+xml',
+        contenidoBase64: '',
+      };
     },
     existeEjercicioPorNombre: async () => false,
     subirEjercicio: async () => undefined,

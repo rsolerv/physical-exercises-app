@@ -8,7 +8,7 @@
 
 ## Summary
 
-Añadir una pantalla "Importar ejercicios" (menú principal) que busca en el repositorio público `rsolerv/common-data-physical-exercises` (rama `main`, lectura sin credenciales) por texto y por una categoría común, permite seleccionar varios resultados e incorporarlos a la biblioteca del usuario (`datos.json` local), resolviendo antes la correspondencia de categorías no reconocidas. Añadir, en la ficha y edición de un ejercicio propio, una acción opcional "Subir al repositorio común" (solo con credenciales de GitHub ya guardadas) que, tras elegir una o varias categorías comunes y confirmar, convierte el ejercicio al formato de fichero independiente del repositorio común y lo envía mediante `push` a la rama `requests` (sin gestionar la pull request automática ni sus reglas de validación, fuera de esta aplicación). El enfoque técnico reutiliza al máximo la arquitectura en capas y los puertos ya existentes de la feature 001 (mismo token de GitHub, mismo tipo de imagen de archivo, mismo patrón de adaptador HTTP directo desde el navegador), añadiendo un nuevo puerto `RepositorioComunPort` y tres casos de uso de Application, sin tocar la sincronización de datos propios (001/002).
+La pantalla "Importar ejercicios" busca en el repositorio público `rsolerv/common-data-physical-exercises` (rama `main`, lectura sin credenciales) por texto y categoría común, permite seleccionar varios resultados e incorporarlos a la biblioteca del usuario (`datos.json` local), resolviendo antes la correspondencia de categorías no reconocidas. Desde cada resultado también se abre una ficha remota de solo lectura con opción para importar ese único ejercicio. En la ficha y edición de un ejercicio propio se ofrece "Subir al repositorio común" (solo con credenciales de GitHub ya guardadas), que convierte el ejercicio al formato remoto y lo envía a la rama `requests`; la validación automática externa queda fuera de esta aplicación. Se reutilizan la arquitectura en capas y los puertos de la feature 001, sin tocar la sincronización de datos propios (001/002).
 
 ## Technical Context
 
@@ -28,7 +28,7 @@ Añadir una pantalla "Importar ejercicios" (menú principal) que busca en el rep
 
 **Constraints**: Sin backend ni servidor intermediario (constitución); autenticación solo con el token de acceso personal de GitHub ya guardado por el usuario (sin secretos de cliente embebidos); todas las llamadas de lectura pública deben funcionar sin ese token. Debe seguir funcionando la aplicación local-first si el repositorio común no está disponible (solo se ve afectada esta feature, no el resto de la aplicación).
 
-**Scale/Scope**: 2 historias de usuario (importar, subir), 1 pantalla nueva, 2 puntos de extensión en pantallas existentes (ficha y edición de ejercicio), 1 puerto nuevo, 3 casos de uso nuevos, 1 campo nuevo en una entidad existente.
+**Scale/Scope**: 2 historias de usuario (importar, subir), 2 pantallas de importación (resultados y previsualización), 2 puntos de extensión en pantallas existentes (ficha y edición de ejercicio), 1 puerto nuevo, 3 casos de uso nuevos, 1 campo nuevo en una entidad existente.
 
 ## Constitution Check
 
@@ -40,7 +40,7 @@ Añadir una pantalla "Importar ejercicios" (menú principal) que busca en el rep
 | II. Cero Alcance Fantasma | PASS. Cada elemento del plan traza a un FR de `spec.md`; no se añade ninguna capacidad no especificada (p. ej. no se crea un índice remoto de búsqueda ni un seguimiento del resultado de la fusión automática, por no estar en el alcance aprobado). |
 | III. Verificabilidad por una persona no técnica | PASS. Los criterios de aceptación de la spec se comprueban navegando la aplicación (buscar, marcar casillas, importar; abrir ficha, subir, confirmar). `quickstart.md` documenta los pasos manuales. |
 | IV. Experiencia multiplataforma y accesible | PASS. La pantalla "Importar ejercicios" reutiliza el layout responsive ya validado de "Buscar" (research.md/contracts de 001); los diálogos de categoría usan Angular Material y cumplen WCAG 2.1 AA igual que el resto de formularios. |
-| V. Prototipo y aprobación en Storybook | APLICA. "Importar ejercicios" es una pantalla nueva → requiere historias de Storybook y aprobación del propietario antes de implementar su presentación (el agente `ux-ui-expert` las preparará a partir de este plan y de `data-model.md`/`contracts/interfaz-usuario.md`). Las extensiones de la ficha y el formulario de ejercicio (un botón y dos diálogos) son ajustes puntuales que no alteran la estructura de esas pantallas y no requieren prototipo separado. |
+| V. Prototipo y aprobación en Storybook | La pantalla de resultados original tuvo sus historias y aprobación en la implementación inicial (T007-T008). Para esta ampliación, el propietario pidió expresamente no preparar un prototipo Storybook; por tanto la ficha de previsualización se implementa directamente conforme a esta enmienda de Living Spec. |
 | Arquitectura en capas (Domain/Application/Infrastructure/Presentation) | PASS. Ver "Project Structure": nuevo puerto en Application, nuevo adaptador en Infrastructure, funciones puras nuevas en Domain, componentes nuevos/ampliados en Presentation; las dependencias siguen fluyendo hacia el dominio. |
 | Sincronización de datos (destinos permitidos, un único activo) | PASS, sin enmienda constitucional. El repositorio común **no es un destino de sincronización** de los datos propios del usuario (no reemplaza, amplía ni compite con GitHub/Google/copia manual de 001/002): es una fuente de catálogo compartido de solo ejercicios, de un repositorio público fijo, con flujo unidireccional explícito (importar o subir uno o varios ejercicios), no una sincronización bidireccional del estado íntegro del usuario. Reutiliza el token de GitHub ya guardado para un repositorio **adicional** fijo por la aplicación, no configurable por el usuario; no se introduce un nuevo "destino de sincronización" en el sentido de la constitución. Ver research.md (decisión de reutilización de credenciales) y la nueva sección 25 en `specs/001-gestion-ejercicios-fisicos/research.md`. |
 | Autorización sin secretos de cliente | PASS. Se reutiliza el token de acceso personal que el usuario ya introdujo manualmente (FR-037 de 001); no se añade ningún secreto embebido en el código. |
@@ -80,7 +80,7 @@ src/app/
 │   │   └── repositorio-comun.port.ts             # nuevo puerto (leer, buscar, comprobar nombre, subir)
 │   │   # ejercicio-repository.port.ts: se amplía con marcarSubidoRepositorioComun()
 │   └── casos-uso/
-│       ├── buscar-ejercicios-comunes.use-case.ts     # nuevo (US1)
+│   ├── buscar-ejercicios-comunes.use-case.ts     # nuevo (US1), ampliado para consulta previa por id
 │       ├── importar-ejercicios-comunes.use-case.ts   # nuevo (US1)
 │       └── subir-ejercicio-comun.use-case.ts         # nuevo (US2)
 ├── infrastructure/
@@ -95,6 +95,7 @@ src/app/
 └── presentation/
     ├── importar-ejercicios/                      # nuevo (US1), estructura hermana de busqueda-ejercicios/
     │   ├── importar-ejercicios.component.ts
+    │   ├── previsualizar-ejercicio-comun.component.ts
     │   ├── mapear-categoria-importada-dialog.component.ts
     │   └── ...
     └── biblioteca-ejercicios/
@@ -108,7 +109,7 @@ tests/unit/
 └── infrastructure/          # spec del nuevo adaptador y del util compartido
 ```
 
-**Structure Decision**: Se reutiliza íntegramente la arquitectura en capas y la convención "un subdirectorio de Presentation por historia de usuario" ya establecidas en 001 (research.md §9). La única pantalla nueva (US1) recibe su propio subdirectorio `importar-ejercicios/`; la acción de subida (US2) se integra en el subdirectorio ya existente `biblioteca-ejercicios/` por ser una ampliación de sus componentes, no una pantalla nueva.
+**Structure Decision**: Se reutiliza íntegramente la arquitectura en capas y la convención "un subdirectorio de Presentation por historia de usuario" ya establecidas en 001 (research.md §9). Las pantallas de lista y previsualización de US1 comparten `importar-ejercicios/`; la acción de subida (US2) se integra en `biblioteca-ejercicios/`.
 
 ## Complexity Tracking
 
@@ -118,4 +119,4 @@ Ninguna. El Constitution Check no identifica violaciones; esta tabla se deja vac
 
 ## Constitution Check (re-evaluación tras la Fase 1)
 
-El diseño detallado en `research.md`, `data-model.md` y `contracts/` no introduce ninguna desviación nueva respecto al Constitution Check inicial: el nuevo puerto y adaptador siguen la misma arquitectura en capas; no se añade ningún destino de sincronización ni ningún secreto embebido; la única columna SQLite nueva se añade por migración no destructiva; y la pantalla nueva queda identificada para pasar por Storybook/aprobación del propietario antes de implementar su presentación (principio V). **PASS**, sin cambios respecto a la tabla anterior.
+El diseño detallado en `research.md`, `data-model.md` y `contracts/` no introduce ninguna desviación nueva respecto al Constitution Check inicial: el nuevo puerto y adaptador siguen la misma arquitectura en capas; no se añade ningún destino de sincronización ni ningún secreto embebido; la única columna SQLite nueva se añade por migración no destructiva. Para esta ampliación se registra en la tabla anterior la decisión explícita del propietario de omitir Storybook. **PASS**.

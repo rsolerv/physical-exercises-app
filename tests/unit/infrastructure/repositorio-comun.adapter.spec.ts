@@ -139,6 +139,28 @@ describe('RepositorioComunAdapter (lectura pública, US1)', () => {
     });
   });
 
+  describe('obtenerEjercicioPorId', () => {
+    it('descarga un ejercicio concreto de main sin credenciales', async () => {
+      const promesa = adapter.obtenerEjercicioPorId('ej-1');
+      const peticion = httpMock.expectOne(`${RAW_BASE}/ejercicios/ej-1.json`);
+      expect(peticion.request.headers.get('Authorization')).toBeNull();
+      const ejercicio = ejercicioComun();
+      peticion.flush(ejercicio);
+
+      await expect(promesa).resolves.toEqual(ejercicio);
+    });
+
+    it('devuelve null si el ejercicio no existe en main', async () => {
+      const promesa = adapter.obtenerEjercicioPorId('ej-inexistente');
+
+      httpMock
+        .expectOne(`${RAW_BASE}/ejercicios/ej-inexistente.json`)
+        .flush({ message: 'Not Found' }, { status: 404, statusText: 'Not Found' });
+
+      await expect(promesa).resolves.toBeNull();
+    });
+  });
+
   describe('leerImagen', () => {
     it('descarga y parsea imagenes/<id>.json de main por su URL raw', async () => {
       const promesa = adapter.leerImagen('imagenes/img-1.json');

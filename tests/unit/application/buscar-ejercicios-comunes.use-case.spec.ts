@@ -4,6 +4,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { BuscarEjerciciosComunesUseCase } from '../../../src/app/application/casos-uso/buscar-ejercicios-comunes.use-case';
 import { RepositorioComunPort } from '../../../src/app/application/ports/repositorio-comun.port';
 import type { EjercicioComunArchivo } from '../../../src/app/application/ports/repositorio-comun.port';
+import { ErrorValidacion } from '../../../src/app/domain/errores/errores-dominio';
 
 function ejercicioComun(sobrescribir: Partial<EjercicioComunArchivo> = {}): EjercicioComunArchivo {
   return {
@@ -51,5 +52,63 @@ describe('BuscarEjerciciosComunesUseCase', () => {
     const resultado = await caso.listarCategorias();
 
     expect(resultado).toEqual([{ id: 'cat-comun-1', nombre: 'Rodilla' }]);
+  });
+
+  it('carga la ficha remota y las imágenes de archivo para previsualizarla', async () => {
+    const imagen = { id: 'img-1', nombreArchivo: 'almeja.png', tipoMime: 'image/png', contenidoBase64: 'QUJD' };
+    const ejercicio = ejercicioComun({
+      imagenes: [
+        { id: 'img-1', tipo: 'archivo', ruta: 'imagenes/img-1.json' },
+        { id: 'img-url', tipo: 'url', valorUrl: 'https://example.com/almeja.png' },
+      ],
+    });
+    const obtenerEjercicioPorId = vi.fn().mockResolvedValue(ejercicio);
+    const leerImagen = vi.fn().mockResolvedValue(imagen);
+    const caso = configurar({ obtenerEjercicioPorId, leerImagen });
+
+    const resultado = await caso.obtenerVistaPrevia('ej-1');
+
+    expect(obtenerEjercicioPorId).toHaveBeenCalledWith('ej-1');
+    expect(leerImagen).toHaveBeenCalledWith('imagenes/img-1.json');
+    expect(resultado).toEqual({
+      ejercicio,
+      imagenesArchivo: new Map([['img-1', imagen]]),
+      imagenesOmitidas: 0,
+    });
+  });
+
+  it('omite imágenes remotas inválidas en la previsualización', async () => {
+    const ejercicio = ejercicioComun({
+      imagenes: [{ id: 'img-1', tipo: 'archivo', ruta: 'imagenes/img-1.json' }],
+    });
+    const caso = configurar({
+      obtenerEjercicioPorId: vi.fn().mockResolvedValue(ejercicio),
+      leerImagen: vi.fn().mockRejectedValue(new ErrorValidacion('Imagen inválida')),
+    });
+
+    await expect(caso.obtenerVistaPrevia('ej-1')).resolves.toEqual({
+      ejercicio,
+      imagenesArchivo: new Map(),
+      imagenesOmitidas: 1,
+    });
+
+  });
+
+  it('propaga errores de red al cargar las imágenes remotas', async () => {
+    const ejercicio = ejercicioComun({
+      imagenes: [{ id: 'img-1', tipo: 'archivo', ruta: 'imagenes/img-1.json' }],
+    });
+    const errorRed = new Error('Sin conexión');
+    const caso = configurar({
+      obtenerEjercicioPorId: vi.fn().mockResolvedValue(ejercicio),
+      leerImagen: vi.fn().mockRejectedValue(errorRed),
+    });
+    await expect(caso.obtenerVistaPrevia('ej-1')).rejects.toBe(errorRed);
+  });
+
+  it('devuelve null si el ejercicio remoto ya no existe', async () => {
+    const caso = configurar({ obtenerEjercicioPorId: vi.fn().mockResolvedValue(null) });
+
+    await expect(caso.obtenerVistaPrevia('ej-inexistente')).resolves.toBeNull();
   });
 });

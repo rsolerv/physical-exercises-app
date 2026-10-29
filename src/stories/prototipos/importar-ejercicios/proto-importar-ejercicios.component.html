@@ -24,7 +24,13 @@
       </mat-chip-listbox>
     }
 
-    <button mat-flat-button type="button" class="importar-ejercicios__boton-buscar" (click)="buscar()">
+    <button
+      mat-flat-button
+      type="button"
+      class="importar-ejercicios__boton-buscar"
+      [disabled]="!categoriaId()"
+      (click)="buscar()"
+    >
       <mat-icon aria-hidden="true">search</mat-icon>
       Buscar
     </button>
@@ -48,27 +54,36 @@
     } @else if (estado() === 'vacio') {
       <app-estado-vacio icono="search_off" mensaje="No se han encontrado ejercicios con los criterios seleccionados." />
     } @else {
-      <mat-selection-list
-        class="importar-ejercicios__resultados"
-        aria-label="Resultados del repositorio común"
-        (selectionChange)="onSeleccionCambia($event)"
-      >
+      <div class="importar-ejercicios__resultados" role="list" aria-label="Resultados del repositorio común">
         @for (ejercicio of resultados(); track ejercicio.id) {
-          <mat-list-option
-            class="importar-ejercicios__item"
-            [value]="ejercicio.id"
-            [selected]="seleccionadosIds().has(ejercicio.id)"
-            [togglePosition]="'before'"
-            lines="3"
-          >
-            <span matListItemTitle>{{ ejercicio.nombre }}</span>
-            <span matListItemLine class="importar-ejercicios__descripcion">{{ ejercicio.descripcion }}</span>
-            <span matListItemLine class="importar-ejercicios__etiquetas">
-              {{ nombresCategoriasComunes(ejercicio).join(', ') }}
-            </span>
-          </mat-list-option>
+          <article class="importar-ejercicios__item" role="listitem">
+            <mat-checkbox
+              class="importar-ejercicios__seleccion"
+              [checked]="seleccionadosIds().has(ejercicio.id)"
+              [aria-label]="'Seleccionar ' + ejercicio.nombre"
+              (change)="alternarSeleccion(ejercicio.id, $event.checked)"
+            />
+            <div class="importar-ejercicios__contenido-item">
+              <h2 class="importar-ejercicios__nombre">{{ ejercicio.nombre }}</h2>
+              <p class="importar-ejercicios__descripcion">{{ ejercicio.descripcion }}</p>
+              <p class="importar-ejercicios__etiquetas">
+                {{ nombresCategoriasComunes(ejercicio).join(', ') }}
+              </p>
+            </div>
+            <div class="importar-ejercicios__acciones-item">
+              <button
+                mat-stroked-button
+                type="button"
+                [attr.aria-label]="'Ver ficha de ' + ejercicio.nombre"
+                (click)="verFicha(ejercicio.id)"
+              >
+                <mat-icon aria-hidden="true">open_in_new</mat-icon>
+                Ver ficha
+              </button>
+            </div>
+          </article>
         }
-      </mat-selection-list>
+      </div>
     }
   </div>
 

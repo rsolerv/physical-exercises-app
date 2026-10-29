@@ -1,11 +1,14 @@
 import { Component, computed, inject, resource, signal } from '@angular/core';
+import { Location } from '@angular/common';
+import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatListModule, type MatListOption, type MatSelectionListChange } from '@angular/material/list';
+import { MatListModule } from '@angular/material/list';
 import { BuscarEjerciciosComunesUseCase } from '../../application/casos-uso/buscar-ejercicios-comunes.use-case';
 import { ImportarEjerciciosComunesUseCase } from '../../application/casos-uso/importar-ejercicios-comunes.use-case';
 import { CategoriaRepositoryPort } from '../../application/ports/categoria-repository.port';
@@ -22,11 +25,50 @@ import {
 
 type EstadoBusquedaImportar = 'inicial' | 'cargando' | 'resultados' | 'vacio' | 'error';
 
+interface EstadoRestauracionImportar {
+  texto: string;
+  categoriaId: string | null;
+  resultados: EjercicioComunArchivo[];
+  seleccionadosIds: string[];
+}
+
+function esEjercicioComun(valor: unknown): valor is EjercicioComunArchivo {
+  if (typeof valor !== 'object' || valor === null) return false;
+  const ejercicio = valor as Record<string, unknown>;
+  return (
+    typeof ejercicio['id'] === 'string' &&
+    typeof ejercicio['nombre'] === 'string' &&
+    typeof ejercicio['descripcion'] === 'string' &&
+    Array.isArray(ejercicio['categoriaIds']) &&
+    Array.isArray(ejercicio['enlaces']) &&
+    Array.isArray(ejercicio['imagenes'])
+  );
+}
+
+function esEstadoRestauracionImportar(valor: unknown): valor is EstadoRestauracionImportar {
+  if (typeof valor !== 'object' || valor === null) return false;
+  const estado = valor as Record<string, unknown>;
+  const resultados = estado['resultados'];
+  const seleccionadosIds = estado['seleccionadosIds'];
+  if (
+    typeof estado['texto'] !== 'string' ||
+    (typeof estado['categoriaId'] !== 'string' && estado['categoriaId'] !== null) ||
+    !Array.isArray(resultados) ||
+    !resultados.every(esEjercicioComun) ||
+    !Array.isArray(seleccionadosIds) ||
+    !seleccionadosIds.every((id) => typeof id === 'string' && resultados.some((ejercicio) => ejercicio.id === id))
+  ) {
+    return false;
+  }
+  return true;
+}
+
 @Component({
   selector: 'app-importar-ejercicios',
   standalone: true,
   imports: [
     MatButtonModule,
+    MatCheckboxModule,
     MatChipsModule,
     MatFormFieldModule,
     MatIconModule,
@@ -41,6 +83,8 @@ type EstadoBusquedaImportar = 'inicial' | 'cargando' | 'resultados' | 'vacio' | 
 })
 export class ImportarEjerciciosComponent {
   private readonly buscarEjerciciosComunes = inject(BuscarEjerciciosComunesUseCase);
+  private readonly router = inject(Router);
+  private readonly location = inject(Location);
   private readonly importarEjerciciosComunes = inject(ImportarEjerciciosComunesUseCase);
   private readonly categoriaRepository = inject(CategoriaRepositoryPort);
   private readonly dialog = inject(MatDialog);
@@ -53,10 +97,24 @@ export class ImportarEjerciciosComponent {
   readonly seleccionadosIds = signal<Set<string>>(new Set());
   readonly mensajeError = signal<string | null>(null);
 
+  constructor() {
+    const state = this.location.getState();
+    if (typeof state === 'object' && state !== null && 'restaurarImportacion' in state) {
+      const restauracion = state.restaurarImportacion;
+      if (esEstadoRestauracionImportar(restauracion)) {
+        this.texto.set(restauracion.texto);
+        this.categoriaId.set(restauracion.categoriaId);
+        this.resultados.set(restauracion.resultados);
+        this.seleccionadosIds.set(new Set(restauracion.seleccionadosIds));
+        this.estado.set('resultados');
+      }
+    }
+  }
+
   protected readonly recursoCategoriasComunes = resource({
     loader: async () => {
       const categorias = await this.buscarEjerciciosComunes.listarCategorias();
-      if (categorias.length > 0) this.categoriaId.set(categorias[0].id);
+      if (categorias.length > 0 && this.categoriaId() === null) this.categoriaId.set(categorias[0].id);
       return categorias;
     },
   });
@@ -87,9 +145,17 @@ export class ImportarEjerciciosComponent {
     });
   }
 
-  onSeleccionCambia(evento: MatSelectionListChange): void {
-    const idsSeleccionados = evento.source.selectedOptions.selected.map((opcion: MatListOption) => String(opcion.value));
-    this.seleccionadosIds.set(new Set(idsSeleccionados));
+  abrirPrevisualizacion(ejercicioId: string): void {
+    void this.router.navigate(['/ejercicios/importar', ejercicioId], {
+      state: {
+        estadoImportacion: {
+          texto: this.texto(),
+          categoriaId: this.categoriaId(),
+          resultados: this.resultados(),
+          seleccionadosIds: [...this.seleccionadosIds()],
+        } satisfies EstadoRestauracionImportar,
+      },
+    });
   }
 
   async buscar(): Promise<void> {

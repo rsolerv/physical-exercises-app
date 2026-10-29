@@ -102,6 +102,14 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: $espaciado-2;
+
+  @include movil{
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+
+  @include tablet{
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
 }
 
 .ejercicio-ficha__imagen {

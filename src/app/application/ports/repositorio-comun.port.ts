@@ -47,6 +47,9 @@ export abstract class RepositorioComunPort {
    */
   abstract buscarEjercicios(texto: string, categoriaId: string | null): Promise<EjercicioComunArchivo[]>;
 
+  /** Descarga un ejercicio publicado de `main` por su id; devuelve `null` si no existe. No requiere credenciales. */
+  abstract obtenerEjercicioPorId(id: string): Promise<EjercicioComunArchivo | null>;
+
   /** Descarga y parsea `imagenes/<id>.json` de `main`. Lanza `ErrorValidacion` si el documento no tiene el formato esperado. */
   abstract leerImagen(ruta: string): Promise<ImagenArchivoJSON>;
 

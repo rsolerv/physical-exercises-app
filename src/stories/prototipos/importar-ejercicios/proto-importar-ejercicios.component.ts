@@ -1,13 +1,14 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { from } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatListModule, MatSelectionListChange } from '@angular/material/list';
+import { Router } from '@angular/router';
 import { BuscarEjerciciosComunesUseCase } from '../../../app/application/casos-uso/buscar-ejercicios-comunes.use-case';
 import { ImportarEjerciciosComunesUseCase } from '../../../app/application/casos-uso/importar-ejercicios-comunes.use-case';
 import { CategoriaRepositoryPort } from '../../../app/application/ports/categoria-repository.port';
@@ -39,11 +40,11 @@ type EstadoBusquedaImportar = 'inicial' | 'cargando' | 'resultados' | 'vacio' | 
   imports: [
     MatButtonModule,
     MatChipsModule,
+    MatCheckboxModule,
     MatDialogModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
-    MatListModule,
     CabeceraPaginaComponent,
     EstadoCargaComponent,
     EstadoVacioComponent,
@@ -57,6 +58,7 @@ export class ProtoImportarEjerciciosComponent {
   private readonly categoriaRepository = inject(CategoriaRepositoryPort);
   private readonly dialog = inject(MatDialog);
   private readonly mensajeFeedback = inject(MensajeFeedbackService);
+  private readonly router = inject(Router);
 
   readonly texto = signal('');
   readonly categoriaId = signal<string | null>(null);
@@ -75,13 +77,21 @@ export class ProtoImportarEjerciciosComponent {
   readonly seleccionados = computed(() => this.resultados().filter((ejercicio) => this.seleccionadosIds().has(ejercicio.id)));
   readonly numSeleccionados = computed(() => this.seleccionadosIds().size);
 
+  constructor() {
+    // La primera categoría queda elegida por defecto; el prototipo no ofrece "Todas".
+    effect(() => {
+      const categorias = this.categoriasComunes();
+      if (this.categoriaId() === null && categorias.length > 0) this.categoriaId.set(categorias[0].id);
+    });
+  }
+
   nombresCategoriasComunes(ejercicio: EjercicioComunArchivo): string[] {
     const nombresPorId = new Map(this.categoriasComunes().map((categoria) => [categoria.id, categoria.nombre]));
     return ejercicio.categoriaIds.map((id) => nombresPorId.get(id)).filter((nombre): nombre is string => nombre !== undefined);
   }
 
   alternarCategoriaFiltro(categoriaId: string): void {
-    this.categoriaId.update((actual) => (actual === categoriaId ? null : categoriaId));
+    this.categoriaId.set(categoriaId);
   }
 
   async buscar(): Promise<void> {
@@ -100,9 +110,17 @@ export class ProtoImportarEjerciciosComponent {
     }
   }
 
-  onSeleccionCambia(evento: MatSelectionListChange): void {
-    const idsSeleccionados = evento.source.selectedOptions.selected.map((opcion) => opcion.value as string);
-    this.seleccionadosIds.set(new Set(idsSeleccionados));
+  alternarSeleccion(id: string, seleccionado: boolean): void {
+    this.seleccionadosIds.update((actuales) => {
+      const siguientes = new Set(actuales);
+      if (seleccionado) siguientes.add(id);
+      else siguientes.delete(id);
+      return siguientes;
+    });
+  }
+
+  verFicha(id: string): void {
+    void this.router.navigateByUrl(`/ejercicios/importar/${encodeURIComponent(id)}`);
   }
 
   async importar(): Promise<void> {

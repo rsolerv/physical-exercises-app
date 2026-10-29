@@ -17,6 +17,10 @@ interface RepositorioComunPort {
   // y/o por categoriaId (si no es null). Sin texto ni categoría, devuelve el
   // catálogo completo (FR-004). No requiere credenciales (FR-007).
 
+  obtenerEjercicioPorId(id: string): Promise<EjercicioComunArchivo | null>;
+  // Descarga ejercicios/<id>.json directamente de main por su URL raw,
+  // sin credenciales. Devuelve null si el documento no existe (FR-024).
+
   leerImagen(ruta: string): Promise<ImagenArchivoJSON>;
   // Descarga y parsea imagenes/<id>.json de `main` por su URL raw.
   // Lanza ErrorValidacion si el documento no tiene el formato de ImagenArchivoJSON

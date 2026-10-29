@@ -4,6 +4,7 @@ import { EjercicioFichaComponent } from './presentation/biblioteca-ejercicios/ej
 import { CategoriaGestionComponent } from './presentation/biblioteca-ejercicios/categorias/categoria-gestion.component';
 import { BusquedaEjerciciosComponent } from './presentation/busqueda-ejercicios/busqueda-ejercicios.component';
 import { ImportarEjerciciosComponent } from './presentation/importar-ejercicios/importar-ejercicios.component';
+import { PrevisualizarEjercicioComunComponent } from './presentation/importar-ejercicios/previsualizar-ejercicio-comun.component';
 import { DiaActualComponent } from './presentation/planificacion-semanal/dia-actual/dia-actual.component';
 import { CalendarioSemanalComponent } from './presentation/planificacion-semanal/calendario/calendario-semanal.component';
 import { PlanificacionConstructorComponent } from './presentation/planificacion-semanal/constructor/planificacion-constructor.component';
@@ -20,6 +21,7 @@ export const routes: Routes = [
   { path: 'ejercicios', redirectTo: 'buscar', pathMatch: 'full' },
   { path: 'ejercicios/categorias', component: CategoriaGestionComponent, title: 'Categorías' },
   { path: 'ejercicios/importar', component: ImportarEjerciciosComponent, title: 'Importar ejercicios' },
+  { path: 'ejercicios/importar/:id', component: PrevisualizarEjercicioComunComponent, title: 'Previsualizar ejercicio' },
   { path: 'ejercicios/nuevo', component: EjercicioFormularioComponent, title: 'Nuevo ejercicio' },
   { path: 'ejercicios/:id/editar', component: EjercicioFormularioComponent, title: 'Editar ejercicio' },
   { path: 'ejercicios/:id', component: EjercicioFichaComponent, title: 'Ejercicio' },

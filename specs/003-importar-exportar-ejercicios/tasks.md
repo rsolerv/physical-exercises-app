@@ -155,3 +155,14 @@ Después de T012: T020 subida en el adaptador; T021 caso de uso y T022 presentac
 2. US1: búsqueda e importación pública sin credenciales; validar por separado.
 3. US2: selección y envío con credenciales, marca local y bloqueo de duplicados; validar por separado.
 4. Completar lint, pruebas, Storybook y quickstart en Phase 5.
+
+---
+
+## Enmienda Living Spec - Previsualización de ejercicio común (2026-10-29)
+
+El propietario solicita añadir a US1 una ficha remota de solo lectura, accesible desde cada resultado, con importación directa. Ha indicado expresamente que no se prepare prototipo de Storybook para esta ampliación.
+
+- [X] T024 [US1] Añadir `obtenerEjercicioPorId(id)` al contrato/puerto y lectura raw de `ejercicios/<id>.json` en `RepositorioComunAdapter`, con cobertura para éxito y 404.
+- [X] T025 [US1] Ampliar `BuscarEjerciciosComunesUseCase` para cargar la ficha y sus imágenes de archivo, omitiendo imágenes inválidas y propagando fallos recuperables.
+- [X] T026 [US1] Añadir la ruta de previsualización de solo lectura con acción propia para importar, aplicar mapeo existente, excluir observaciones/edición/eliminación y añadir la acción "Ver ejercicio" a cada resultado.
+- [X] T027 [US1] Actualizar criterios funcionales y contratos de interfaz/puerto/plan/research; añadir pruebas unitarias y de componente de carga, navegación, ausencia de observaciones e importación.

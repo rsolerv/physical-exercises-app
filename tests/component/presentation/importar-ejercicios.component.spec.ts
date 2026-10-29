@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { Location } from '@angular/common';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { of } from 'rxjs';
 import { ImportarEjerciciosComponent } from '../../../src/app/presentation/importar-ejercicios/importar-ejercicios.component';
@@ -35,6 +37,7 @@ describe('ImportarEjerciciosComponent', () => {
     dialogOpen?: ReturnType<typeof vi.fn>;
     mostrarExito?: ReturnType<typeof vi.fn>;
     mostrarError?: ReturnType<typeof vi.fn>;
+    restaurarImportacion?: unknown;
   }) {
     const buscar = opciones.buscar ?? vi.fn().mockResolvedValue([]);
     const listarCategorias =
@@ -45,11 +48,14 @@ describe('ImportarEjerciciosComponent', () => {
     const mostrarExito = opciones.mostrarExito ?? vi.fn();
     const mostrarError = opciones.mostrarError ?? vi.fn();
     const dialogOpen = opciones.dialogOpen;
+    const navigate = vi.fn().mockResolvedValue(true);
 
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
         provideNoopAnimations(),
+        { provide: Router, useValue: { navigate } },
+        { provide: Location, useValue: { getState: () => ({ restaurarImportacion: opciones.restaurarImportacion }) } },
         { provide: BuscarEjerciciosComunesUseCase, useValue: { buscar, listarCategorias } },
         { provide: ImportarEjerciciosComunesUseCase, useValue: { obtenerCategoriasPendientes, importar } },
         { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue(opciones.categoriasLocales ?? [{ id: 'cat-local-1', nombre: 'Rodilla' }]) } },
@@ -57,7 +63,7 @@ describe('ImportarEjerciciosComponent', () => {
         { provide: MatDialog, useValue: { open: dialogOpen ?? vi.fn() } },
       ],
     });
-    return { buscar, listarCategorias, obtenerCategoriasPendientes, importar, mostrarExito, mostrarError };
+    return { buscar, listarCategorias, obtenerCategoriasPendientes, importar, mostrarExito, mostrarError, navigate };
   }
 
   async function crearComponente() {
@@ -125,6 +131,7 @@ describe('ImportarEjerciciosComponent', () => {
 
   it('deshabilita Buscar al desmarcar todas las categorías y no ejecuta la búsqueda', async () => {
     const { buscar } = configurar({
+      buscar: vi.fn().mockResolvedValue([ejercicioComun()]),
       listarCategoriasComunes: vi.fn().mockResolvedValue([
         { id: 'cat-comun-1', nombre: 'Movilidad' },
         { id: 'cat-comun-2', nombre: 'Fuerza' },
@@ -149,6 +156,7 @@ describe('ImportarEjerciciosComponent', () => {
     expect(botonBuscar.disabled).toBe(false);
 
     await fixture.componentInstance.buscar();
+    fixture.detectChanges();
     expect(buscar).toHaveBeenCalledWith('', 'cat-comun-2');
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Almeja');
   });
@@ -187,6 +195,46 @@ describe('ImportarEjerciciosComponent', () => {
     const boton = fixture.nativeElement.querySelector('[data-testid="boton-importar"]');
     expect(boton).toBeTruthy();
     expect(boton.textContent).toContain('1');
+  });
+
+  it('ofrece abrir la ficha remota del resultado sin cambiar su selección', async () => {
+    const { navigate } = configurar({ buscar: vi.fn().mockResolvedValue([ejercicioComun()]) });
+    const fixture = await crearComponente();
+    await fixture.componentInstance.buscar();
+    fixture.detectChanges();
+
+    const boton = fixture.nativeElement.querySelector(
+      'button[aria-label="Ver ejercicio Almeja"]'
+    ) as HTMLButtonElement | null;
+    expect(boton).toBeTruthy();
+    boton?.click();
+    expect(navigate).toHaveBeenCalledWith(
+      ['/ejercicios/importar', 'comun-1'],
+      expect.objectContaining({
+        state: expect.objectContaining({
+          estadoImportacion: expect.objectContaining({ resultados: [ejercicioComun()] }),
+        }),
+      })
+    );
+    expect(fixture.componentInstance.seleccionadosIds().size).toBe(0);
+  });
+
+  it('restaura los resultados y la selección al volver de la ficha remota', async () => {
+    configurar({
+      restaurarImportacion: {
+        texto: 'almeja',
+        categoriaId: 'cat-comun-1',
+        resultados: [ejercicioComun()],
+        seleccionadosIds: ['comun-1'],
+      },
+    });
+    const fixture = await crearComponente();
+
+    expect(fixture.componentInstance.texto()).toBe('almeja');
+    expect(fixture.componentInstance.categoriaId()).toBe('cat-comun-1');
+    expect(fixture.componentInstance.estado()).toBe('resultados');
+    expect(fixture.componentInstance.seleccionadosIds()).toEqual(new Set(['comun-1']));
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Almeja');
   });
 
   it('importa directamente cuando ninguna categoría necesita mapeo (CA6)', async () => {

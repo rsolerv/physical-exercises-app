@@ -66,6 +66,7 @@ Como usuario quiero buscar ejercicios en el catálogo público compartido por to
 
 1. **Given** que el usuario abre "Importar ejercicios" desde el menú principal y hay categorías comunes disponibles, **When** se carga la pantalla, **Then** ve un buscador de texto y la lista de categorías del repositorio común (no las suyas propias), con la primera categoría seleccionada, sin ninguna opción "Todas" y permitiendo seleccionar como máximo una categoría.
 2. **Given** que el usuario ha escrito un texto o mantiene seleccionada una categoría común, **When** pulsa "Buscar", **Then** obtiene un listado de ejercicios del repositorio común que coinciden, cada uno con una casilla de selección.
+2a. **Given** que aparecen resultados de búsqueda, **When** el usuario activa la acción "Ver ejercicio" de uno de ellos, **Then** se abre una ficha remota de solo lectura con sus datos completos y una acción "Importar ejercicio".
 3. **Given** que el usuario desmarca todas las categorías, **When** la pantalla muestra los filtros, **Then** el botón "Buscar" está deshabilitado y no se ejecuta ninguna búsqueda; al seleccionar una categoría, el botón vuelve a habilitarse.
 4. **Given** que el listado de resultados está vacío, **When** se muestra la pantalla, **Then** aparece un estado vacío indicativo, no un error.
 5. **Given** que el usuario marca una o varias casillas de resultados, **When** hay al menos una selección, **Then** aparece un botón "Importar"; si no hay ninguna selección, el botón no se muestra.
@@ -134,6 +135,7 @@ Como usuario con credenciales de GitHub guardadas, quiero compartir con el resto
 - **FR-021**: Tras un envío correcto, el sistema DEBE registrar localmente que ese ejercicio ya fue subido y NO DEBE volver a ofrecer la acción "Subir al repositorio común" para él en adelante, aunque posteriormente se edite su nombre u otros datos.
 - **FR-022**: Si el usuario cancela la confirmación de subida, el sistema NO DEBE enviar ningún dato y DEBE mantener disponible la acción de subida para ese ejercicio.
 - **FR-023**: Si falla la conexión, la autenticación o la disponibilidad del repositorio común al buscar, importar o subir, el sistema DEBE informar del error de forma comprensible, sin perder datos locales, sin dejar cambios parciales y, en el caso de una subida fallida, sin marcar el ejercicio como ya subido.
+- **FR-024**: Cada resultado de importación DEBE ofrecer una acción independiente para abrir la ficha del ejercicio común publicado, que DEBE mostrar nombre, descripción, categorías, enlaces e imágenes en modo lectura, sin editar, eliminar ni mostrar observaciones. La ficha DEBE ofrecer "Importar ejercicio" y aplicar las mismas reglas de mapeo de categorías y manejo de errores que la importación desde resultados. El acceso directo por identificador DEBE leer el ejercicio de `main` sin credenciales; si no existe o no puede cargarse, se DEBE mostrar un estado comprensible y permitir reintentar ante errores recuperables.
 
 ### Key Entities *(include if feature involves data)*
 
