@@ -23,6 +23,8 @@
 :host ::ng-deep .agregar-ejercicio__opcion.mdc-list-item--with-three-lines {
   height: auto !important;
   min-height: 0 !important;
+  border-bottom: 1px solid #2969966b;
+  padding: 12px;  
 }
 
 :host ::ng-deep .agregar-ejercicio__opcion .mdc-list-item__content {
