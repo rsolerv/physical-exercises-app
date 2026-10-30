@@ -45,6 +45,12 @@
   white-space: nowrap;
 }
 
+.importar-ejercicios__item{
+    border-bottom: 1px solid #2969966b;
+    padding: 12px 0;
+    height: auto;  
+}
+
 :host ::ng-deep .importar-ejercicios__categorias > .mdc-evolution-chip-set__chips {
   flex-wrap: nowrap;
   width: max-content;
@@ -75,6 +81,10 @@
 
   @include navegacion-riel {
     padding-top: 330px;
+  }
+
+  @include tablet {
+    padding-top: 345px;
   }
 }
 
@@ -143,4 +153,8 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font: var(--tipo-metadato, inherit);
+}
+
+.ver-ejercicio{
+  align-self: center !important;
 }
