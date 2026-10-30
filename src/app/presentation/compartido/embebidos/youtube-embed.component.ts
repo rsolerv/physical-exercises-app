@@ -7,9 +7,8 @@ import { extraerIdYoutube } from '../../../domain/ejercicio/extraer-id-youtube';
 /**
  * Reproductor de YouTube embebido (Historia de Usuario 2, FR-015). Usa
  * `youtube-nocookie.com` para no depender de cookies de terceros. Si la URL
- * no corresponde a un vídeo de YouTube reconocible, muestra un aviso en vez
- * del reproductor, igual que cuando el vídeo deja de estar disponible
- * (CL5, FR-033).
+ * no corresponde a un vídeo de YouTube reconocible o falla su miniatura,
+ * muestra un aviso y permite abrir la URL original (CL5, FR-033).
  */
 @Component({
   selector: 'app-youtube-embed',

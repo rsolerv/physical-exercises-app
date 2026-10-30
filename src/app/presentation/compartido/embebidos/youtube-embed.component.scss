@@ -68,3 +68,10 @@
   gap: $espaciado-1;
   color: var(--mat-sys-on-surface-variant, #5f6368);
 }
+
+.youtube-embed__enlace-original {
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: var(--mat-sys-primary);
+}

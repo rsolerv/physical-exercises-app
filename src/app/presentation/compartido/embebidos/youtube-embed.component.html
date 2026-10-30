@@ -7,7 +7,10 @@
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
       allowfullscreen
     ></iframe>
-  } @else if (urlMiniatura(); as miniatura) {
+    <a class="youtube-embed__enlace-original" [href]="url()" target="_blank" rel="noopener noreferrer">
+      {{ url() }}
+    </a>
+  } @else if (!miniaturaConError() && urlMiniatura(); as miniatura) {
     <div class="youtube-embed__vista-previa">
       @if (miniaturaConError()) {
         <div class="youtube-embed__miniatura-no-disponible" aria-hidden="true">
@@ -38,7 +41,10 @@
   } @else {
     <p class="youtube-embed__aviso">
       <mat-icon>videocam_off</mat-icon>
-      Vídeo no disponible.
+      <span>Vídeo no disponible.</span>
     </p>
+    <a class="youtube-embed__enlace-original" [href]="url()" target="_blank" rel="noopener noreferrer">
+      {{ url() }}
+    </a>
   }
 </div>
