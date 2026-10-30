@@ -51,7 +51,6 @@
 }
 
 .ejercicio-ficha__descripcion {
-  max-width: 720px;
   margin: $espaciado-2 0;
   font: var(--mat-sys-body-large);
   line-height: 1.6;
@@ -125,7 +124,7 @@
 
 .ejercicio-ficha__imagenes {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(1, minmax(0, 1fr));
   gap: $espaciado-2;
 
   @include movil{
