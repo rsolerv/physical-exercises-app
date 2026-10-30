@@ -14,6 +14,7 @@ import { GestionarPlanificacionUseCase } from '../../../src/app/application/caso
 import { GestionarCategoriaUseCase } from '../../../src/app/application/casos-uso/gestionar-categoria.use-case';
 import { SubirEjercicioComunUseCase } from '../../../src/app/application/casos-uso/subir-ejercicio-comun.use-case';
 import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
+import { SincronizarAlIniciarService } from '../../../src/app/presentation/sincronizacion/sincronizar-al-iniciar.service';
 
 describe('Integración de rutas de biblioteca (US1)', () => {
   function configurar() {
@@ -43,6 +44,7 @@ describe('Integración de rutas de biblioteca (US1)', () => {
         { provide: GestionarCategoriaUseCase, useValue: { crear: vi.fn(), actualizar: vi.fn(), eliminar: vi.fn() } },
         { provide: SubirEjercicioComunUseCase, useValue: { puedeOfrecerSubida: vi.fn().mockResolvedValue(false) } },
         { provide: MensajeFeedbackService, useValue: { mostrarExito: vi.fn(), mostrarError: vi.fn() } },
+        { provide: SincronizarAlIniciarService, useValue: { ejecutar: vi.fn().mockResolvedValue(undefined) } },
       ],
     });
   }
