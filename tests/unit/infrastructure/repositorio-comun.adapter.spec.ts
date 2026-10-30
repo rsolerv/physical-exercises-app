@@ -243,7 +243,8 @@ describe('RepositorioComunAdapter (subida, US2)', () => {
   describe('subirEjercicio', () => {
     it('crea primero cada imagen de archivo y después el ejercicio, ambos en requests, sin SHA (FR-017, FR-019)', async () => {
       const imagen: ImagenArchivoJSON = { id: 'img-1', nombreArchivo: 'foto.png', tipoMime: 'image/png', contenidoBase64: 'QUJD' };
-      const promesa = adapter.subirEjercicio(CREDENCIALES, ejercicioComun(), [imagen]);
+      const ejercicio = ejercicioComun({ imagenes: [{ id: 'img-1', tipo: 'archivo', ruta: 'imagenes/img-1.json' }] });
+      const promesa = adapter.subirEjercicio(CREDENCIALES, ejercicio, [imagen]);
 
       const peticionImagen = httpMock.expectOne(`${API_CONTENTS}/imagenes/img-1.json`);
       expect(peticionImagen.request.method).toBe('PUT');
@@ -252,7 +253,7 @@ describe('RepositorioComunAdapter (subida, US2)', () => {
       peticionImagen.flush({ content: { sha: 'sha-imagen' } });
       await flushMicrotareas();
 
-      const peticionEjercicio = httpMock.expectOne(`${API_CONTENTS}/ejercicios/${ejercicioComun().id}.json`);
+      const peticionEjercicio = httpMock.expectOne(`${API_CONTENTS}/ejercicios/${ejercicio.id}.json`);
       expect(peticionEjercicio.request.method).toBe('PUT');
       expect(peticionEjercicio.request.body.branch).toBe('requests');
       peticionEjercicio.flush({ content: { sha: 'sha-ejercicio' } });
@@ -260,9 +261,56 @@ describe('RepositorioComunAdapter (subida, US2)', () => {
       await expect(promesa).resolves.toBeUndefined();
     });
 
+    it('solo sube las imágenes de archivo referenciadas por el ejercicio', async () => {
+      const imagenAsociada: ImagenArchivoJSON = {
+        id: 'img-asociada',
+        nombreArchivo: 'foto.png',
+        tipoMime: 'image/png',
+        contenidoBase64: 'QUJD',
+      };
+      const imagenAjena: ImagenArchivoJSON = {
+        id: 'img-ajena',
+        nombreArchivo: 'otra.png',
+        tipoMime: 'image/png',
+        contenidoBase64: 'REVG',
+      };
+      const ejercicio = ejercicioComun({
+        imagenes: [{ id: 'img-asociada', tipo: 'archivo', ruta: 'imagenes/img-asociada.json' }],
+      });
+      const promesa = adapter.subirEjercicio(CREDENCIALES, ejercicio, [imagenAsociada, imagenAjena]);
+
+      const peticionImagen = httpMock.expectOne(`${API_CONTENTS}/imagenes/img-asociada.json`);
+      peticionImagen.flush({ content: { sha: 'sha-imagen' } });
+      await flushMicrotareas();
+
+      const peticionEjercicio = httpMock.expectOne(`${API_CONTENTS}/ejercicios/${ejercicio.id}.json`);
+      peticionEjercicio.flush({ content: { sha: 'sha-ejercicio' } });
+
+      await expect(promesa).resolves.toBeUndefined();
+      httpMock.expectNone(`${API_CONTENTS}/imagenes/img-ajena.json`);
+    });
+
+    it('no sube documentos de imagen si el ejercicio no tiene imágenes de archivo', async () => {
+      const imagenAjena: ImagenArchivoJSON = {
+        id: 'img-ajena',
+        nombreArchivo: 'otra.png',
+        tipoMime: 'image/png',
+        contenidoBase64: 'REVG',
+      };
+      const ejercicio = ejercicioComun({ imagenes: [{ id: 'img-url', tipo: 'url', valorUrl: 'https://example.com/foto.jpg' }] });
+      const promesa = adapter.subirEjercicio(CREDENCIALES, ejercicio, [imagenAjena]);
+
+      const peticionEjercicio = httpMock.expectOne(`${API_CONTENTS}/ejercicios/${ejercicio.id}.json`);
+      peticionEjercicio.flush({ content: { sha: 'sha-ejercicio' } });
+
+      await expect(promesa).resolves.toBeUndefined();
+      httpMock.expectNone(`${API_CONTENTS}/imagenes/img-ajena.json`);
+    });
+
     it('no envía el ejercicio si falla antes la subida de una imagen (sin cambios parciales)', async () => {
       const imagen: ImagenArchivoJSON = { id: 'img-1', nombreArchivo: 'foto.png', tipoMime: 'image/png', contenidoBase64: 'QUJD' };
-      const promesa = adapter.subirEjercicio(CREDENCIALES, ejercicioComun(), [imagen]);
+      const ejercicio = ejercicioComun({ imagenes: [{ id: 'img-1', tipo: 'archivo', ruta: 'imagenes/img-1.json' }] });
+      const promesa = adapter.subirEjercicio(CREDENCIALES, ejercicio, [imagen]);
       const esperacion = expect(promesa).rejects.toThrow(ErrorRedSincronizacion);
 
       httpMock
@@ -270,7 +318,7 @@ describe('RepositorioComunAdapter (subida, US2)', () => {
         .error(new ProgressEvent('error'), { status: 0, statusText: 'Unknown Error' });
 
       await esperacion;
-      httpMock.expectNone(`${API_CONTENTS}/ejercicios/${ejercicioComun().id}.json`);
+      httpMock.expectNone(`${API_CONTENTS}/ejercicios/${ejercicio.id}.json`);
     });
   });
 });

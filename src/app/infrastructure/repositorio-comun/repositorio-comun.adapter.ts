@@ -113,7 +113,11 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
     ejercicio: EjercicioComunArchivo,
     imagenesArchivo: ImagenArchivoJSON[]
   ): Promise<void> {
+    const idsImagenesAsociadas = new Set(
+      ejercicio.imagenes.filter((imagen) => imagen.tipo === 'archivo').map((imagen) => imagen.id)
+    );
     for (const imagen of imagenesArchivo) {
+      if (!idsImagenesAsociadas.has(imagen.id)) continue;
       await this.crearArchivo(credenciales, `imagenes/${imagen.id}.json`, JSON.stringify(imagen));
     }
     await this.crearArchivo(credenciales, `ejercicios/${ejercicio.id}.json`, JSON.stringify(ejercicio));

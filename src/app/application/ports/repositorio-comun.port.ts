@@ -61,10 +61,12 @@ export abstract class RepositorioComunPort {
   abstract existeEjercicioPorNombre(credenciales: CredencialesGitHub, nombre: string): Promise<boolean>;
 
   /**
-   * Crea `ejercicios/<id>.json` en la rama `requests` (y, antes, cada
-   * `imagenes/<id>.json` que corresponda) mediante `PUT` sin `sha` (son
-   * ficheros nuevos, FR-017/FR-019). No escribe en `main` ni gestiona la pull
-   * request ni las reglas de validación automática.
+   * Crea `ejercicios/<id>.json` en la rama `requests` y, antes, solo los
+   * documentos `imagenes/<id>.json` referenciados por ese ejercicio como
+   * imágenes de archivo. Si no tiene imágenes de archivo, no crea documentos
+   * de imagen. Usa `PUT` sin `sha` (son ficheros nuevos, FR-017/FR-019). No
+   * escribe en `main` ni gestiona la pull request ni las reglas de validación
+   * automática.
    */
   abstract subirEjercicio(
     credenciales: CredencialesGitHub,
