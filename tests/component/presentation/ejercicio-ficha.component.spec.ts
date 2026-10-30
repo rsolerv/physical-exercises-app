@@ -309,12 +309,14 @@ describe('EjercicioFichaComponent', () => {
     const menu = document.body.querySelector('[role="menu"]');
     const subida = menu?.querySelector<HTMLButtonElement>('.ejercicio-ficha__subir-comun--menu');
     const eliminacion = menu?.querySelector<HTMLButtonElement>('.ejercicio-ficha__accion-destructiva');
+    const textoMenu = menu?.textContent ?? '';
+    const indiceSubida = textoMenu.indexOf('Subir al repositorio común');
+    const indiceEliminacion = textoMenu.indexOf('Eliminar');
 
     expect(subida).toBeTruthy();
     expect(eliminacion).toBeTruthy();
-    expect(menu?.textContent?.indexOf('Subir al repositorio común')).toBeLessThan(
-      menu?.textContent?.indexOf('Eliminar')
-    );
+    expect(indiceSubida).toBeGreaterThanOrEqual(0);
+    expect(indiceSubida).toBeLessThan(indiceEliminacion);
     subida?.click();
     await fixture.whenStable();
 
