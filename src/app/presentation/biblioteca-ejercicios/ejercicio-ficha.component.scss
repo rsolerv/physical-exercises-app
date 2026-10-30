@@ -1,6 +1,30 @@
 @use '../../../styles/espaciado' as *;
 @use '../../../styles/breakpoints' as *;
 
+.ejercicio-ficha__subir-comun--menu {
+  display: none;
+}
+
+@include movil {
+  .ejercicio-ficha__subir-comun--escritorio {
+    display: none;
+  }
+
+  .ejercicio-ficha__subir-comun--menu {
+    display: flex;
+  }
+}
+
+@include navegacion-riel {
+  .ejercicio-ficha__subir-comun--escritorio {
+    display: none;
+  }
+
+  .ejercicio-ficha__subir-comun--menu {
+    display: flex;
+  }
+}
+
 .ejercicio-ficha__medios {
   display: flex;
   flex-direction: column;

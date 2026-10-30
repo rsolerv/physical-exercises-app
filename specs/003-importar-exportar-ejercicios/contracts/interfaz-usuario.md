@@ -1,5 +1,6 @@
 # Contrato de interfaz de usuario: Importar y subir ejercicios
 
+
 Complementa `spec.md` con el detalle de presentación necesario para implementar y para que `ux-ui-expert` prepare las historias de Storybook de la pantalla nueva (Constitución, principio V).
 
 ## Pantalla "Importar ejercicios" (nueva, US1)
@@ -33,7 +34,7 @@ Complementa `spec.md` con el detalle de presentación necesario para implementar
 
 ## Ficha de ejercicio y formulario de edición (ampliación existente, US2)
 
-- `ejercicio-ficha.component` y, en modo edición, `ejercicio-formulario.component`: añaden una acción secundaria "Subir al repositorio común", visible junto al resto de acciones del ejercicio (p. ej. junto a "Editar"/"Eliminar" en la ficha).
+- `ejercicio-ficha.component` y, en modo edición, `ejercicio-formulario.component`: añaden una acción secundaria "Subir al repositorio común". En la ficha se muestra junto a las acciones principales en escritorio; en móvil y tablet se encuentra en el menú de las elipsis, inmediatamente antes de "Eliminar". En la edición permanece junto al resto de acciones del formulario.
 - La acción **no se muestra** (no solo deshabilitada) cuando no se cumple alguna condición de disponibilidad, para no exponer una función inalcanzable sin explicación (FR-014/FR-015/FR-021):
   - no hay credenciales de GitHub guardadas, o
   - el ejercicio no tiene ninguna imagen ni ningún enlace de YouTube, o

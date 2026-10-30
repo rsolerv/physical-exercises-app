@@ -295,6 +295,32 @@ describe('EjercicioFichaComponent', () => {
 
     expect(document.body.textContent).toContain('Eliminar');
   });
+
+  it('ofrece la subida en el menú de las elipsis antes de eliminar', async () => {
+    const dialogOpen = vi.fn().mockReturnValue({ afterClosed: () => of(false) });
+    configurar({ ejercicio: ejercicio(), puedeOfrecerSubida: vi.fn().mockResolvedValue(true), dialogOpen });
+    const fixture = await crearComponente();
+    (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLButtonElement>('[aria-label="Más acciones del ejercicio"]')
+      ?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const menu = document.body.querySelector('[role="menu"]');
+    const subida = menu?.querySelector<HTMLButtonElement>('.ejercicio-ficha__subir-comun--menu');
+    const eliminacion = menu?.querySelector<HTMLButtonElement>('.ejercicio-ficha__accion-destructiva');
+
+    expect(subida).toBeTruthy();
+    expect(eliminacion).toBeTruthy();
+    expect(menu?.textContent?.indexOf('Subir al repositorio común')).toBeLessThan(
+      menu?.textContent?.indexOf('Eliminar')
+    );
+    subida?.click();
+    await fixture.whenStable();
+
+    expect(dialogOpen).toHaveBeenCalled();
+  });
+
   it('muestra un error contextual y no navega si falla la eliminación', async () => {
     const eliminar = vi.fn().mockRejectedValue(new Error('No se ha podido eliminar el ejercicio.'));
     const mostrarError = vi.fn();

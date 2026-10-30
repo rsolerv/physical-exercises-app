@@ -16,7 +16,7 @@
           Editar
         </a>
         @if (puedeSubirRepositorioComun()) {
-          <button mat-stroked-button type="button" class="ejercicio-ficha__subir-comun" (click)="abrirDialogoSubirComun()">
+          <button mat-stroked-button type="button" class="ejercicio-ficha__subir-comun ejercicio-ficha__subir-comun--escritorio" (click)="abrirDialogoSubirComun()">
             <mat-icon>cloud_upload</mat-icon>
             Subir al repositorio común
           </button>
@@ -30,6 +30,12 @@
           <mat-icon>more_vert</mat-icon>
         </button>
         <mat-menu #menuAcciones="matMenu">
+          @if (puedeSubirRepositorioComun()) {
+            <button mat-menu-item class="ejercicio-ficha__subir-comun--menu" type="button" (click)="abrirDialogoSubirComun()">
+              <mat-icon>cloud_upload</mat-icon>
+              Subir al repositorio común
+            </button>
+          }
           <button mat-menu-item class="ejercicio-ficha__accion-destructiva" type="button" (click)="eliminar()">
             <mat-icon>delete</mat-icon>
             Eliminar
