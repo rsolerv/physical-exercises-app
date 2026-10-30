@@ -650,19 +650,6 @@ describe('EjercicioFormularioComponent', () => {
       expect(gestionarEjercicio.crear).not.toHaveBeenCalled();
     });
 
-    it('muestra la acción "Subir al repositorio común" al editar un ejercicio elegible (US2)', async () => {
-      configurarEdicion(
-        { id: 'ej-1', nombre: 'Sentadilla', descripcion: 'Flexionar rodillas', categoriaIds: ['cat-1'], enlaces: [], imagenes: [] },
-        vi.fn().mockResolvedValue(true)
-      );
-      const fixture = crearComponente();
-      await fixture.whenStable();
-      fixture.detectChanges();
-      await fixture.whenStable();
-      fixture.detectChanges();
-
-      expect((fixture.nativeElement as HTMLElement).querySelector('.ejercicio-formulario__subir-comun')).toBeTruthy();
-    });
 
     it('no muestra la acción cuando el ejercicio no es elegible al editar', async () => {
       configurarEdicion(

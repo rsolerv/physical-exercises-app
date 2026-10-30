@@ -245,12 +245,6 @@
         @default { Cambios sin guardar }
       }
     </span>
-    @if (leerPlanificacion() && puedeSubirRepositorioComun()) {
-      <button mat-stroked-button type="button" class="ejercicio-formulario__subir-comun" (click)="abrirDialogoSubirComun()">
-        <mat-icon>cloud_upload</mat-icon>
-        Subir al repositorio común
-      </button>
-    }
     <button mat-flat-button color="primary" type="submit" [disabled]="guardando() || leerPlanificacion()">
       Guardar ejercicio
     </button>
