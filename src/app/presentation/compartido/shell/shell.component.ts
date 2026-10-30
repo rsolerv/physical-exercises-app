@@ -1,4 +1,4 @@
-import { Component, HostListener, computed, inject, signal } from '@angular/core';
+import { Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatBottomSheet, MatBottomSheetModule, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,6 +11,7 @@ import {
   MENU_PRINCIPAL,
   SECCIONES_MENU,
 } from './menu-principal';
+import { SincronizarAlIniciarService } from '../../sincronizacion/sincronizar-al-iniciar.service';
 
 const VERSION_APLICACION = '0.0.0';
 
@@ -93,8 +94,9 @@ class PanelMasComponent {
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
 })
-export class ShellComponent {
+export class ShellComponent implements OnInit {
   private readonly bottomSheet = inject(MatBottomSheet);
+  private readonly sincronizarAlIniciar = inject(SincronizarAlIniciarService);
 
   protected readonly entradasMenu = MENU_PRINCIPAL;
   protected readonly entradasMovil = MENU_MOVIL;
@@ -104,6 +106,10 @@ export class ShellComponent {
   readonly esMovil = computed(() => this.anchoViewport() <= 599);
   readonly esRiel = computed(() => this.anchoViewport() > 599 && this.anchoViewport() < 1280);
   readonly masAbierto = signal(false);
+
+  ngOnInit(): void {
+    void this.sincronizarAlIniciar.ejecutar();
+  }
 
   private calcularAnchoViewport(): number {
     return typeof window === 'undefined' ? 1280 : window.innerWidth;

@@ -27,7 +27,7 @@
 - Solo hay un método de sincronización **activo** a la vez (Google o GitHub): es el que usa "Sincronizar ahora". Sin embargo, la persona puede tener **guardadas a la vez** la conexión de Google y los datos de acceso de GitHub, y cambiar el método activo con una sola acción, sin desconectar ni volver a introducir nada. GitHub con token se mantiene como "opción avanzada" para quien ya lo utilice.
 - Desconectar un método solo olvida los datos de acceso de ese método; el otro, si estaba guardado, permanece intacto.
 - Quien no quiera conectar ninguna cuenta puede llevar sus datos a otro dispositivo mediante una copia manual en fichero (exportar e importar).
-- La sincronización sigue siendo una acción explícita ("Sincronizar ahora"), nunca automática en segundo plano.
+- La sincronización se puede iniciar manualmente con "Sincronizar ahora" y, además, se intenta automáticamente al entrar en la aplicación cuando hay un método activo. Esta sincronización de inicio no sustituye ni modifica la acción manual.
 - Los textos del flujo de Google evitan jerga técnica (no se habla de "token", "OAuth" ni "credenciales") y están en español de España.
 
 ## User Scenarios & Testing *(mandatory)*
@@ -69,6 +69,8 @@ Como persona con la cuenta de Google conectada, quiero sincronizar desde distint
 6. **Given** dos personas distintas, cada una con su cuenta de Google, **When** cada una sincroniza sus datos, **Then** ninguna ve ni modifica los datos de la otra.
 7. **Given** que no hay conexión a internet o el servicio de Google no está disponible, **When** la persona intenta sincronizar, **Then** recibe un mensaje claro del error, los datos locales permanecen intactos y puede volver a intentarlo.
 8. **Given** una imagen de ejercicio de más de 5 MB, **When** se intenta sincronizar o importar desde una copia manual, **Then** se aplica la misma regla que en la especificación 001: se rechaza con el mensaje "Cada imagen de archivo no puede superar los 5 MB." y los datos locales no cambian.
+9. **Given** que hay un método de sincronización activo, **When** la persona entra en la aplicación, **Then** se inicia una sincronización después de cargar los datos locales y se aplican las mismas reglas de decisión. Si no hay conflicto, se suben o descargan los cambios que correspondan; si hay conflicto entre cambios locales y remotos, no se modifica ningún dato, no se muestra la pantalla de resolución ni un aviso de conflicto y la aplicación continúa en la pantalla actual.
+10. **Given** que no hay un método activo, **When** la persona entra en la aplicación, **Then** no se inicia ninguna sincronización y el resto de la aplicación funciona con normalidad.
 
 ---
 
@@ -153,7 +155,7 @@ Como persona que no quiere conectar ninguna cuenta, quiero exportar mis datos a 
 - **FR-003**: Los datos sincronizados DEBEN guardarse en un espacio privado de la aplicación dentro del almacenamiento de la propia cuenta de Google de la persona. Ese espacio NO DEBE mezclarse con los ficheros personales de la persona.
 - **FR-004**: La aplicación DEBE solicitar únicamente el permiso mínimo necesario para leer y escribir en su propio espacio privado y NO DEBE acceder a ningún otro fichero ni dato de la cuenta de Google, salvo el dato necesario para mostrar qué cuenta está conectada.
 - **FR-005**: Cada persona DEBE sincronizar únicamente con su propia cuenta; NO DEBEN existir datos compartidos entre personas, roles ni permisos entre usuarios.
-- **FR-006**: La sincronización DEBE ejecutarse únicamente mediante una acción explícita ("Sincronizar ahora") y NO DEBE ejecutarse automáticamente en segundo plano.
+- **FR-006**: La persona DEBE poder iniciar la sincronización manualmente mediante "Sincronizar ahora", cuyo comportamiento se mantiene. Además, cuando exista un método activo, la aplicación DEBE intentar sincronizar al entrar, una vez cargados los datos locales; no DEBE iniciar la sincronización de inicio si no hay método activo. Si se detecta un conflicto, el intento de inicio NO DEBE modificar datos, mostrar la pantalla ni emitir un aviso de conflicto. Un error de sincronización de inicio NO DEBE impedir el uso de la aplicación y DEBE informarse visiblemente. Ambos disparadores DEBEN utilizar las mismas reglas de sincronización y evitar sincronizaciones simultáneas.
 - **FR-007**: Con Google, la decisión de la sincronización DEBE seguir las mismas reglas que en la especificación 001: si solo hay cambios locales, se suben; si solo hay cambios remotos, se descargan; si hay cambios en ambos lados, la persona DEBE elegir explícitamente entre conservar todos los datos locales o todos los de Google; en la primera sincronización con datos remotos, DEBE ofrecerse esa elección con "Usar los datos de Google" marcada por defecto.
 - **FR-008**: La sincronización DEBE incluir los mismos datos que con GitHub: ejercicios, imágenes locales (máximo 5 MB cada una), categorías, planificaciones y progreso diario.
 - **FR-009**: La aplicación DEBE detectar, antes de escribir, que la cuenta de Google ha cambiado desde otro dispositivo desde la última lectura y, en ese caso, NO DEBE sobrescribir: DEBE tratarlo como conflicto o pedir repetir la sincronización, sin pérdida de datos. Si el servicio no ofrece escritura condicional, se acepta que quede una ventana de milisegundos entre la comprobación y la escritura, dado que cada cuenta es de una sola persona y la sincronización es manual.
@@ -198,6 +200,7 @@ Como persona que no quiere conectar ninguna cuenta, quiero exportar mis datos a 
 - **SC-009**: Los flujos de sincronización con GitHub y sus escenarios de aceptación de la especificación 001 conservan sus resultados tras añadir Google.
 - **SC-010**: Con GitHub y Google guardados, la persona cambia de método activo con una sola acción y sin introducir ningún dato de acceso, en el 100% de las pruebas; y tras conectar Google, el 100% de los datos de acceso de GitHub previamente guardados siguen disponibles.
 - **SC-011**: Al alternar entre métodos ya usados, no aparece ningún falso conflicto cuando no ha habido cambios en el destino ni en el dispositivo desde la última sincronización con ese mismo destino (0 conflictos erróneos en las pruebas).
+- **SC-012**: Al entrar en la aplicación con un método activo se inicia una sincronización después de cargar los datos locales; sin método activo no se inicia. Si hay conflicto, no se escriben ni descargan datos ni se muestra la pantalla de resolución; un fallo de red tampoco impide acceder a la aplicación ni altera los datos locales.
 
 ## Assumptions
 
@@ -210,7 +213,7 @@ Como persona que no quiere conectar ninguna cuenta, quiero exportar mis datos a 
 - **Sin migración automática entre destinos**: la aplicación no copia datos de GitHub a Google ni viceversa por sí sola; la persona activa el otro método y elige qué datos conservar en la primera sincronización con él.
 - **Qué activa un método**: conectar un método por primera vez (alta o reconexión) lo convierte en el método activo y se avisa de ello; editar la configuración de GitHub ya guardada no cambia el método activo. Cambiar entre métodos ya guardados se hace solo con "Usar este método".
 - **Credenciales de GitHub guardadas junto a Google**: se mantiene lo aceptado en la especificación 001 (token guardado sin cifrar en el almacenamiento local del navegador, un único usuario por navegador). La sesión de Google sigue sujeta a caducidad (FR-013), por lo que "estar conectado a Google" significa tener la cuenta vinculada y visible, aunque pueda pedirse una reconexión breve al sincronizar.
-- **Sincronización manual**: igual que en la especificación 001, solo se sincroniza bajo acción explícita.
+- **Sincronización al iniciar**: además de mantener "Sincronizar ahora" sin cambios, se inicia un intento de sincronización al entrar cuando hay un método activo. El intento se realiza después de cargar los datos locales; los errores se muestran sin bloquear el uso local y, si se detecta un conflicto, se omite la sincronización silenciosamente sin modificar datos ni abrir la pantalla de resolución.
 - **Conexión de la sesión**: la sesión con Google puede caducar; la recuperación puede requerir una interacción breve de la persona (ver FR-013). Los detalles de renovación se decidieron en el plan.
 - **Detección de cambios remotos (FR-009)**: la comprobación de versión antes de escribir es el mecanismo previsto; si el servicio no admite escritura condicional queda una ventana muy breve, aceptada por tratarse de una cuenta de una sola persona (ver `research.md`, sección 4, y la verificación V3).
 - **Disponibilidad**: la sincronización requiere conexión a internet; el resto de la aplicación no.
@@ -220,4 +223,5 @@ Como persona que no quiere conectar ninguna cuenta, quiero exportar mis datos a 
 
 ## Historial de cambios
 
+- **2026-10-30**: ampliación dentro del mismo ámbito (Living Spec, sin feature nueva). Se añade el intento de sincronización al entrar cuando existe un método activo, manteniendo intacta la acción manual "Sincronizar ahora". Los errores de inicio no bloquean la aplicación y los conflictos se omiten sin mostrar la pantalla de resolución ni modificar datos. Modifica: decisión de producto, historia de usuario 2, FR-006, SC-012 y supuestos.
 - **2026-10-27**: ampliación dentro del mismo ámbito (Living Spec, sin feature nueva). Se permite tener guardadas a la vez la conexión de Google y los datos de acceso de GitHub, con un único método activo y cambio con una acción. Modifica: Decisiones de producto, historia 3 (escenarios 4 y 5), nueva historia 5, casos límite de cambio de método, FR-011, FR-012, FR-016, FR-017, nuevos FR-025 a FR-027, entidad Conexión de sincronización, SC-010 y SC-011, y supuestos. Los documentos plan.md, data-model.md, contracts/, quickstart.md y 	asks.md quedan pendientes de actualizar con /speckit-plan y /speckit-tasks.

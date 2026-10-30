@@ -18,6 +18,7 @@ import { GitHubSyncPort } from '../../../src/app/application/ports/github-sync.p
 import { ProveedorSincronizacionPort } from '../../../src/app/application/ports/proveedor-sincronizacion.port';
 import { RepositorioComunPort } from '../../../src/app/application/ports/repositorio-comun.port';
 import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
+import { SincronizarAlIniciarService } from '../../../src/app/presentation/sincronizacion/sincronizar-al-iniciar.service';
 
 const anchoViewportOriginal = window.innerWidth;
 
@@ -63,6 +64,7 @@ describe('ShellComponent (navegación)', () => {
           },
         },
         { provide: MensajeFeedbackService, useValue: { mostrarExito: vi.fn(), mostrarError: vi.fn() } },
+        { provide: SincronizarAlIniciarService, useValue: { ejecutar: vi.fn().mockResolvedValue(undefined) } },
         {
           provide: PlanificacionRepositoryPort,
           useValue: {

@@ -41,4 +41,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: $espaciado-2;
+  justify-content: flex-end;
+  min-width: 280px;
 }

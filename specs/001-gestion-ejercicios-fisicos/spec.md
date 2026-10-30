@@ -249,7 +249,7 @@ Como usuario quiero reconocer rápidamente dónde estoy, encontrar las acciones 
 ### Functional Requirements
 
 - **FR-001**: Al abrir la aplicación, el sistema DEBE cargar automáticamente toda la información almacenada del usuario.
-- **FR-002**: El sistema DEBE permitir al usuario sincronizar, mediante una acción explícita, la información almacenada con un repositorio de GitHub, autenticándose mediante un token de acceso personal (PAT) de GitHub que el propio usuario genera en GitHub e introduce manualmente en la aplicación.
+- **FR-002**: El sistema DEBE permitir al usuario sincronizar manualmente la información almacenada con un repositorio de GitHub, autenticándose mediante un token de acceso personal (PAT) de GitHub que el propio usuario genera en GitHub e introduce manualmente en la aplicación. Además, si hay un método de sincronización activo, DEBE intentar sincronizar al entrar en la aplicación, una vez cargados los datos locales, según la especificación vigente de sincronización. Un error de inicio NO DEBE impedir el uso de la aplicación ni modificar los datos locales; la sincronización manual existente se mantiene.
 - **FR-003**: El sistema DEBE mostrar un calendario semanal con indicación visual de los días que contienen ejercicios planificados.
 - **FR-004**: El sistema DEBE permitir crear, modificar y eliminar ejercicios.
 - **FR-005**: Todo ejercicio DEBE tener obligatoriamente un nombre y una descripción; no podrá guardarse sin ambos datos.
