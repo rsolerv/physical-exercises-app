@@ -31,6 +31,7 @@
   margin: $espaciado-2 0;
   font: var(--mat-sys-body-large);
   line-height: 1.6;
+  white-space: pre-line;
   @include movil{
     margin: 0 0 16px 0;
   }
