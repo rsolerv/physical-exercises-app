@@ -217,7 +217,7 @@
   </div>
 
   @if (!modoEdicion) {
-    @if (cargandoPlanificacion()) {
+    @if (leerPlanificacion()) {
       <div class="ejercicio-formulario__carga" role="status">
         <mat-spinner diameter="24" />
         <span>Comprobando la planificación de esta semana…</span>
@@ -245,13 +245,13 @@
         @default { Cambios sin guardar }
       }
     </span>
-    @if (puedeSubirRepositorioComun()) {
+    @if (leerPlanificacion() && puedeSubirRepositorioComun()) {
       <button mat-stroked-button type="button" class="ejercicio-formulario__subir-comun" (click)="abrirDialogoSubirComun()">
         <mat-icon>cloud_upload</mat-icon>
         Subir al repositorio común
       </button>
     }
-    <button mat-flat-button color="primary" type="submit" [disabled]="guardando() || cargandoPlanificacion()">
+    <button mat-flat-button color="primary" type="submit" [disabled]="guardando() || leerPlanificacion()">
       Guardar ejercicio
     </button>
     <button mat-button type="button" [disabled]="guardando()" (click)="cancelar()">Cancelar</button>

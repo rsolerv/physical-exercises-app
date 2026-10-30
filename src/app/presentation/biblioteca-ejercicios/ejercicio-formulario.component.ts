@@ -87,7 +87,7 @@ export class EjercicioFormularioComponent {
   readonly errorCargaCategorias = signal<string | null>(null);
   readonly categorias = toSignal(from(this.cargarCategorias()), { initialValue: [] as Categoria[] });
   readonly planificacionActiva = signal<Planificacion | null>(null);
-  readonly cargandoPlanificacion = signal(!this.modoEdicion);
+  readonly leerPlanificacion = signal(!this.modoEdicion);
   readonly errorCargaPlanificacion = signal<string | null>(null);
   readonly agregarAEjerciciosHoy = signal(false);
   readonly categoriaIdsSeleccionadas = signal<string[]>([]);
@@ -162,7 +162,7 @@ export class EjercicioFormularioComponent {
           : 'No se ha podido consultar la planificación de esta semana.'
       );
     } finally {
-      this.cargandoPlanificacion.set(false);
+      this.leerPlanificacion.set(false);
     }
   }
 
