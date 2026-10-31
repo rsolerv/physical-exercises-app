@@ -1,4 +1,8 @@
 <section class="importar-ejercicios">
+  @if (errorAcreditacion(); as error) {
+    <p class="importar-ejercicios__error" role="status">{{ error }}</p>
+  }
+
   <div class="importar-ejercicios__filtros">
     <app-cabecera-pagina
       titulo="Importar ejercicios"
@@ -93,6 +97,19 @@
             >
               <mat-icon aria-hidden="true">visibility</mat-icon>
             </button>
+            @if (esAdministrador()) {
+              <button
+                type="button"
+                mat-icon-button
+                matListItemMeta
+                class="importar-ejercicios__borrar"
+                (click)="eliminarEjercicio(ejercicio)"
+                [attr.aria-label]="'Borrar del repositorio común ' + ejercicio.nombre"
+                title="Borrar del repositorio común"
+              >
+                <mat-icon aria-hidden="true">delete</mat-icon>
+              </button>
+            }
           </mat-list-item>
         }
       </mat-list>

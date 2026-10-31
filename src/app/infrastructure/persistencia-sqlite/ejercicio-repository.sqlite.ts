@@ -103,6 +103,10 @@ export class EjercicioRepositorySqlite implements EjercicioRepositoryPort {
     await this.conexion.ejecutarSinResultado('UPDATE ejercicio SET subido_repositorio_comun = 1 WHERE id = ?', [id]);
   }
 
+  async quitarMarcaSubidoRepositorioComun(id: string): Promise<void> {
+    await this.conexion.ejecutarSinResultado('UPDATE ejercicio SET subido_repositorio_comun = 0 WHERE id = ?', [id]);
+  }
+
   async eliminar(id: string): Promise<void> {
     // ON DELETE CASCADE en el esquema propaga el borrado a categorías,
     // enlaces, imágenes, días de planificación y progreso diario (FR-028).

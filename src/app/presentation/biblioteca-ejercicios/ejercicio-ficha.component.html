@@ -21,6 +21,18 @@
             Subir al repositorio común
           </button>
         }
+        @if (esAdministrador() && ejercicio.subidoRepositorioComun) {
+          <button
+            mat-stroked-button
+            color="warn"
+            type="button"
+            class="ejercicio-ficha__marca-admin--escritorio"
+            (click)="quitarMarcaSubido()"
+          >
+            <mat-icon>undo</mat-icon>
+            Quitar marca de subida
+          </button>
+        }
         <button
           mat-icon-button
           type="button"
@@ -34,6 +46,17 @@
             <button mat-menu-item class="ejercicio-ficha__subir-comun--menu" type="button" (click)="abrirDialogoSubirComun()">
               <mat-icon>cloud_upload</mat-icon>
               Subir al repositorio común
+            </button>
+          }
+          @if (esAdministrador() && ejercicio.subidoRepositorioComun) {
+            <button
+              mat-menu-item
+              type="button"
+              class="ejercicio-ficha__marca-admin--menu"
+              (click)="quitarMarcaSubido()"
+            >
+              <mat-icon>undo</mat-icon>
+              Quitar marca de subida
             </button>
           }
           <button mat-menu-item class="ejercicio-ficha__accion-destructiva" type="button" (click)="eliminar()">
@@ -91,6 +114,9 @@
 
     @if (errorAlEliminar(); as error) {
       <p class="ejercicio-ficha__error-operacion" role="alert">{{ error }}</p>
+    }
+    @if (errorAcreditacion(); as error) {
+      <p class="ejercicio-ficha__error-operacion" role="status">{{ error }}</p>
     }
 
     @if (planificadoHoy()) {

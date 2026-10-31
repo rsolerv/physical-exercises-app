@@ -12,6 +12,7 @@ import { GestionarEjercicioUseCase } from '../../../src/app/application/casos-us
 import { ConsultarPlanificacionUseCase } from '../../../src/app/application/casos-uso/consultar-planificacion.use-case';
 import { GestionarProgresoDiarioUseCase } from '../../../src/app/application/casos-uso/gestionar-progreso-diario.use-case';
 import { SubirEjercicioComunUseCase } from '../../../src/app/application/casos-uso/subir-ejercicio-comun.use-case';
+import { AdministrarRepositorioComunUseCase } from '../../../src/app/application/casos-uso/administrar-repositorio-comun.use-case';
 import { ProgresoDiarioRepositoryPort } from '../../../src/app/application/ports/progreso-diario-repository.port';
 import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
 import type { Ejercicio } from '../../../src/app/domain/ejercicio/ejercicio.entity';
@@ -47,6 +48,7 @@ describe('Integración de rutas de búsqueda y componentes embebidos (US2)', () 
         { provide: AjustesRepositoryPort, useValue: { marcarCambiosLocalesPendientes: vi.fn().mockResolvedValue(undefined) } },
         { provide: GestionarEjercicioUseCase, useValue: { eliminar: vi.fn() } },
         { provide: SubirEjercicioComunUseCase, useValue: { puedeOfrecerSubida: vi.fn().mockResolvedValue(false) } },
+        { provide: AdministrarRepositorioComunUseCase, useValue: { esAdministrador: vi.fn().mockResolvedValue(false) } },
         {
           provide: MensajeFeedbackService,
           useValue: { mostrarExito: vi.fn(), mostrarExitoConAccion: vi.fn(), mostrarError: vi.fn() },

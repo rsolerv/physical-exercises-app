@@ -36,6 +36,7 @@ describe('GestionarEjercicioUseCase', () => {
       restaurar: vi.fn().mockResolvedValue(undefined),
       quitarCategoriaDeTodos: vi.fn(),
       marcarSubidoRepositorioComun: vi.fn(),
+      quitarMarcaSubidoRepositorioComun: vi.fn(),
     };
     planificacionRepo = {
       obtenerPorId: vi.fn(),

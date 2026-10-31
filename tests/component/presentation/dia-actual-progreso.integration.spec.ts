@@ -12,6 +12,7 @@ import { CategoriaRepositoryPort } from '../../../src/app/application/ports/cate
 import { ProgresoDiarioRepositoryPort } from '../../../src/app/application/ports/progreso-diario-repository.port';
 import { GestionarEjercicioUseCase } from '../../../src/app/application/casos-uso/gestionar-ejercicio.use-case';
 import { SubirEjercicioComunUseCase } from '../../../src/app/application/casos-uso/subir-ejercicio-comun.use-case';
+import { AdministrarRepositorioComunUseCase } from '../../../src/app/application/casos-uso/administrar-repositorio-comun.use-case';
 import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
 import { EjercicioFichaComponent } from '../../../src/app/presentation/biblioteca-ejercicios/ejercicio-ficha.component';
 import { routes } from '../../../src/app/app.routes';
@@ -112,6 +113,7 @@ describe('Integración del progreso diario dentro de la vista "hoy" (US4)', () =
         },
         { provide: GestionarEjercicioUseCase, useValue: { eliminar: vi.fn().mockResolvedValue(undefined) } },
         { provide: SubirEjercicioComunUseCase, useValue: { puedeOfrecerSubida: vi.fn().mockResolvedValue(false) } },
+        { provide: AdministrarRepositorioComunUseCase, useValue: { esAdministrador: vi.fn().mockResolvedValue(false) } },
         { provide: MensajeFeedbackService, useValue: { mostrarExito: vi.fn(), mostrarError: vi.fn() } },
       ],
     });

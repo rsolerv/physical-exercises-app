@@ -10,6 +10,7 @@ import type { ImagenArchivoJSON } from '../../../src/app/application/ports/githu
 
 const RAW_BASE = 'https://raw.githubusercontent.com/rsolerv/common-data-physical-exercises/main';
 const API_CONTENTS = 'https://api.github.com/repos/rsolerv/common-data-physical-exercises/contents';
+const API_REPOSITORIO = 'https://api.github.com/repos/rsolerv/common-data-physical-exercises';
 const CREDENCIALES = { tokenPAT: 'token-secreto', repositorio: 'owner/datos-privados' };
 
 function ejercicioComun(sobrescribir: Partial<EjercicioComunArchivo> = {}): EjercicioComunArchivo {
@@ -195,6 +196,178 @@ describe('RepositorioComunAdapter', () => {
       httpMock.expectNone(`${API_CONTENTS}/ejercicios?ref=main`);
     });
 
+    describe('obtenerLoginGitHub', () => {
+      it('consulta a GitHub la identidad asociada a la PAT', async () => {
+        const promesa = adapter.obtenerLoginGitHub('pat-admin');
+        const peticion = httpMock.expectOne('https://api.github.com/user');
+        expect(peticion.request.headers.get('Authorization')).toContain('pat-admin');
+        peticion.flush({ login: 'rsolerv' });
+        await expect(promesa).resolves.toBe('rsolerv');
+      });
+
+      it('rechaza una respuesta sin login de usuario', async () => {
+        const promesa = adapter.obtenerLoginGitHub('pat-admin');
+        const esperacion = expect(promesa).rejects.toThrow(ErrorValidacion);
+        httpMock.expectOne('https://api.github.com/user').flush({});
+        await esperacion;
+      });
+    });
+
+    describe('eliminarEjercicio', () => {
+      it('rechaza identificadores que no se pueden usar como carpeta', async () => {
+        await expect(adapter.eliminarEjercicio(CREDENCIALES, '../otro')).rejects.toThrow(ErrorValidacion);
+        httpMock.expectNone(`${API_REPOSITORIO}/git/ref/heads/main`);
+      });
+
+      it('rechaza la ausencia de contenido de categorias.json sin continuar', async () => {
+        const promesa = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
+        const esperacion = expect(promesa).rejects.toThrow(ErrorValidacion);
+        httpMock.expectOne(`${API_REPOSITORIO}/git/ref/heads/main`).flush({ object: { sha: 'commit-base' } });
+        httpMock.expectOne(`${API_CONTENTS}/categorias.json?ref=main`).flush({ content: '', sha: 'sha-categorias' });
+        await esperacion;
+        httpMock.expectNone(`${API_REPOSITORIO}/git/commits/commit-base`);
+      });
+
+      it('rechaza JSON mal formado e índices que no contienen el ejercicio', async () => {
+        const jsonInvalido = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
+        const errorJson = expect(jsonInvalido).rejects.toThrow(ErrorValidacion);
+        httpMock.expectOne(`${API_REPOSITORIO}/git/ref/heads/main`).flush({ object: { sha: 'commit-json' } });
+        httpMock.expectOne(`${API_CONTENTS}/categorias.json?ref=main`).flush({
+          content: codificarJSON('no es json'),
+          sha: 'sha-categorias',
+        });
+        await errorJson;
+
+        const sinReferencia = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
+        const errorIndice = expect(sinReferencia).rejects.toThrow('ya no aparece');
+        httpMock.expectOne(`${API_REPOSITORIO}/git/ref/heads/main`).flush({ object: { sha: 'commit-indice' } });
+        httpMock.expectOne(`${API_CONTENTS}/categorias.json?ref=main`).flush({
+          content: codificarJSON(documentoCategorias([{ id: 'cat-1', nombre: 'Piernas', ejercicios: [] }])),
+          sha: 'sha-categorias',
+        });
+        await errorIndice;
+        httpMock.expectNone(`${API_REPOSITORIO}/git/commits/commit-indice`);
+      });
+
+      it('rechaza una codificación inválida de categorias.json', async () => {
+        const promesa = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
+        const esperacion = expect(promesa).rejects.toThrow();
+        httpMock.expectOne(`${API_REPOSITORIO}/git/ref/heads/main`).flush({ object: { sha: 'commit-base' } });
+        httpMock.expectOne(`${API_CONTENTS}/categorias.json?ref=main`).flush({
+          content: '%%% inválido',
+          sha: 'sha-categorias',
+        });
+        await esperacion;
+      });
+
+      it('rechaza un árbol incompleto o sin el documento del ejercicio', async () => {
+        const ejercicioNoEncontrado = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
+        const errorNoEncontrado = expect(ejercicioNoEncontrado).rejects.toThrow('No se ha encontrado');
+        httpMock.expectOne(`${API_REPOSITORIO}/git/ref/heads/main`).flush({ object: { sha: 'commit-base' } });
+        httpMock.expectOne(`${API_CONTENTS}/categorias.json?ref=main`).flush({
+          content: codificarJSON(documentoCategorias()),
+          sha: 'sha-categorias',
+        });
+        await flushMicrotareas();
+        httpMock.expectOne(`${API_REPOSITORIO}/git/commits/commit-base`).flush({ tree: { sha: 'tree-base' } });
+        await flushMicrotareas();
+        httpMock.expectOne(`${API_REPOSITORIO}/git/trees/tree-base?recursive=1`).flush({
+          truncated: false,
+          tree: [{ path: 'ejercicios/ej-1/imagenes/img-1.json', type: 'blob' }],
+        });
+        await errorNoEncontrado;
+
+        const arbolInvalido = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
+        const errorArbol = expect(arbolInvalido).rejects.toThrow(ErrorValidacion);
+        httpMock.expectOne(`${API_REPOSITORIO}/git/ref/heads/main`).flush({ object: { sha: 'commit-base' } });
+        httpMock.expectOne(`${API_CONTENTS}/categorias.json?ref=main`).flush({
+          content: codificarJSON(documentoCategorias()),
+          sha: 'sha-categorias',
+        });
+        await flushMicrotareas();
+        httpMock.expectOne(`${API_REPOSITORIO}/git/commits/commit-base`).flush({ tree: { sha: 'tree-base' } });
+        await flushMicrotareas();
+        httpMock.expectOne(`${API_REPOSITORIO}/git/trees/tree-base?recursive=1`).flush({ truncated: false });
+        await errorArbol;
+      });
+
+      it('elimina el ejercicio, sus archivos y sus referencias de categorías en un solo commit de main', async () => {
+        const categorias = documentoCategorias([
+          { id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-1', 'ej-2'] },
+          { id: 'cat-comun-2', nombre: 'Piernas', ejercicios: ['ej-1'] },
+        ]);
+        const promesa = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
+        httpMock.expectOne(`${API_REPOSITORIO}/git/ref/heads/main`).flush({ object: { sha: 'commit-base' } });
+        httpMock.expectOne(`${API_CONTENTS}/categorias.json?ref=main`).flush({
+          content: codificarJSON(categorias),
+          sha: 'sha-categorias',
+        });
+        await flushMicrotareas();
+
+        httpMock.expectOne(`${API_REPOSITORIO}/git/commits/commit-base`).flush({ tree: { sha: 'tree-base' } });
+        await flushMicrotareas();
+        httpMock.expectOne(`${API_REPOSITORIO}/git/trees/tree-base?recursive=1`).flush({
+          truncated: false,
+          tree: [
+            { path: 'ejercicios/ej-1/ej-1.json', type: 'blob' },
+            { path: 'ejercicios/ej-1/imagenes/img-1.json', type: 'blob' },
+            { path: 'ejercicios/ej-2/ej-2.json', type: 'blob' },
+          ],
+        });
+        await flushMicrotareas();
+
+        const blob = httpMock.expectOne(`${API_REPOSITORIO}/git/blobs`);
+        expect(blob.request.body.encoding).toBe('utf-8');
+        expect(JSON.parse(blob.request.body.content)).toEqual({
+          ...categorias,
+          categorias: [
+            { id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-2'] },
+            { id: 'cat-comun-2', nombre: 'Piernas', ejercicios: [] },
+          ],
+        });
+        blob.flush({ sha: 'blob-categorias' });
+        await flushMicrotareas();
+
+        const arbol = httpMock.expectOne(`${API_REPOSITORIO}/git/trees`);
+        expect(arbol.request.body.base_tree).toBe('tree-base');
+        expect(arbol.request.body.tree).toEqual([
+          { path: 'categorias.json', mode: '100644', type: 'blob', sha: 'blob-categorias' },
+          { path: 'ejercicios/ej-1/ej-1.json', mode: '100644', type: 'blob', sha: null },
+          { path: 'ejercicios/ej-1/imagenes/img-1.json', mode: '100644', type: 'blob', sha: null },
+        ]);
+        arbol.flush({ sha: 'tree-nuevo' });
+        await flushMicrotareas();
+
+        const commit = httpMock.expectOne(`${API_REPOSITORIO}/git/commits`);
+        expect(commit.request.body.parents).toEqual(['commit-base']);
+        expect(commit.request.body.tree).toBe('tree-nuevo');
+        commit.flush({ sha: 'commit-nuevo' });
+        await flushMicrotareas();
+
+        const actualizacion = httpMock.expectOne(`${API_REPOSITORIO}/git/refs/heads/main`);
+        expect(actualizacion.request.method).toBe('PATCH');
+        expect(actualizacion.request.body).toEqual({ sha: 'commit-nuevo', force: false });
+        actualizacion.flush({ ref: 'refs/heads/main' });
+        await expect(promesa).resolves.toBeUndefined();
+      });
+
+      it('no modifica el repositorio si el árbol devuelto está truncado', async () => {
+        const promesa = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
+        const esperacion = expect(promesa).rejects.toThrow(ErrorValidacion);
+        httpMock.expectOne(`${API_REPOSITORIO}/git/ref/heads/main`).flush({ object: { sha: 'commit-base' } });
+        httpMock.expectOne(`${API_CONTENTS}/categorias.json?ref=main`).flush({
+          content: codificarJSON(documentoCategorias([{ id: 'cat-1', nombre: 'Piernas', ejercicios: ['ej-1'] }])),
+          sha: 'sha-categorias',
+        });
+        await flushMicrotareas();
+        httpMock.expectOne(`${API_REPOSITORIO}/git/commits/commit-base`).flush({ tree: { sha: 'tree-base' } });
+        await flushMicrotareas();
+        httpMock.expectOne(`${API_REPOSITORIO}/git/trees/tree-base?recursive=1`).flush({ truncated: true, tree: [] });
+        await esperacion;
+        httpMock.expectNone(`${API_REPOSITORIO}/git/blobs`);
+      });
+    });
+
     it('devuelve false si el nombre no coincide con ningún ejercicio del índice', async () => {
       const promesa = adapter.existeEjercicioPorNombre('Sentadilla');
       httpMock.expectOne(`${RAW_BASE}/categorias.json`).flush(
@@ -223,6 +396,7 @@ describe('RepositorioComunAdapter', () => {
       const categoriasOriginales = documentoCategorias([
         { id: 1, nombre: 'Rodilla', ejercicios: [23] },
         { id: 'cat-comun-2', nombre: 'Piernas', ejercicios: [] },
+        { id: 'cat-sin-indice', nombre: 'Sin índice' },
       ]);
       const lecturaCategorias = httpMock.expectOne(`${API_CONTENTS}/categorias.json?ref=requests`);
       expect(lecturaCategorias.request.headers.get('Authorization')).toContain('token-secreto');
@@ -253,6 +427,7 @@ describe('RepositorioComunAdapter', () => {
         categorias: [
           { id: 1, nombre: 'Rodilla', ejercicios: [23, 'ej-2'] },
           { id: 'cat-comun-2', nombre: 'Piernas', ejercicios: [] },
+          { id: 'cat-sin-indice', nombre: 'Sin índice' },
         ],
       });
       actualizacion.flush({ content: { sha: 'sha-categorias-nuevo' } });

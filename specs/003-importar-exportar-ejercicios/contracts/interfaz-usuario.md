@@ -21,9 +21,12 @@ Complementa `spec.md` con el detalle de presentación necesario para implementar
 
 - Ruta: `/ejercicios/importar/:id`. Se abre desde la acción secundaria de cada resultado y puede cargar el ejercicio publicado directamente por su identificador, sin credenciales.
 - Presenta nombre, descripción, categorías comunes, imágenes y enlaces multimedia con el mismo estilo de lectura de la ficha local.
-- No muestra observaciones ni acciones para editar o eliminar el ejercicio remoto.
+- No muestra observaciones ni acciones para editar el ejercicio remoto. Solo el usuario GitHub `rsolerv` acreditado ve la acción "Borrar ejercicio", que pide confirmación y elimina el contenido remoto publicado.
 - Incluye "Volver a los resultados" y la acción principal "Importar ejercicio". Volver restaura filtros, resultados y selección previos. La importación usa el mismo flujo de mapeo de categorías y los mismos mensajes de éxito/error que importar desde la lista; tras completar vuelve a `/ejercicios/importar`.
 - Estados: carga, no encontrado, error de red con posibilidad de reintentar. Las imágenes de archivo inválidas se omiten en la previsualización y se informa de cuántas no se pudieron mostrar; un error de red al leerlas permite reintentar la carga.
+- Si no se puede acreditar la identidad administrativa, la acción de borrado no se muestra. Si falla la comprobación de identidad, se informa de que las acciones administrativas no están disponibles; importar y volver siguen funcionando.
+- La búsqueda añade la acción "Borrar del repositorio común" a cada resultado solo para la persona administradora acreditada. Tras confirmar y borrar, el resultado y cualquier selección asociada se retiran de la lista actual.
+- En la ficha local, si el ejercicio tiene `subidoRepositorioComun = true`, solo la persona administradora ve "Quitar marca de subida". Tras aplicarla, se vuelve a ofrecer la acción de subida si se cumplen sus requisitos habituales.
 
 ### Diálogo "Asignar categoría" (nuevo, parte de US1)
 
@@ -41,6 +44,13 @@ Complementa `spec.md` con el detalle de presentación necesario para implementar
   - el ejercicio ya tiene `subidoRepositorioComun = true`.
 - Al pulsarla, se abre el diálogo "Subir al repositorio común" (nuevo componente, en `biblioteca-ejercicios/`).
 
+### Acreditación y acciones administrativas (ampliación)
+
+- La aplicación consulta `GET https://api.github.com/user` con la PAT guardada y compara `login` sin distinguir mayúsculas/minúsculas con `rsolerv`. La presencia de un token sin validar no habilita acciones.
+- La acreditación se comprueba al entrar en la ficha local, los resultados y la previsualización, y se vuelve a comprobar dentro del caso de uso inmediatamente antes de ejecutar una acción administrativa.
+- Las acciones administrativas solo se muestran tras una respuesta afirmativa. Si GitHub no responde, se muestra un aviso y se mantienen ocultas.
+- El borrado remoto pide confirmación, crea en `main` una única actualización Git que quita el id del índice y borra todo el contenido bajo `ejercicios/<id>/`. La rama no se actualiza si no se puede preparar ese commit completo.
+
 ### Diálogo "Subir al repositorio común" (nuevo, parte de US2)
 
 Flujo en dos pasos dentro del mismo diálogo (o dos diálogos encadenados, a discreción de implementación, manteniendo el flujo lineal):
@@ -49,7 +59,7 @@ Flujo en dos pasos dentro del mismo diálogo (o dos diálogos encadenados, a dis
 2. **Confirmar**: tras elegir categorías, se comprueba el nombre duplicado (FR-017):
    - Si ya existe, se sustituye el paso de confirmación por un mensaje de bloqueo ("Ya existe un ejercicio con este nombre en el repositorio común") y una acción para cerrar; no se permite continuar.
    - Si no existe, se muestra el texto de confirmación explícito indicando que la acción no podrá deshacerse ni repetirse para ese ejercicio (FR-018), con "Confirmar y enviar" y "Cancelar".
-3. Tras confirmar con éxito: notificación "Ejercicio enviado. Quedará pendiente de revisión antes de publicarse en el catálogo común." (research.md, sección 10); el diálogo se cierra y la acción "Subir al repositorio común" deja de mostrarse para ese ejercicio en adelante (FR-021).
+3. Tras confirmar con éxito: notificación "Ejercicio enviado. Quedará pendiente de revisión antes de publicarse en el catálogo común." (research.md, sección 10); el diálogo se cierra y la acción "Subir al repositorio común" deja de mostrarse para ese ejercicio, salvo que la persona administradora quite la marca (FR-021/FR-027).
 4. Si falla la conexión o la autenticación durante la comprobación o el envío, se muestra el error correspondiente sin marcar el ejercicio como subido y sin cerrar el diálogo, permitiendo reintentar (FR-023).
 
 ## Accesibilidad y estilo

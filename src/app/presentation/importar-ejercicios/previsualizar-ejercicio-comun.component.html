@@ -1,4 +1,7 @@
 <section class="previsualizar-ejercicio-comun">
+  @if (errorAcreditacion(); as error) {
+    <p class="previsualizar-ejercicio-comun__error" role="status">{{ error }}</p>
+  }
   @if (recursoVistaPrevia.isLoading() || recursoCategorias.isLoading()) {
     <app-estado-carga mensaje="Cargando ejercicio del repositorio común" [cantidad]="2" />
   } @else if (errorCarga(); as error) {
@@ -19,6 +22,12 @@
           <mat-icon aria-hidden="true">download</mat-icon>
           Importar ejercicio
         </button>
+        @if (esAdministrador()) {
+          <button mat-stroked-button color="warn" type="button" (click)="eliminarEjercicio()">
+            <mat-icon aria-hidden="true">delete</mat-icon>
+            Borrar ejercicio
+          </button>
+        }
       </div>
     </app-cabecera-pagina>
 

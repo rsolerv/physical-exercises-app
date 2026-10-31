@@ -8,7 +8,7 @@
 
 ## Summary
 
-La pantalla "Importar ejercicios" busca en el repositorio público `rsolerv/common-data-physical-exercises` (rama `main`, lectura sin credenciales) por texto y categoría común, permite seleccionar varios resultados e incorporarlos a la biblioteca del usuario (`datos.json` local), resolviendo antes la correspondencia de categorías no reconocidas. Desde cada resultado también se abre una ficha remota de solo lectura con opción para importar ese único ejercicio. En la ficha y edición de un ejercicio propio se ofrece "Subir al repositorio común" (solo con credenciales de GitHub ya guardadas), que convierte el ejercicio al formato remoto y lo envía a la rama `requests`; la validación automática externa queda fuera de esta aplicación. Se reutilizan la arquitectura en capas y los puertos de la feature 001, sin tocar la sincronización de datos propios (001/002).
+La pantalla "Importar ejercicios" busca en el repositorio público `rsolerv/common-data-physical-exercises` (rama `main`, lectura sin credenciales) por texto y categoría común, permite seleccionar varios resultados e incorporarlos a la biblioteca del usuario (`datos.json` local), resolviendo antes la correspondencia de categorías no reconocidas. Desde cada resultado también se abre una ficha remota con opción para importar ese ejercicio. En la ficha y edición de un ejercicio propio se ofrece "Subir al repositorio común" y el envío va a `requests`. La cuenta `rsolerv` se acredita validando la PAT guardada con `GET /user`; solo esa cuenta ve y ejecuta las acciones administrativas para revertir la marca local y borrar ejercicios publicados. El borrado remoto prepara un único commit en `main` que actualiza el índice y retira todos los archivos del ejercicio.
 
 ## Technical Context
 
@@ -26,9 +26,9 @@ La pantalla "Importar ejercicios" busca en el repositorio público `rsolerv/comm
 
 **Performance Goals**: Una búsqueda explícita en "Importar ejercicios" (tras pulsar "Buscar") debe mostrar resultados en menos de 3 segundos con una conexión normal y un catálogo común de tamaño moderado (decenas a baja centena de ejercicios), coherente con SC-001. No se fija un objetivo de rendimiento para catálogos de gran escala (ver research.md, limitación conocida).
 
-**Constraints**: Sin backend ni servidor intermediario (constitución); autenticación solo con el token de acceso personal de GitHub ya guardado por el usuario (sin secretos de cliente embebidos); todas las llamadas de lectura pública deben funcionar sin ese token. Debe seguir funcionando la aplicación local-first si el repositorio común no está disponible (solo se ve afectada esta feature, no el resto de la aplicación).
+**Constraints**: Sin backend ni servidor intermediario (constitución); autenticación solo con la PAT guardada (sin secretos de cliente embebidos); todas las llamadas de lectura pública deben funcionar sin ese token. Las operaciones administrativas requieren validar `login === 'rsolerv'`; el borrado necesita permiso de escritura sobre `main` y no fuerza cambios concurrentes. Debe seguir funcionando la aplicación local-first si el repositorio común no está disponible (solo se ve afectada esta feature, no el resto de la aplicación).
 
-**Scale/Scope**: 2 historias de usuario (importar, subir), 2 pantallas de importación (resultados y previsualización), 2 puntos de extensión en pantallas existentes (ficha y edición de ejercicio), 1 puerto nuevo, 3 casos de uso nuevos, 1 campo nuevo en una entidad existente.
+**Scale/Scope**: 3 historias de usuario (importar, subir, administración), 2 pantallas de importación (resultados y previsualización), ampliaciones de ficha/edición, 1 puerto nuevo, 4 casos de uso nuevos, 1 campo nuevo en una entidad existente.
 
 ## Constitution Check
 
@@ -77,12 +77,15 @@ src/app/
 │       └── convertir-ejercicio-comun.ts          # nuevo: Ejercicio local ⇄ EjercicioComunArchivo
 ├── application/
 │   ├── ports/
-│   │   └── repositorio-comun.port.ts             # nuevo puerto (leer, buscar, comprobar nombre, subir)
-│   │   # ejercicio-repository.port.ts: se amplía con marcarSubidoRepositorioComun()
+│   │   └── repositorio-comun.port.ts             # nuevo puerto (leer, buscar, comprobar, subir, borrar e identidad)
+│   │   # ejercicio-repository.port.ts: marcar y revertir marca administrativamente
 │   └── casos-uso/
 │   ├── buscar-ejercicios-comunes.use-case.ts     # nuevo (US1), ampliado para consulta previa por id
 │       ├── importar-ejercicios-comunes.use-case.ts   # nuevo (US1)
-│       └── subir-ejercicio-comun.use-case.ts         # nuevo (US2)
+│       ├── subir-ejercicio-comun.use-case.ts         # nuevo (US2)
+│       └── administrar-repositorio-comun.use-case.ts # nuevo (US3), vuelve a acreditar antes de mutar
+│   └── configuracion/
+│       └── administrador.config.ts                   # login GitHub fijo: rsolerv
 ├── infrastructure/
 │   ├── github-sync/
 │   │   └── github-contenido.util.ts              # nuevo: extraído de github-sync.adapter.ts (DRY)
@@ -96,10 +99,11 @@ src/app/
     ├── importar-ejercicios/                      # nuevo (US1), estructura hermana de busqueda-ejercicios/
     │   ├── importar-ejercicios.component.ts
     │   ├── previsualizar-ejercicio-comun.component.ts
+    │       ├── confirmar-eliminar-ejercicio-comun-dialog.component.ts
     │   ├── mapear-categoria-importada-dialog.component.ts
     │   └── ...
     └── biblioteca-ejercicios/
-        ├── ejercicio-ficha.component.ts          # ampliado: acción "Subir al repositorio común"
+        ├── ejercicio-ficha.component.ts          # subir y quitar marca solo para administrador
         ├── ejercicio-formulario.component.ts     # ampliado: misma acción en edición
         └── subir-ejercicio-comun-dialog.component.ts  # nuevo: selección de categorías comunes + confirmación
 
@@ -109,7 +113,7 @@ tests/unit/
 └── infrastructure/          # spec del nuevo adaptador y del util compartido
 ```
 
-**Structure Decision**: Se reutiliza íntegramente la arquitectura en capas y la convención "un subdirectorio de Presentation por historia de usuario" ya establecidas en 001 (research.md §9). Las pantallas de lista y previsualización de US1 comparten `importar-ejercicios/`; la acción de subida (US2) se integra en `biblioteca-ejercicios/`.
+**Structure Decision**: Se reutiliza íntegramente la arquitectura en capas y la convención "un subdirectorio de Presentation por historia de usuario" ya establecidas en 001 (research.md §9). Las pantallas de lista y previsualización de US1 comparten `importar-ejercicios/`; las acciones administrativas se integran en esas pantallas y en `biblioteca-ejercicios/`. Se usa Git Database API para aplicar la eliminación del catálogo en un commit único y el CAS de referencia no forzado para evitar sobrescribir cambios concurrentes.
 
 ## Complexity Tracking
 

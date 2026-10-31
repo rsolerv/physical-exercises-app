@@ -5,22 +5,30 @@
   display: none;
 }
 
+.ejercicio-ficha__marca-admin--menu {
+  display: none;
+}
+
 @include movil {
-  .ejercicio-ficha__subir-comun--escritorio {
+  .ejercicio-ficha__subir-comun--escritorio,
+  .ejercicio-ficha__marca-admin--escritorio {
     display: none;
   }
 
-  .ejercicio-ficha__subir-comun--menu {
+  .ejercicio-ficha__subir-comun--menu,
+  .ejercicio-ficha__marca-admin--menu {
     display: flex;
   }
 }
 
 @include navegacion-riel {
-  .ejercicio-ficha__subir-comun--escritorio {
+  .ejercicio-ficha__subir-comun--escritorio,
+  .ejercicio-ficha__marca-admin--escritorio {
     display: none;
   }
 
-  .ejercicio-ficha__subir-comun--menu {
+  .ejercicio-ficha__subir-comun--menu,
+  .ejercicio-ficha__marca-admin--menu {
     display: flex;
   }
 }

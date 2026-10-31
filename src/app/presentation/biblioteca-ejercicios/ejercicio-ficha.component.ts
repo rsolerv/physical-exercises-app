@@ -16,6 +16,7 @@ import { ConsultarPlanificacionUseCase } from '../../application/casos-uso/consu
 import { GestionarProgresoDiarioUseCase } from '../../application/casos-uso/gestionar-progreso-diario.use-case';
 import { GestionarEjercicioUseCase } from '../../application/casos-uso/gestionar-ejercicio.use-case';
 import { SubirEjercicioComunUseCase } from '../../application/casos-uso/subir-ejercicio-comun.use-case';
+import { AdministrarRepositorioComunUseCase } from '../../application/casos-uso/administrar-repositorio-comun.use-case';
 import type { EliminacionEjercicio } from '../../application/casos-uso/gestionar-ejercicio.use-case';
 import type { CambioProgreso } from '../../application/casos-uso/gestionar-progreso-diario.use-case';
 import type { Categoria } from '../../domain/categoria/categoria.entity';
@@ -65,6 +66,7 @@ export class EjercicioFichaComponent {
   private readonly gestionarProgresoDiario = inject(GestionarProgresoDiarioUseCase);
   private readonly gestionarEjercicio = inject(GestionarEjercicioUseCase);
   private readonly subirEjercicioComun = inject(SubirEjercicioComunUseCase);
+  private readonly administrarRepositorioComun = inject(AdministrarRepositorioComunUseCase);
   private readonly dialog = inject(MatDialog);
   private readonly mensajeFeedback = inject(MensajeFeedbackService);
 
@@ -103,6 +105,15 @@ export class EjercicioFichaComponent {
     params: () => this.recursoEjercicio.value() ?? undefined,
     loader: ({ params }) => this.subirEjercicioComun.puedeOfrecerSubida(params),
   });
+  protected readonly recursoEsAdministrador = resource({
+    loader: () => this.administrarRepositorioComun.esAdministrador(),
+  });
+  protected readonly esAdministrador = computed(() => this.recursoEsAdministrador.value() ?? false);
+  protected readonly errorAcreditacion = computed(() =>
+    this.recursoEsAdministrador.error()
+      ? 'No se ha podido verificar la cuenta GitHub. Las acciones de administración no están disponibles.'
+      : null
+  );
   protected readonly puedeSubirRepositorioComun = computed(
     () => !this.yaSubidoRepositorioComun() && (this.recursoPuedeSubirComun.value() ?? false)
   );
@@ -160,6 +171,17 @@ export class EjercicioFichaComponent {
         );
       }
     });
+  }
+
+  async quitarMarcaSubido(): Promise<void> {
+    try {
+      await this.administrarRepositorioComun.quitarMarcaSubido(this.ejercicioId);
+      this.mensajeFeedback.mostrarExito('Se ha quitado la marca de subida al repositorio común.');
+      this.recursoEjercicio.reload();
+      this.recursoPuedeSubirComun.reload();
+    } catch (error) {
+      this.mensajeFeedback.mostrarError(error instanceof Error ? error.message : 'No se ha podido quitar la marca de subida.');
+    }
   }
 
   async volver(): Promise<void> {

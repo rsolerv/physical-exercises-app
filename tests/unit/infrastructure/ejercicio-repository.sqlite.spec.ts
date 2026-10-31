@@ -166,6 +166,13 @@ describe('EjercicioRepositorySqlite', () => {
     expect(actualizado).toEqual({ ...creado, subidoRepositorioComun: true });
   });
 
+  it('quitarMarcaSubidoRepositorioComun restablece la marca de forma persistente', async () => {
+    const creado = await repositorio.crear(datos());
+    await repositorio.marcarSubidoRepositorioComun(creado.id);
+    await repositorio.quitarMarcaSubidoRepositorioComun(creado.id);
+    expect((await repositorio.obtenerPorId(creado.id))?.subidoRepositorioComun).toBe(false);
+  });
+
   it('migra bases de datos existentes añadiendo la columna subido_repositorio_comun con valor 0 (ALTER TABLE)', async () => {
     await conexion.cerrar();
     const motor: MotorSqlite = await crearMotorSqliteEnMemoria();

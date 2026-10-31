@@ -35,6 +35,7 @@ describe('SembrarCatalogoPredefinidoUseCase', () => {
       restaurar: vi.fn(),
       quitarCategoriaDeTodos: vi.fn(),
       marcarSubidoRepositorioComun: vi.fn(),
+      quitarMarcaSubidoRepositorioComun: vi.fn(),
     };
     ajustesRepo = {
       obtener: vi.fn(),

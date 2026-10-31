@@ -7,6 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { BuscarEjerciciosComunesUseCase } from '../../application/casos-uso/buscar-ejercicios-comunes.use-case';
 import { ImportarEjerciciosComunesUseCase } from '../../application/casos-uso/importar-ejercicios-comunes.use-case';
+import { AdministrarRepositorioComunUseCase } from '../../application/casos-uso/administrar-repositorio-comun.use-case';
 import { CategoriaRepositoryPort } from '../../application/ports/categoria-repository.port';
 import type { EjercicioComunArchivo } from '../../application/ports/repositorio-comun.port';
 import { CabeceraPaginaComponent } from '../compartido/ui/cabecera-pagina/cabecera-pagina.component';
@@ -16,6 +17,7 @@ import { EstadoCargaComponent } from '../compartido/ui/estado-carga/estado-carga
 import { EstadoVacioComponent } from '../compartido/ui/estado-vacio/estado-vacio.component';
 import { MensajeFeedbackService } from '../compartido/ui/mensaje-feedback.service';
 import { BloqueoCategoriasPropiasDialogComponent } from './bloqueo-categorias-propias-dialog.component';
+import { ConfirmarEliminarEjercicioComunDialogComponent } from './confirmar-eliminar-ejercicio-comun-dialog.component';
 import {
   MapearCategoriaImportadaDialogComponent,
   type DatosMapearCategoriaImportadaDialog,
@@ -43,12 +45,23 @@ export class PrevisualizarEjercicioComunComponent {
   private readonly location = inject(Location);
   private readonly buscarEjerciciosComunes = inject(BuscarEjerciciosComunesUseCase);
   private readonly importarEjerciciosComunes = inject(ImportarEjerciciosComunesUseCase);
+  private readonly administrarRepositorioComun = inject(AdministrarRepositorioComunUseCase);
   private readonly categoriaRepository = inject(CategoriaRepositoryPort);
   private readonly dialog = inject(MatDialog);
   private readonly mensajeFeedback = inject(MensajeFeedbackService);
   private readonly ejercicioId = this.ruta.snapshot.paramMap.get('id') ?? '';
 
   readonly imagenesConError = signal<ReadonlySet<string>>(new Set());
+
+  protected readonly recursoAdministrador = resource({
+    loader: () => this.administrarRepositorioComun.esAdministrador(),
+  });
+  protected readonly esAdministrador = computed(() => this.recursoAdministrador.value() ?? false);
+  protected readonly errorAcreditacion = computed(() =>
+    this.recursoAdministrador.error()
+      ? 'No se ha podido verificar la cuenta GitHub. Las acciones de administración no están disponibles.'
+      : null
+  );
 
   protected readonly recursoVistaPrevia = resource({
     loader: () => this.buscarEjerciciosComunes.obtenerVistaPrevia(this.ejercicioId),
@@ -126,6 +139,20 @@ export class PrevisualizarEjercicioComunComponent {
     }
   }
 
+  async eliminarEjercicio(): Promise<void> {
+    const ejercicio = this.recursoVistaPrevia.value()?.ejercicio;
+    if (!ejercicio || !this.esAdministrador()) return;
+
+    const referencia = this.dialog.open(ConfirmarEliminarEjercicioComunDialogComponent, {
+      width: '440px',
+      maxWidth: 'calc(100vw - 32px)',
+      data: { nombre: ejercicio.nombre },
+    });
+    referencia.afterClosed().subscribe((confirmado: boolean) => {
+      if (confirmado) void this.confirmarEliminacion(ejercicio);
+    });
+  }
+
   async reintentar(): Promise<void> {
     this.recursoVistaPrevia.reload();
     this.recursoCategorias.reload();
@@ -144,6 +171,40 @@ export class PrevisualizarEjercicioComunComponent {
 
   marcarErrorImagen(id: string): void {
     this.imagenesConError.update((actuales) => new Set(actuales).add(id));
+  }
+
+  private async confirmarEliminacion(ejercicio: EjercicioComunArchivo): Promise<void> {
+    try {
+      await this.administrarRepositorioComun.eliminarEjercicio(ejercicio.id);
+      this.mensajeFeedback.mostrarExito(`Se ha borrado «${ejercicio.nombre}» del repositorio común.`);
+      const state = this.location.getState();
+      const estadoImportacion =
+        typeof state === 'object' && state !== null && 'estadoImportacion' in state
+          ? this.filtrarEjercicioDeEstado(state.estadoImportacion, ejercicio.id)
+          : undefined;
+      await this.router.navigate(['/ejercicios/importar'], {
+        state: estadoImportacion === undefined ? undefined : { restaurarImportacion: estadoImportacion },
+      });
+    } catch (error) {
+      this.mensajeFeedback.mostrarError(error instanceof Error ? error.message : 'No se ha podido borrar el ejercicio común.');
+    }
+  }
+
+  private filtrarEjercicioDeEstado(valor: unknown, ejercicioId: string): unknown {
+    if (typeof valor !== 'object' || valor === null || !('resultados' in valor)) return valor;
+    const estado = valor as Record<string, unknown>;
+    if (!Array.isArray(estado['resultados'])) return valor;
+    const resultados = estado['resultados'].filter(
+      (resultado) =>
+        typeof resultado === 'object' &&
+        resultado !== null &&
+        'id' in resultado &&
+        resultado.id !== ejercicioId
+    );
+    const seleccionadosIds = Array.isArray(estado['seleccionadosIds'])
+      ? estado['seleccionadosIds'].filter((id) => id !== ejercicioId)
+      : [];
+    return { ...estado, resultados, seleccionadosIds };
   }
 
   private async completarImportacion(

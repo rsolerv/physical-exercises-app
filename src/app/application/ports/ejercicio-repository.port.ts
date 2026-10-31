@@ -34,4 +34,7 @@ export abstract class EjercicioRepositoryPort {
 
   /** Pone `subidoRepositorioComun = true` para ese ejercicio; no modifica ningún otro campo (FR-021). */
   abstract marcarSubidoRepositorioComun(id: string): Promise<void>;
+
+  /** Quita la marca de subida, acción reservada a la cuenta administradora del repositorio común. */
+  abstract quitarMarcaSubidoRepositorioComun(id: string): Promise<void>;
 }

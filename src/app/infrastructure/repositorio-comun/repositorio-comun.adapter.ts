@@ -2,7 +2,9 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import {
+  ErrorConflictoRemoto,
   ErrorAutenticacionGitHub,
+  ErrorNoEncontrado,
   ErrorRedSincronizacion,
   ErrorValidacion,
 } from '../../domain/errores/errores-dominio';
@@ -35,6 +37,23 @@ interface CategoriaComunDocumento {
 
 interface ContenidoGitHub {
   content?: string;
+  sha: string;
+}
+
+interface ReferenciaGitHub {
+  object: { sha: string };
+}
+
+interface CommitGitHub {
+  tree: { sha: string };
+}
+
+interface ArbolGitHub {
+  truncated: boolean;
+  tree: { path: string; type: string }[];
+}
+
+interface BlobGitHub {
   sha: string;
 }
 
@@ -130,6 +149,27 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
     return ejercicios.some((ejercicio) => normalizarNombreEjercicio(ejercicio.nombre) === buscado);
   }
 
+  async obtenerLoginGitHub(tokenPAT: string): Promise<string> {
+    try {
+      const usuario = await firstValueFrom(
+        this.http.get<unknown>('https://api.github.com/user', { headers: cabecerasGitHub(tokenPAT) })
+      );
+      if (
+        typeof usuario !== 'object' ||
+        usuario === null ||
+        !('login' in usuario) ||
+        typeof usuario.login !== 'string' ||
+        !usuario.login.trim()
+      ) {
+        throw new ErrorValidacion('GitHub no ha devuelto una identidad de usuario válida.');
+      }
+      return usuario.login;
+    } catch (error) {
+      if (error instanceof ErrorValidacion) throw error;
+      throw this.traducirError(error);
+    }
+  }
+
   async subirEjercicio(
     credenciales: CredencialesGitHub,
     ejercicio: EjercicioComunArchivo,
@@ -178,6 +218,128 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
       JSON.stringify({ ...documentoCategorias.documento, categorias: categoriasActualizadas }),
       documentoCategorias.sha
     );
+  }
+
+  async eliminarEjercicio(credenciales: CredencialesGitHub, ejercicioId: string): Promise<void> {
+    if (!/^[\w.-]+$/.test(ejercicioId)) {
+      throw new ErrorValidacion('El identificador del ejercicio común no tiene un formato válido.');
+    }
+
+    try {
+      const rutaCategorias = `${API_CONTENTS}/categorias.json?ref=${RAMA_LECTURA}`;
+      const [referencia, documentoCategoriasRespuesta] = await Promise.all([
+        firstValueFrom(
+          this.http.get<ReferenciaGitHub>(`${API_BASE_GITHUB}/${OWNER_REPO}/git/ref/heads/${RAMA_LECTURA}`, {
+            headers: cabecerasGitHub(credenciales.tokenPAT),
+          })
+        ),
+        firstValueFrom(
+          this.http.get<ContenidoGitHub>(rutaCategorias, { headers: cabecerasGitHub(credenciales.tokenPAT) })
+        ),
+      ]);
+
+      if (!documentoCategoriasRespuesta.content?.trim()) {
+        throw new ErrorValidacion('GitHub no ha devuelto el contenido de categorias.json en main.');
+      }
+      let contenidoCategorias: unknown;
+      try {
+        contenidoCategorias = JSON.parse(desdeBase64(documentoCategoriasRespuesta.content));
+      } catch (error) {
+        if (!(error instanceof SyntaxError)) throw error;
+        throw new ErrorValidacion('El documento categorias.json del repositorio común no contiene JSON válido.');
+      }
+      const documentoCategorias = this.validarDocumentoCategorias(contenidoCategorias as DocumentoCategoriasComun);
+      const apareceEnIndice = documentoCategorias.categorias.some((categoria) =>
+        (categoria.ejercicios ?? []).some((id) => String(id) === ejercicioId)
+      );
+      if (!apareceEnIndice) throw new ErrorNoEncontrado('El ejercicio ya no aparece en el catálogo común.');
+
+      const commitBase = await firstValueFrom(
+        this.http.get<CommitGitHub>(`${API_BASE_GITHUB}/${OWNER_REPO}/git/commits/${referencia.object.sha}`, {
+          headers: cabecerasGitHub(credenciales.tokenPAT),
+        })
+      );
+      const arbolBase = await firstValueFrom(
+        this.http.get<ArbolGitHub>(
+          `${API_BASE_GITHUB}/${OWNER_REPO}/git/trees/${commitBase.tree.sha}?recursive=1`,
+          { headers: cabecerasGitHub(credenciales.tokenPAT) }
+        )
+      );
+      if (arbolBase.truncated) {
+        throw new ErrorValidacion('GitHub ha truncado el árbol del repositorio; no se ha eliminado ningún archivo.');
+      }
+      if (
+        !Array.isArray(arbolBase.tree) ||
+        !arbolBase.tree.every(
+          (entrada) => typeof entrada?.path === 'string' && typeof entrada.type === 'string'
+        )
+      ) {
+        throw new ErrorValidacion('GitHub no ha devuelto un árbol válido del repositorio común.');
+      }
+
+      const prefijo = `ejercicios/${ejercicioId}/`;
+      const rutasEjercicio = arbolBase.tree.filter((entrada) => entrada.type === 'blob' && entrada.path.startsWith(prefijo));
+      const rutaDocumento = `${prefijo}${ejercicioId}.json`;
+      if (!rutasEjercicio.some((entrada) => entrada.path === rutaDocumento)) {
+        throw new ErrorNoEncontrado('No se ha encontrado el archivo publicado del ejercicio.');
+      }
+
+      const categoriasActualizadas = documentoCategorias.categorias.map((categoria) => ({
+        ...categoria,
+        ...(categoria.ejercicios
+          ? { ejercicios: categoria.ejercicios.filter((id) => String(id) !== ejercicioId) }
+          : {}),
+      }));
+      const blob = await firstValueFrom(
+        this.http.post<BlobGitHub>(
+          `${API_BASE_GITHUB}/${OWNER_REPO}/git/blobs`,
+          {
+            content: JSON.stringify({ ...documentoCategorias, categorias: categoriasActualizadas }),
+            encoding: 'utf-8',
+          },
+          { headers: cabecerasGitHub(credenciales.tokenPAT) }
+        )
+      );
+      const arbolNuevo = await firstValueFrom(
+        this.http.post<BlobGitHub>(
+          `${API_BASE_GITHUB}/${OWNER_REPO}/git/trees`,
+          {
+            base_tree: commitBase.tree.sha,
+            tree: [
+              { path: 'categorias.json', mode: '100644', type: 'blob', sha: blob.sha },
+              ...rutasEjercicio.map((entrada) => ({
+                path: entrada.path,
+                mode: '100644',
+                type: 'blob',
+                sha: null,
+              })),
+            ],
+          },
+          { headers: cabecerasGitHub(credenciales.tokenPAT) }
+        )
+      );
+      const commitNuevo = await firstValueFrom(
+        this.http.post<BlobGitHub>(
+          `${API_BASE_GITHUB}/${OWNER_REPO}/git/commits`,
+          {
+            message: `Eliminar ejercicio ${ejercicioId} del catálogo común`,
+            tree: arbolNuevo.sha,
+            parents: [referencia.object.sha],
+          },
+          { headers: cabecerasGitHub(credenciales.tokenPAT) }
+        )
+      );
+      await firstValueFrom(
+        this.http.patch(
+          `${API_BASE_GITHUB}/${OWNER_REPO}/git/refs/heads/${RAMA_LECTURA}`,
+          { sha: commitNuevo.sha, force: false },
+          { headers: cabecerasGitHub(credenciales.tokenPAT) }
+        )
+      );
+    } catch (error) {
+      if (error instanceof ErrorValidacion || error instanceof ErrorNoEncontrado) throw error;
+      throw this.traducirError(error);
+    }
   }
 
   private async crearArchivo(credenciales: CredencialesGitHub, ruta: string, contenidoTexto: string): Promise<void> {
@@ -293,6 +455,9 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
     if (error instanceof HttpErrorResponse) {
       if (error.status === 401 || error.status === 403) {
         return new ErrorAutenticacionGitHub('El token de GitHub no es válido o no tiene permisos suficientes.');
+      }
+      if (error.status === 409 || error.status === 422) {
+        return new ErrorConflictoRemoto('El repositorio común ha cambiado o no permite esta operación. Actualiza los datos e inténtalo de nuevo.');
       }
       return new ErrorRedSincronizacion('No se ha podido conectar con el repositorio común. Comprueba tu conexión a internet.');
     }

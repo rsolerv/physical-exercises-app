@@ -48,8 +48,8 @@ Este documento no parte de ningún `NEEDS CLARIFICATION` pendiente en el Technic
 
 ## 7. Marca local de "ejercicio ya subido"
 
-- **Decision**: Se añade un campo booleano `subidoRepositorioComun` a la entidad `Ejercicio` (por defecto `false`), persistido como columna `subido_repositorio_comun INTEGER` en la tabla `ejercicio` de SQLite (migración `ALTER TABLE ... ADD COLUMN` en `motor-sqlite.ts`, mismo patrón ya usado para `ultima_sincronizacion_correcta`). `EjercicioRepositoryPort` se amplía con `marcarSubidoRepositorioComun(id: string): Promise<void>`.
-- **Rationale**: FR-021 exige que la acción deje de ofrecerse tras una subida correcta, de forma permanente y con independencia de futuras ediciones del ejercicio; un campo persistente en la propia entidad es la solución más simple y SOLID, coherente con cómo 001 ya guarda otros indicadores de estado (p. ej. `catalogoPredefinidoCargado` en Ajustes). No se guarda fecha porque la spec no pide mostrarla (evita alcance fantasma).
+- **Decision**: Se añade un campo booleano `subidoRepositorioComun` a la entidad `Ejercicio` (por defecto `false`), persistido como columna `subido_repositorio_comun INTEGER` en la tabla `ejercicio` de SQLite. `EjercicioRepositoryPort` ofrece `marcarSubidoRepositorioComun()` y `quitarMarcaSubidoRepositorioComun()`; la segunda operación solo se orquesta tras acreditar a la cuenta `rsolerv`.
+- **Rationale**: La marca persiste para ocultar la subida tras un envío correcto; el requisito de administración permite revertirla expresamente sin modificar el resto del ejercicio. No se guarda fecha porque la spec no pide mostrarla.
 - **Alternatives considered**: Tabla de registro separada (`ejercicio_subido_comun`) — rechazada por ser una relación estrictamente 1:1 con `ejercicio`, sin necesidad de una tabla propia. Confiar solo en la comprobación remota de nombre duplicado (FR-017) sin marca local — rechazada porque exigiría una llamada de red (listar + leer `main`) solo para decidir si mostrar el botón en cada apertura de la ficha, degradando el rendimiento percibido sin necesidad.
 
 ## 8. Validación de disponibilidad de la acción de subida
@@ -82,3 +82,16 @@ Este documento no parte de ningún `NEEDS CLARIFICATION` pendiente en el Technic
 - **Decision**: Cada categoría incorpora `ejercicios`, un array de ids de ejercicios relacionados. La aplicación consulta ese array para seleccionar qué documentos descargar, escribe ejercicios e imágenes dentro de la carpeta del ejercicio y actualiza `categorias.json` en `requests` con el `sha` de GitHub. El JSON del ejercicio y el JSON de imagen conservan sus campos actuales; el valor de `ruta` de imagen sigue siendo relativo (`imagenes/<id>.json`).
 - **Rationale**: El índice elimina la enumeración completa del directorio, mientras que los directorios por ejercicio permiten agrupar sus imágenes sin cambiar los documentos de datos existentes.
 - **Referencia Living Spec**: [spec.md](./spec.md), FR-025; [contracts/repositorio-comun.port.md](./contracts/repositorio-comun.port.md).
+
+## 13. Acreditación del administrador con la identidad GitHub autenticada
+
+- **Decision**: La cuenta administradora se configura internamente como `rsolerv`. Cuando hay una PAT guardada, Infrastructure consulta `GET https://api.github.com/user` con esa PAT; Application compara el `login` devuelto con la cuenta configurada. La presencia del token, el campo del repositorio privado y la sincronización Google no conceden el rol. Presentation oculta las acciones hasta acreditar, y el caso de uso vuelve a comprobar identidad antes de mutar datos.
+- **Rationale**: La app no tiene servidor de autenticación propio. Validar el usuario autenticado en GitHub evita tratar una PAT de cualquier cuenta como una sesión administradora, reutiliza la credencial existente y no persiste un rol falso o editable localmente.
+- **Alternatives considered**: Añadir OAuth independiente — descartado al confirmarse con el propietario que la PAT ya introducida representa su sesión GitHub. Conceder el rol por mera existencia de una PAT — descartado porque no prueba que pertenezca a `rsolerv`.
+- **Referencia Living Spec**: [spec.md](./spec.md), FR-026/FR-027, User Story 3.
+
+## 14. Borrado administrativo atómico del catálogo publicado
+
+- **Decision**: El borrado usa Git Database API contra `main`: verifica el índice y el árbol recursivo completo, crea un blob de `categorias.json` sin el id, construye un árbol que elimina todos los blobs bajo `ejercicios/<id>/`, crea un commit con el commit actual como padre y actualiza `refs/heads/main` con `force: false`. Si el árbol está truncado, falta el JSON del ejercicio o hay conflicto, aborta sin actualizar la referencia.
+- **Rationale**: Las operaciones secuenciales de Contents API producirían commits parciales (archivo sin índice, o índice sin imágenes). Un solo commit mantiene catálogo, ejercicio e imágenes coherentes; el avance no forzado evita sobrescribir cambios concurrentes.
+- **Referencia Living Spec**: [spec.md](./spec.md), FR-028/FR-029; [contracts/repositorio-comun.port.md](./contracts/repositorio-comun.port.md).

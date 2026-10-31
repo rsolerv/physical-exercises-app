@@ -9,6 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
+import { AdministrarRepositorioComunUseCase } from '../../application/casos-uso/administrar-repositorio-comun.use-case';
 import { BuscarEjerciciosComunesUseCase } from '../../application/casos-uso/buscar-ejercicios-comunes.use-case';
 import { ImportarEjerciciosComunesUseCase } from '../../application/casos-uso/importar-ejercicios-comunes.use-case';
 import { CategoriaRepositoryPort } from '../../application/ports/categoria-repository.port';
@@ -18,6 +19,7 @@ import { EstadoVacioComponent } from '../compartido/ui/estado-vacio/estado-vacio
 import { CabeceraPaginaComponent } from '../compartido/ui/cabecera-pagina/cabecera-pagina.component';
 import { MensajeFeedbackService } from '../compartido/ui/mensaje-feedback.service';
 import { BloqueoCategoriasPropiasDialogComponent } from './bloqueo-categorias-propias-dialog.component';
+import { ConfirmarEliminarEjercicioComunDialogComponent } from './confirmar-eliminar-ejercicio-comun-dialog.component';
 import {
   MapearCategoriaImportadaDialogComponent,
   type DatosMapearCategoriaImportadaDialog,
@@ -86,6 +88,7 @@ export class ImportarEjerciciosComponent {
   private readonly router = inject(Router);
   private readonly location = inject(Location);
   private readonly importarEjerciciosComunes = inject(ImportarEjerciciosComunesUseCase);
+  private readonly administrarRepositorioComun = inject(AdministrarRepositorioComunUseCase);
   private readonly categoriaRepository = inject(CategoriaRepositoryPort);
   private readonly dialog = inject(MatDialog);
   private readonly mensajeFeedback = inject(MensajeFeedbackService);
@@ -96,6 +99,16 @@ export class ImportarEjerciciosComponent {
   readonly resultados = signal<EjercicioComunArchivo[]>([]);
   readonly seleccionadosIds = signal<Set<string>>(new Set());
   readonly mensajeError = signal<string | null>(null);
+
+  protected readonly recursoAdministrador = resource({
+    loader: () => this.administrarRepositorioComun.esAdministrador(),
+  });
+  protected readonly esAdministrador = computed(() => this.recursoAdministrador.value() ?? false);
+  protected readonly errorAcreditacion = computed(() =>
+    this.recursoAdministrador.error()
+      ? 'No se ha podido verificar la cuenta GitHub. Las acciones de administración no están disponibles.'
+      : null
+  );
 
   constructor() {
     const state = this.location.getState();
@@ -171,6 +184,34 @@ export class ImportarEjerciciosComponent {
     } catch (error) {
       this.mensajeError.set(error instanceof Error ? error.message : 'No se ha podido conectar con el repositorio común.');
       this.estado.set('error');
+    }
+  }
+
+  async eliminarEjercicio(ejercicio: EjercicioComunArchivo): Promise<void> {
+    if (!this.esAdministrador()) return;
+    const referencia = this.dialog.open(ConfirmarEliminarEjercicioComunDialogComponent, {
+      width: '440px',
+      maxWidth: 'calc(100vw - 32px)',
+      data: { nombre: ejercicio.nombre },
+    });
+    referencia.afterClosed().subscribe((confirmado: boolean) => {
+      if (confirmado) void this.confirmarEliminacion(ejercicio);
+    });
+  }
+
+  private async confirmarEliminacion(ejercicio: EjercicioComunArchivo): Promise<void> {
+    try {
+      await this.administrarRepositorioComun.eliminarEjercicio(ejercicio.id);
+      this.resultados.update((resultados) => resultados.filter((actual) => actual.id !== ejercicio.id));
+      this.seleccionadosIds.update((ids) => {
+        const siguientes = new Set(ids);
+        siguientes.delete(ejercicio.id);
+        return siguientes;
+      });
+      if (this.resultados().length === 0) this.estado.set('vacio');
+      this.mensajeFeedback.mostrarExito(`Se ha borrado «${ejercicio.nombre}» del repositorio común.`);
+    } catch (error) {
+      this.mensajeFeedback.mostrarError(error instanceof Error ? error.message : 'No se ha podido borrar el ejercicio común.');
     }
   }
 

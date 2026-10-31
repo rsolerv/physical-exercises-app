@@ -13,6 +13,7 @@ import { GestionarEjercicioUseCase } from '../../../src/app/application/casos-us
 import { ConsultarPlanificacionUseCase } from '../../../src/app/application/casos-uso/consultar-planificacion.use-case';
 import { GestionarProgresoDiarioUseCase } from '../../../src/app/application/casos-uso/gestionar-progreso-diario.use-case';
 import { SubirEjercicioComunUseCase } from '../../../src/app/application/casos-uso/subir-ejercicio-comun.use-case';
+import { AdministrarRepositorioComunUseCase } from '../../../src/app/application/casos-uso/administrar-repositorio-comun.use-case';
 import { ProgresoDiarioRepositoryPort } from '../../../src/app/application/ports/progreso-diario-repository.port';
 import { crearDiasVacios } from '../../../src/app/domain/planificacion/planificacion.entity';
 import { diaSemanaDeFecha } from '../../../src/app/domain/planificacion/fecha-semana';
@@ -46,6 +47,8 @@ describe('EjercicioFichaComponent', () => {
     restaurarProgreso?: ReturnType<typeof vi.fn>;
     puedeOfrecerSubida?: ReturnType<typeof vi.fn>;
     dialogOpen?: ReturnType<typeof vi.fn>;
+    esAdministrador?: boolean;
+    quitarMarca?: ReturnType<typeof vi.fn>;
   }) {
     const dias = crearDiasVacios();
     dias.find((dia) => dia.diaSemana === diaSemanaDeFecha(new Date()))!.ejercicioIds = ['ej-1'];
@@ -89,6 +92,13 @@ describe('EjercicioFichaComponent', () => {
         {
           provide: SubirEjercicioComunUseCase,
           useValue: { puedeOfrecerSubida: opciones.puedeOfrecerSubida ?? vi.fn().mockResolvedValue(true) },
+        },
+        {
+          provide: AdministrarRepositorioComunUseCase,
+          useValue: {
+            esAdministrador: vi.fn().mockResolvedValue(opciones.esAdministrador ?? false),
+            quitarMarcaSubido: opciones.quitarMarca ?? vi.fn().mockResolvedValue(undefined),
+          },
         },
         {
           provide: MensajeFeedbackService,
@@ -351,6 +361,22 @@ describe('EjercicioFichaComponent', () => {
     const fixture = await crearComponente();
 
     expect((fixture.nativeElement as HTMLElement).querySelector('.ejercicio-ficha__subir-comun')).toBeNull();
+  });
+
+  it('muestra la acción para quitar la marca a la persona administradora', async () => {
+    configurar({ ejercicio: ejercicio({ subidoRepositorioComun: true }), esAdministrador: true });
+    const fixture = await crearComponente();
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('.ejercicio-ficha__marca-admin--escritorio')
+    ).not.toBeNull();
+  });
+
+  it('oculta la acción de quitar la marca a usuarios no administradores', async () => {
+    configurar({ ejercicio: ejercicio({ subidoRepositorioComun: true }) });
+    const fixture = await crearComponente();
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('.ejercicio-ficha__marca-admin--escritorio')
+    ).toBeNull();
   });
 
   it('abre el diálogo de subida al pulsar la acción', async () => {

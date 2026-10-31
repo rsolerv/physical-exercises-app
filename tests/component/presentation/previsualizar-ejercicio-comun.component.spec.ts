@@ -7,6 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { of } from 'rxjs';
 import { BuscarEjerciciosComunesUseCase } from '../../../src/app/application/casos-uso/buscar-ejercicios-comunes.use-case';
 import { ImportarEjerciciosComunesUseCase } from '../../../src/app/application/casos-uso/importar-ejercicios-comunes.use-case';
+import { AdministrarRepositorioComunUseCase } from '../../../src/app/application/casos-uso/administrar-repositorio-comun.use-case';
 import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
 import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
 import { PrevisualizarEjercicioComunComponent } from '../../../src/app/presentation/importar-ejercicios/previsualizar-ejercicio-comun.component';
@@ -31,6 +32,7 @@ describe('PrevisualizarEjercicioComunComponent', () => {
     importar?: ReturnType<typeof vi.fn>;
     dialogOpen?: ReturnType<typeof vi.fn>;
     mostrarExito?: ReturnType<typeof vi.fn>;
+    esAdministrador?: boolean;
   } = {}) {
     const obtenerVistaPrevia = vi.fn().mockResolvedValue(
       opciones.datosVistaPrevia ?? {
@@ -57,6 +59,7 @@ describe('PrevisualizarEjercicioComunComponent', () => {
         },
         { provide: BuscarEjerciciosComunesUseCase, useValue: { obtenerVistaPrevia, listarCategorias } },
         { provide: ImportarEjerciciosComunesUseCase, useValue: { obtenerCategoriasPendientes, importar } },
+        { provide: AdministrarRepositorioComunUseCase, useValue: { esAdministrador: vi.fn().mockResolvedValue(opciones.esAdministrador ?? false) } },
         {
           provide: CategoriaRepositoryPort,
           useValue: {
@@ -97,6 +100,18 @@ describe('PrevisualizarEjercicioComunComponent', () => {
     expect(fixture.nativeElement.querySelector('button[aria-label*="Editar"]')).toBeNull();
     expect(fixture.nativeElement.querySelector('button[aria-label*="Eliminar"]')).toBeNull();
     expect(texto).toContain('Importar ejercicio');
+  });
+
+  it('muestra el borrado remoto cuando la PAT acredita a la administradora', async () => {
+    configurar({ esAdministrador: true });
+    const fixture = await crearComponente();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Borrar ejercicio');
+  });
+
+  it('oculta el borrado remoto a usuarios no administradores', async () => {
+    configurar();
+    const fixture = await crearComponente();
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Borrar ejercicio');
   });
 
   it('importa desde la ficha previa y vuelve a la búsqueda tras completar', async () => {

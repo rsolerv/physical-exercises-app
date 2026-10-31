@@ -7,6 +7,7 @@ Guía de validación manual end-to-end de las dos historias de usuario. No susti
 - Aplicación en ejecución (`ng serve` o la build publicada).
 - Para probar US1 (importar): ninguno adicional; funciona sin cuenta ni credenciales.
 - Para probar US2 (subir): credenciales de GitHub ya guardadas en "Sincronización" (un token de acceso personal con permiso de lectura y escritura de contenidos también sobre `rsolerv/common-data-physical-exercises`, además de tu repositorio privado de datos — ver research.md, sección 3).
+- Para probar US3 como administradora: una PAT válida de `rsolerv`, permiso de escritura de contenidos sobre `rsolerv/common-data-physical-exercises` y permisos para actualizar `main`. La aplicación comprueba el `login` con GitHub; una PAT de otra cuenta no acredita el rol.
 - Al menos una categoría propia creada (para completar una importación que requiera seleccionar categorías propias, FR-010).
 - Un ejercicio propio con nombre, descripción, categoría y al menos una imagen o un enlace de YouTube (para poder subirlo).
 
@@ -43,6 +44,14 @@ Guía de validación manual end-to-end de las dos historias de usuario. No susti
 2. Con credenciales guardadas pero un ejercicio sin ninguna imagen ni ningún enlace de YouTube: comprobar que la acción tampoco aparece en su ficha (FR-015).
 3. Intentar subir un ejercicio cuyo nombre (ignorando mayúsculas y espacios) ya exista en el repositorio común: comprobar que se bloquea antes de pedir confirmación, con un mensaje explicativo, y que no se envía nada (FR-017, SC-004).
 4. Cancelar la confirmación de una subida: comprobar que no se envía nada y que la acción sigue disponible para ese ejercicio (FR-022).
+
+## Escenario 5 — Administrar la marca local y borrar del catálogo (US3)
+
+1. Con la PAT de `rsolerv` guardada, abrir la ficha de un ejercicio propio cuya marca de subida sea `true`: comprobar que aparece "Quitar marca de subida". Activarla y verificar que la marca pasa a `false` y la disponibilidad de subida vuelve a evaluarse.
+2. Abrir "Importar ejercicios" y buscar un ejercicio común. Comprobar que aparece "Borrar del repositorio común" en el resultado y en su ficha.
+3. Pulsar "Borrar" y cancelar: comprobar que el ejercicio permanece.
+4. Repetir y confirmar: comprobar que el ejercicio y todos los ficheros bajo `ejercicios/<id>/` desaparecen de `main`, se retiran sus ids de todas las categorías de `categorias.json` y la lista actual deja de mostrarlo (FR-028).
+5. Guardar una PAT de otra cuenta o quitar la PAT, volver a las mismas pantallas y comprobar que las acciones administrativas no aparecen. Si GitHub no está disponible al verificar la identidad, debe mostrarse un aviso y mantenerse ocultas.
 
 ## Verificación cruzada
 

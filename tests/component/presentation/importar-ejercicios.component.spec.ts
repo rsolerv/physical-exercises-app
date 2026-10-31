@@ -9,6 +9,7 @@ import { of } from 'rxjs';
 import { ImportarEjerciciosComponent } from '../../../src/app/presentation/importar-ejercicios/importar-ejercicios.component';
 import { BuscarEjerciciosComunesUseCase } from '../../../src/app/application/casos-uso/buscar-ejercicios-comunes.use-case';
 import { ImportarEjerciciosComunesUseCase } from '../../../src/app/application/casos-uso/importar-ejercicios-comunes.use-case';
+import { AdministrarRepositorioComunUseCase } from '../../../src/app/application/casos-uso/administrar-repositorio-comun.use-case';
 import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
 import { MensajeFeedbackService } from '../../../src/app/presentation/compartido/ui/mensaje-feedback.service';
 import { BloqueoCategoriasPropiasDialogComponent } from '../../../src/app/presentation/importar-ejercicios/bloqueo-categorias-propias-dialog.component';
@@ -38,6 +39,7 @@ describe('ImportarEjerciciosComponent', () => {
     mostrarExito?: ReturnType<typeof vi.fn>;
     mostrarError?: ReturnType<typeof vi.fn>;
     restaurarImportacion?: unknown;
+    esAdministrador?: boolean;
   }) {
     const buscar = opciones.buscar ?? vi.fn().mockResolvedValue([]);
     const listarCategorias =
@@ -58,6 +60,7 @@ describe('ImportarEjerciciosComponent', () => {
         { provide: Location, useValue: { getState: () => ({ restaurarImportacion: opciones.restaurarImportacion }) } },
         { provide: BuscarEjerciciosComunesUseCase, useValue: { buscar, listarCategorias } },
         { provide: ImportarEjerciciosComunesUseCase, useValue: { obtenerCategoriasPendientes, importar } },
+        { provide: AdministrarRepositorioComunUseCase, useValue: { esAdministrador: vi.fn().mockResolvedValue(opciones.esAdministrador ?? false) } },
         { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue(opciones.categoriasLocales ?? [{ id: 'cat-local-1', nombre: 'Rodilla' }]) } },
         { provide: MensajeFeedbackService, useValue: { mostrarExito, mostrarError } },
         { provide: MatDialog, useValue: { open: dialogOpen ?? vi.fn() } },
@@ -81,6 +84,27 @@ describe('ImportarEjerciciosComponent', () => {
 
     expect(texto.toLowerCase()).toContain('buscar');
     expect(fixture.nativeElement.querySelector('[data-testid="boton-importar"]')).toBeNull();
+  });
+
+  it('muestra la acción de borrado en los resultados cuando GitHub acredita a la administradora', async () => {
+    configurar({ esAdministrador: true, buscar: vi.fn().mockResolvedValue([ejercicioComun()]) });
+    const fixture = await crearComponente();
+    await fixture.componentInstance.buscar();
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelector('button[aria-label="Borrar del repositorio común Almeja"]')
+    ).not.toBeNull();
+  });
+
+  it('oculta la acción de borrado en los resultados a usuarios no administradores', async () => {
+    configurar({ buscar: vi.fn().mockResolvedValue([ejercicioComun()]) });
+    const fixture = await crearComponente();
+    await fixture.componentInstance.buscar();
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('button[aria-label="Borrar del repositorio común Almeja"]')
+    ).toBeNull();
   });
 
   it('fija los filtros y reserva espacio para que el listado no quede oculto', async () => {

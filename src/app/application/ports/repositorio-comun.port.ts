@@ -61,6 +61,9 @@ export abstract class RepositorioComunPort {
    */
   abstract existeEjercicioPorNombre(nombre: string): Promise<boolean>;
 
+  /** Devuelve el login que GitHub autentica para la PAT; nunca se infiere la identidad por la presencia del token. */
+  abstract obtenerLoginGitHub(tokenPAT: string): Promise<string>;
+
   /**
    * Crea `ejercicios/<id>/<id>.json` y solo sus imágenes de archivo
    * referenciadas en `ejercicios/<id>/imagenes/<imagenId>.json`; actualiza
@@ -72,4 +75,7 @@ export abstract class RepositorioComunPort {
     ejercicio: EjercicioComunArchivo,
     imagenesArchivo: ImagenArchivoJSON[]
   ): Promise<void>;
+
+  /** Elimina del catálogo publicado el ejercicio, sus imágenes y sus referencias de categorías en una sola actualización de main. */
+  abstract eliminarEjercicio(credenciales: CredencialesGitHub, ejercicioId: string): Promise<void>;
 }

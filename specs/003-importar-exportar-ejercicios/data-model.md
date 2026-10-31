@@ -8,11 +8,11 @@ Este documento solo describe entidades y campos **nuevos o ampliados** por esta 
 
 | Campo nuevo | Tipo | Obligatorio | Regla de validación / origen |
 |---|---|---|---|
-| `subidoRepositorioComun` | booleano | Sí (por defecto `false`) | Pasa a `true` tras una subida correcta al repositorio común (FR-021). Nunca vuelve a `false`; no se expone ningún control para revertirlo. No afecta a ninguna otra regla de validación de Ejercicio. |
+| `subidoRepositorioComun` | booleano | Sí (por defecto `false`) | Pasa a `true` tras una subida correcta al repositorio común (FR-021). Solo la identidad GitHub `rsolerv`, validada en tiempo de uso, puede devolverlo a `false` (FR-027). No afecta a ninguna otra regla de validación de Ejercicio. |
 
 **Persistencia**: columna `subido_repositorio_comun INTEGER NOT NULL DEFAULT 0` añadida a la tabla `ejercicio` mediante migración `ALTER TABLE` (mismo patrón que `ultima_sincronizacion_correcta` en `ajustes_aplicacion`), aplicada una sola vez al iniciar el esquema y dejando `0` (false) en los ejercicios ya existentes.
 
-**Nuevo método de `EjercicioRepositoryPort`**: `marcarSubidoRepositorioComun(id: string): Promise<void>` — pone `subidoRepositorioComun = true` para ese ejercicio; no modifica ningún otro campo. Ver ampliación del contrato en `specs/001-gestion-ejercicios-fisicos/contracts/ejercicio-repository.port.md`.
+**Métodos de `EjercicioRepositoryPort`**: `marcarSubidoRepositorioComun(id: string): Promise<void>` — pone la marca a `true`; `quitarMarcaSubidoRepositorioComun(id: string): Promise<void>` — la devuelve a `false`, invocado exclusivamente tras acreditación administrativa en Application. Ambos métodos no modifican ningún otro campo. Ver ampliación del contrato en `specs/001-gestion-ejercicios-fisicos/contracts/ejercicio-repository.port.md`.
 
 ## Ejercicio común (remoto)
 
