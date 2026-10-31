@@ -84,6 +84,14 @@ describe('RepositorioComunAdapter', () => {
       await expect(promesa).resolves.toEqual([]);
     });
 
+    it('no considera ejercicios en categorías antiguas que carecen de índice', async () => {
+      const promesa = adapter.existeEjercicioPorNombre('Sentadilla');
+      httpMock
+        .expectOne(`${RAW_BASE}/categorias.json`)
+        .flush(documentoCategorias([{ id: 'cat-antigua', nombre: 'Antigua' }]));
+      await expect(promesa).resolves.toBe(false);
+    });
+
     it('normaliza ids numéricos de categoría y ejercicio a cadenas en el catálogo', async () => {
       const promesa = adapter.listarCategorias();
       httpMock
@@ -92,10 +100,27 @@ describe('RepositorioComunAdapter', () => {
       await expect(promesa).resolves.toEqual([{ id: '1', nombre: 'Piernas', ejercicios: ['23'] }]);
     });
 
+    it('trata como vacía una categoría antigua sin lista de ejercicios', async () => {
+      const promesa = adapter.listarCategorias();
+      httpMock
+        .expectOne(`${RAW_BASE}/categorias.json`)
+        .flush(documentoCategorias([{ id: 'cat-antigua', nombre: 'Antigua' }]));
+      await expect(promesa).resolves.toEqual([{ id: 'cat-antigua', nombre: 'Antigua', ejercicios: [] }]);
+    });
+
     it('rechaza un índice de categorías mal formado', async () => {
       const promesa = adapter.listarCategorias();
       const esperacion = expect(promesa).rejects.toThrow(ErrorValidacion);
       httpMock.expectOne(`${RAW_BASE}/categorias.json`).flush({ categorias: [{ id: 'cat-1' }] });
+      await esperacion;
+    });
+
+    it('traduce fallos de red al leer una imagen', async () => {
+      const promesa = adapter.leerImagen('23', 'imagenes/233433.json');
+      const esperacion = expect(promesa).rejects.toThrow(ErrorRedSincronizacion);
+      httpMock
+        .expectOne(`${RAW_BASE}/ejercicios/23/imagenes/233433.json`)
+        .error(new ProgressEvent('error'), { status: 0, statusText: 'Unknown Error' });
       await esperacion;
     });
   });
@@ -126,6 +151,7 @@ describe('RepositorioComunAdapter', () => {
         documentoCategorias([
           { id: 'cat-1', nombre: 'Rodilla', ejercicios: ['23', '55'] },
           { id: 'cat-2', nombre: 'Piernas', ejercicios: [55, '34'] },
+          { id: 'cat-3', nombre: 'Sin índice' },
         ])
       );
       await flushMicrotareas();
@@ -447,10 +473,11 @@ describe('RepositorioComunAdapter', () => {
       };
       const ejercicio = ejercicioComun({
         id: 'ej-2',
-        categoriaIds: ['1'],
+        categoriaIds: ['1', 'cat-sin-indice'],
         imagenes: [{ id: 'img-1', tipo: 'archivo', ruta: 'imagenes/img-1.json' }],
       });
-      const promesa = adapter.subirEjercicio(CREDENCIALES, ejercicio, [imagen]);
+      const imagenNoAsociada = { ...imagen, id: 'img-otro' };
+      const promesa = adapter.subirEjercicio(CREDENCIALES, ejercicio, [imagen, imagenNoAsociada]);
       const categoriasOriginales = documentoCategorias([
         { id: 1, nombre: 'Rodilla', ejercicios: [23] },
         { id: 'cat-comun-2', nombre: 'Piernas', ejercicios: [] },
@@ -485,11 +512,12 @@ describe('RepositorioComunAdapter', () => {
         categorias: [
           { id: 1, nombre: 'Rodilla', ejercicios: [23, 'ej-2'] },
           { id: 'cat-comun-2', nombre: 'Piernas', ejercicios: [] },
-          { id: 'cat-sin-indice', nombre: 'Sin índice' },
+          { id: 'cat-sin-indice', nombre: 'Sin índice', ejercicios: ['ej-2'] },
         ],
       });
       actualizacion.flush({ content: { sha: 'sha-categorias-nuevo' } });
       await expect(promesa).resolves.toBeUndefined();
+      httpMock.expectNone(`${API_CONTENTS}/ejercicios/ej-2/imagenes/img-otro.json`);
     });
 
     it('rechaza categorías desconocidas antes de crear ficheros', async () => {
