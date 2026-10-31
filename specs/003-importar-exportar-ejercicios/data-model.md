@@ -16,7 +16,7 @@ Este documento solo describe entidades y campos **nuevos o ampliados** por esta 
 
 ## Ejercicio común (remoto)
 
-Representación de un ejercicio en el repositorio común, como fichero JSON independiente `ejercicios/<id>.json` en la rama `main` (lectura) o `requests` (escritura de uno nuevo). No es una entidad persistida localmente: vive solo en memoria mientras dura una búsqueda, una importación o una subida.
+Representación de un ejercicio en el repositorio común, como fichero JSON independiente `ejercicios/<id>/<id>.json` en la rama `main` (lectura) o `requests` (escritura de uno nuevo). No es una entidad persistida localmente: vive solo en memoria mientras dura una búsqueda, una importación o una subida. Su estructura JSON no cambia.
 
 | Campo | Tipo | Obligatorio | Notas |
 |---|---|---|---|
@@ -25,7 +25,7 @@ Representación de un ejercicio en el repositorio común, como fichero JSON inde
 | `descripcion` | texto | Sí | Igual que en Ejercicio local. |
 | `categoriaIds` | lista de referencias a Categoría común, al menos 1 | Sí | Un ejercicio común puede tener una o varias categorías comunes (ver `categorias.json`). Al **subir**, contiene las categorías comunes elegidas por el usuario (una o varias, FR-016); al **importar**, se traduce a categorías propias del usuario (ver más abajo). |
 | `enlaces` | lista de `{ tipo: 'web' \| 'youtube'; url }` | No | Misma forma que `Ejercicio.enlaces` en el modelo local (sin conversión). |
-| `imagenes` | lista de `{ id; tipo: 'url' \| 'archivo'; valorUrl? ; ruta? }` | No | `tipo: 'archivo'` referencia `imagenes/<id>.json` (ver Imagen de archivo común); `tipo: 'url'` guarda la URL directamente en `valorUrl`. |
+| `imagenes` | lista de `{ id; tipo: 'url' \| 'archivo'; valorUrl? ; ruta? }` | No | `tipo: 'archivo'` conserva la referencia relativa `imagenes/<id>.json`; el documento se encuentra en `ejercicios/<id-ejercicio>/imagenes/<id-imagen>.json` (ver Imagen de archivo común); `tipo: 'url'` guarda la URL directamente en `valorUrl`. |
 | `observaciones` | texto | No | Igual que en Ejercicio local; se omite en el fichero si está vacío. |
 
 **Relaciones**: N:M con Categoría común (por `categoriaIds`). No tiene relación con Planificación, Progreso diario ni Ajustes: estos nunca se leen ni se escriben en el repositorio común (FR-013).
@@ -34,24 +34,25 @@ Representación de un ejercicio en el repositorio común, como fichero JSON inde
 
 ## Categoría común (remota)
 
-Definida en `categorias.json`, al mismo nivel que `/ejercicios` y `/imagenes` en el repositorio común.
+Definida en `categorias.json`, en la raíz del repositorio común.
 
 | Campo | Tipo | Obligatorio | Notas |
 |---|---|---|---|
 | `id` | identificador único | Sí | Espacio de identificadores propio del repositorio común, independiente del `id` de las categorías propias del usuario. |
 | `nombre` | texto | Sí | Usado para: (a) filtrar en "Importar ejercicios" (selección única, FR-002); (b) comparar por nombre con las categorías propias del usuario al resolver el mapeo de importación (FR-009); (c) mostrarse en el selector de una o varias categorías al subir (FR-016). |
+| `ejercicios` | lista de identificadores de ejercicio | Sí en el índice actualizado | IDs de los ejercicios relacionados con esta categoría. Se usa para obtener los documentos solicitados sin enumerar el directorio `ejercicios`; en índices antiguos puede faltar y se interpreta como una lista vacía. |
 
-**Relaciones**: N:M con Ejercicio común. Nunca se crea, modifica ni elimina desde la aplicación (es un catálogo de solo lectura para la aplicación; su mantenimiento es responsabilidad del propietario del repositorio común, fuera de este alcance).
+**Relaciones**: N:M con Ejercicio común. La aplicación no crea, modifica ni elimina categorías ni sus nombres; al subir un ejercicio, actualiza únicamente el array `ejercicios` de las categorías elegidas para mantener el índice remoto.
 
 **Documento contenedor** `categorias.json`:
 
 ```json
-{ "version": 1, "categorias": [{ "id": "...", "nombre": "..." }, "..."] }
+{ "version": 1, "categorias": [{ "id": "...", "nombre": "...", "ejercicios": ["..."] }, "..."] }
 ```
 
 ## Imagen de archivo común (remota)
 
-Documento `imagenes/<id>.json` en el repositorio común, con **la misma forma** que `ImagenArchivoJSON` ya definido en `application/ports/github-sync.port.ts` de 001 (reutilizado tal cual, sin un tipo nuevo):
+Documento `ejercicios/<id-ejercicio>/imagenes/<id-imagen>.json` en el repositorio común, con **la misma forma** que `ImagenArchivoJSON` ya definido en `application/ports/github-sync.port.ts` de 001 (reutilizado tal cual, sin un tipo nuevo):
 
 | Campo | Tipo | Obligatorio |
 |---|---|---|

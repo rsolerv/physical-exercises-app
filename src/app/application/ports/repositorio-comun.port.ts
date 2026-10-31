@@ -5,9 +5,10 @@ import type { CredencialesGitHub, ImagenArchivoJSON } from './github-sync.port';
 export interface CategoriaComun {
   id: string;
   nombre: string;
+  ejercicios?: (string | number)[];
 }
 
-/** Imagen de un ejercicio común: por URL o referenciando un documento `imagenes/<id>.json`. */
+/** Imagen de un ejercicio común: por URL o referenciando una ruta relativa a la carpeta del ejercicio. */
 export interface ImagenEjercicioComun {
   id: string;
   tipo: 'url' | 'archivo';
@@ -17,7 +18,7 @@ export interface ImagenEjercicioComun {
   ruta?: string;
 }
 
-/** Documento `ejercicios/<id>.json` del repositorio común (data-model.md § Ejercicio común). */
+/** Documento `ejercicios/<id>/<id>.json` del repositorio común (data-model.md § Ejercicio común). */
 export interface EjercicioComunArchivo {
   id: string;
   nombre: string;
@@ -50,23 +51,21 @@ export abstract class RepositorioComunPort {
   /** Descarga un ejercicio publicado de `main` por su id; devuelve `null` si no existe. No requiere credenciales. */
   abstract obtenerEjercicioPorId(id: string): Promise<EjercicioComunArchivo | null>;
 
-  /** Descarga y parsea `imagenes/<id>.json` de `main`. Lanza `ErrorValidacion` si el documento no tiene el formato esperado. */
-  abstract leerImagen(ruta: string): Promise<ImagenArchivoJSON>;
+  /** Descarga `ejercicios/<ejercicioId>/imagenes/<id>.json` de `main`, conservando `ruta` relativa del ejercicio. */
+  abstract leerImagen(ejercicioId: string, ruta: string): Promise<ImagenArchivoJSON>;
 
   /**
    * Comprueba si ya existe un ejercicio con el mismo nombre normalizado en
-   * `main` (FR-017). Requiere credenciales (se llama solo antes de subir). No
-   * consulta los ejercicios pendientes en `requests`.
+   * `main` (FR-017). Lee el índice y el contenido público sin credenciales;
+   * no consulta los ejercicios pendientes en `requests`.
    */
-  abstract existeEjercicioPorNombre(credenciales: CredencialesGitHub, nombre: string): Promise<boolean>;
+  abstract existeEjercicioPorNombre(nombre: string): Promise<boolean>;
 
   /**
-   * Crea `ejercicios/<id>.json` en la rama `requests` y, antes, solo los
-   * documentos `imagenes/<id>.json` referenciados por ese ejercicio como
-   * imágenes de archivo. Si no tiene imágenes de archivo, no crea documentos
-   * de imagen. Usa `PUT` sin `sha` (son ficheros nuevos, FR-017/FR-019). No
-   * escribe en `main` ni gestiona la pull request ni las reglas de validación
-   * automática.
+   * Crea `ejercicios/<id>/<id>.json` y solo sus imágenes de archivo
+   * referenciadas en `ejercicios/<id>/imagenes/<imagenId>.json`; actualiza
+   * también `categorias.json` para indexar el ejercicio en sus categorías.
+   * No escribe en `main` ni gestiona la pull request ni sus reglas de validación.
    */
   abstract subirEjercicio(
     credenciales: CredencialesGitHub,

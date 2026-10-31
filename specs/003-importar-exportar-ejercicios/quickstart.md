@@ -14,7 +14,7 @@ Guía de validación manual end-to-end de las dos historias de usuario. No susti
 
 1. Abrir el menú principal → "Importar ejercicios".
 2. Comprobar que se ve un buscador de texto y una lista de categorías del repositorio común con selección única, sin ninguna opción "Todas".
-3. Dejar el buscador y la categoría vacíos y pulsar "Buscar": comprobar que aparece el catálogo completo del repositorio común (FR-004).
+3. Seleccionar una categoría y pulsar "Buscar": comprobar que aparecen sus ejercicios. Al consultar el tráfico de red, verificar que se descargan documentos por id bajo `ejercicios/<id>/<id>.json` y que no se solicita un listado del directorio (FR-004).
 4. Marcar la casilla de uno o varios ejercicios: comprobar que aparece el botón "Importar" con el recuento de seleccionados (FR-005, FR-006).
 5. Pulsar "Importar":
    - Si alguna categoría de los ejercicios seleccionados no coincide con ninguna categoría propia, comprobar que aparece un único selector múltiple de categorías propias (en un diálogo o en la pantalla). Elegir dos categorías y continuar; comprobar que esas dos categorías quedan asociadas a todos los ejercicios seleccionados, sustituyendo sus categorías comunes originales (FR-009).
@@ -35,6 +35,7 @@ Guía de validación manual end-to-end de las dos historias de usuario. No susti
 4. Comprobar el texto de confirmación que advierte de que la acción no se puede deshacer ni repetir (FR-018); pulsar "Confirmar y enviar".
 5. Comprobar la notificación "Ejercicio enviado. Quedará pendiente de revisión..." (research.md, sección 10).
 6. Volver a abrir la ficha del mismo ejercicio: comprobar que la acción "Subir al repositorio común" ya no está disponible (FR-021), incluso tras recargar la aplicación.
+7. Comprobar en la rama `requests` que el JSON mantiene su formato actual bajo `ejercicios/<id>/<id>.json`, sus imágenes están en `ejercicios/<id>/imagenes/` y `categorias.json` incluye el id en las categorías seleccionadas (FR-019, FR-025).
 
 ## Escenario 4 — Bloqueos de disponibilidad (US2, edge cases)
 

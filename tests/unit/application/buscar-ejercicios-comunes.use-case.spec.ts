@@ -69,7 +69,7 @@ describe('BuscarEjerciciosComunesUseCase', () => {
     const resultado = await caso.obtenerVistaPrevia('ej-1');
 
     expect(obtenerEjercicioPorId).toHaveBeenCalledWith('ej-1');
-    expect(leerImagen).toHaveBeenCalledWith('imagenes/img-1.json');
+    expect(leerImagen).toHaveBeenCalledWith('ej-1', 'imagenes/img-1.json');
     expect(resultado).toEqual({
       ejercicio,
       imagenesArchivo: new Map([['img-1', imagen]]),

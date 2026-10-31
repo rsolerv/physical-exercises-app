@@ -162,7 +162,14 @@ Después de T012: T020 subida en el adaptador; T021 caso de uso y T022 presentac
 
 El propietario solicita añadir a US1 una ficha remota de solo lectura, accesible desde cada resultado, con importación directa. Ha indicado expresamente que no se prepare prototipo de Storybook para esta ampliación.
 
-- [X] T024 [US1] Añadir `obtenerEjercicioPorId(id)` al contrato/puerto y lectura raw de `ejercicios/<id>.json` en `RepositorioComunAdapter`, con cobertura para éxito y 404.
+- [X] T024 [US1] Añadir `obtenerEjercicioPorId(id)` al contrato/puerto y lectura raw de `ejercicios/<id>/<id>.json` en `RepositorioComunAdapter`, con cobertura para éxito y 404.
 - [X] T025 [US1] Ampliar `BuscarEjerciciosComunesUseCase` para cargar la ficha y sus imágenes de archivo, omitiendo imágenes inválidas y propagando fallos recuperables.
 - [X] T026 [US1] Añadir la ruta de previsualización de solo lectura con acción propia para importar, aplicar mapeo existente, excluir observaciones/edición/eliminación, añadir "Ver ejercicio" a cada resultado y restaurar filtros/resultados/selección al volver.
 - [X] T027 [US1] Actualizar criterios funcionales y contratos de interfaz/puerto/plan/research; añadir pruebas unitarias y de componente de carga, navegación, ausencia de observaciones e importación.
+
+## Enmienda Living Spec - Índice remoto y directorios por ejercicio (2026-10-31)
+
+- [X] T028 [US1] Sustituir el listado remoto de `/ejercicios` por lecturas guiadas por los ids de `categorias.json`; actualizar la búsqueda por categoría y la comprobación de duplicados.
+- [X] T029 [US2] Subir el ejercicio y sus imágenes a `ejercicios/<id>/`, actualizar el índice `categorias.json` de `requests` usando su SHA y validar las categorías elegidas.
+- [X] T030 [US1] Pasar el id del ejercicio al lector de imágenes para resolver su directorio sin alterar la ruta relativa serializada; añadir cobertura de las rutas anidadas.
+- [X] T031 [US1/US2] Actualizar el contrato, modelo de datos, especificación funcional, investigación y guía manual; añadir pruebas del índice, el flujo de subida y la preservación del formato JSON.

@@ -149,6 +149,7 @@ describe('ImportarEjerciciosComunesUseCase', () => {
         new Map()
       );
 
+      expect(leerImagen).toHaveBeenCalledWith('comun-1', 'imagenes/img-1.json');
       expect(crear).toHaveBeenCalledWith(expect.objectContaining({ imagenes: [] }));
       expect(resultado).toEqual({ creados: 1, imagenesOmitidas: 1 });
     });

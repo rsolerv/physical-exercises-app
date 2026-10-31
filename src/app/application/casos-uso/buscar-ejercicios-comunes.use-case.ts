@@ -38,7 +38,7 @@ export class BuscarEjerciciosComunesUseCase {
     for (const imagen of ejercicio.imagenes) {
       if (imagen.tipo !== 'archivo' || !imagen.ruta) continue;
       try {
-        imagenesArchivo.set(imagen.id, await this.repositorioComun.leerImagen(imagen.ruta));
+        imagenesArchivo.set(imagen.id, await this.repositorioComun.leerImagen(ejercicio.id, imagen.ruta));
       } catch (error) {
         if (!(error instanceof ErrorValidacion)) throw error;
         imagenesOmitidas += 1;

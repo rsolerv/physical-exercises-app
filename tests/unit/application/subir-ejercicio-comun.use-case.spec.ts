@@ -136,13 +136,10 @@ describe('SubirEjercicioComunUseCase', () => {
   });
 
   describe('comprobarDuplicado', () => {
-    it('delega en el puerto usando las credenciales guardadas', async () => {
+    it('comprueba las credenciales guardadas antes de consultar el índice público', async () => {
       const { caso, existeEjercicioPorNombre } = configurar({});
       await caso.comprobarDuplicado('Sentadilla');
-      expect(existeEjercicioPorNombre).toHaveBeenCalledWith(
-        { tokenPAT: 'token-secreto', repositorio: 'owner/datos-privados' },
-        'Sentadilla'
-      );
+      expect(existeEjercicioPorNombre).toHaveBeenCalledWith('Sentadilla');
     });
   });
 

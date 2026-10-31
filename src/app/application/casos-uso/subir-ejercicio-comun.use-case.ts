@@ -35,8 +35,8 @@ export class SubirEjercicioComunUseCase {
 
   /** Comprueba si ya existe un ejercicio publicado con ese nombre en `main` (FR-017). */
   async comprobarDuplicado(nombre: string): Promise<boolean> {
-    const credenciales = await this.obtenerCredenciales();
-    return this.repositorioComun.existeEjercicioPorNombre(credenciales, nombre);
+    await this.obtenerCredenciales();
+    return this.repositorioComun.existeEjercicioPorNombre(nombre);
   }
 
   async subir(ejercicio: Ejercicio, categoriaIdsComunes: string[]): Promise<void> {
@@ -50,7 +50,7 @@ export class SubirEjercicioComunUseCase {
     }
 
     const credenciales = await this.obtenerCredenciales();
-    const yaExiste = await this.repositorioComun.existeEjercicioPorNombre(credenciales, ejercicio.nombre);
+    const yaExiste = await this.repositorioComun.existeEjercicioPorNombre(ejercicio.nombre);
     if (yaExiste) {
       throw new ErrorNombreDuplicado('Ya existe un ejercicio con este nombre en el repositorio común.');
     }

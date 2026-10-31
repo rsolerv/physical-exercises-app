@@ -84,7 +84,7 @@ export class ImportarEjerciciosComunesUseCase {
       for (const imagen of ejercicioComun.imagenes) {
         if (imagen.tipo !== 'archivo' || !imagen.ruta) continue;
         try {
-          imagenesArchivo.set(imagen.id, await this.repositorioComun.leerImagen(imagen.ruta));
+          imagenesArchivo.set(imagen.id, await this.repositorioComun.leerImagen(ejercicioComun.id, imagen.ruta));
         } catch (error) {
           if (error instanceof ErrorValidacion) {
             imagenesOmitidas += 1;
