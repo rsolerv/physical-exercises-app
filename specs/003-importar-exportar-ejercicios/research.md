@@ -92,6 +92,6 @@ Este documento no parte de ningún `NEEDS CLARIFICATION` pendiente en el Technic
 
 ## 14. Borrado administrativo atómico del catálogo publicado
 
-- **Decision**: El borrado usa Git Database API contra `main`: verifica el índice y el árbol recursivo completo, crea un blob de `categorias.json` sin el id, construye un árbol que elimina todos los blobs bajo `ejercicios/<id>/`, crea un commit con el commit actual como padre y actualiza `refs/heads/main` con `force: false`. Si el árbol está truncado, falta el JSON del ejercicio o hay conflicto, aborta sin actualizar la referencia.
-- **Rationale**: Las operaciones secuenciales de Contents API producirían commits parciales (archivo sin índice, o índice sin imágenes). Un solo commit mantiene catálogo, ejercicio e imágenes coherentes; el avance no forzado evita sobrescribir cambios concurrentes.
+- **Decision**: El borrado comprueba la referencia y el árbol recursivo de `main`, y aplica en una sola mutación `createCommitOnBranch` de GraphQL la actualización de `categorias.json` y la eliminación de todos los archivos bajo `ejercicios/<id>/`. La mutación incluye el SHA leído como `expectedHeadOid`; si el árbol está truncado, falta el JSON del ejercicio o cambió la referencia, aborta sin actualizar la rama.
+- **Rationale**: La API REST de actualización de referencias requiere `PATCH`, que puede quedar bloqueado por el preflight CORS en navegadores. La mutación GraphQL usa `POST` desde la SPA sin añadir backend y crea el commit de forma atómica; `expectedHeadOid` evita sobrescribir cambios concurrentes.
 - **Referencia Living Spec**: [spec.md](./spec.md), FR-028/FR-029; [contracts/repositorio-comun.port.md](./contracts/repositorio-comun.port.md).

@@ -49,9 +49,9 @@ interface RepositorioComunPort {
 
   eliminarEjercicio(credenciales: CredencialesGitHub, ejercicioId: string): Promise<void>;
   // Verifica el índice y el árbol completo de main; crea un blob actualizado
-  // de categorias.json, un árbol con todos los archivos del ejercicio borrados
-  // y un commit; mueve refs/heads/main sin force para aplicar el borrado
-  // completo de forma atómica (FR-028/FR-029).
+  // de categorias.json y elimina todos los archivos del ejercicio mediante
+  // una mutación GraphQL createCommitOnBranch con expectedHeadOid, para aplicar
+  // el borrado completo de forma atómica y detectar cambios concurrentes (FR-028/FR-029).
 }
 
 interface CategoriaComun {
@@ -81,7 +81,7 @@ interface ImagenEjercicioComun {
 // application/ports/github-sync.port.ts (mismo formato, mismo token).
 ```
 
-**Errores que puede lanzar la implementación**: `ErrorRedSincronizacion` (repositorio común no disponible o sin conexión, FR-023), `ErrorAutenticacionGitHub` (token inválido o sin permisos), `ErrorConflictoRemoto` (la referencia cambió o GitHub rechaza el movimiento de `main`), `ErrorNoEncontrado` (el ejercicio no está publicado) y `ErrorValidacion` (documento remoto con formato inválido o árbol truncado). El borrado no modifica `main` hasta que están preparados índice, árbol y commit completos; el movimiento de referencia es fast-forward y no fuerza cambios concurrentes.
+**Errores que puede lanzar la implementación**: `ErrorRedSincronizacion` (repositorio común no disponible o sin conexión, FR-023), `ErrorAutenticacionGitHub` (token inválido o sin permisos), `ErrorConflictoRemoto` (la referencia cambió o GitHub rechaza la mutación de `main`), `ErrorNoEncontrado` (el ejercicio no está publicado) y `ErrorValidacion` (documento remoto con formato inválido o árbol truncado). El borrado no modifica `main` hasta que la mutación atómica se acepta; `expectedHeadOid` impide sobrescribir cambios concurrentes.
 
 ## Reglas de decisión de Application (sin lógica de dominio adicional)
 

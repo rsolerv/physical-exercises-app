@@ -16,6 +16,7 @@ import type { ImagenArchivoJSON } from '../../../src/app/application/ports/githu
 const RAW_BASE = 'https://raw.githubusercontent.com/rsolerv/common-data-physical-exercises/main';
 const API_CONTENTS = 'https://api.github.com/repos/rsolerv/common-data-physical-exercises/contents';
 const API_REPOSITORIO = 'https://api.github.com/repos/rsolerv/common-data-physical-exercises';
+const API_GRAPHQL_GITHUB = 'https://api.github.com/graphql';
 const CREDENCIALES = { tokenPAT: 'token-secreto', repositorio: 'owner/datos-privados' };
 
 function ejercicioComun(sobrescribir: Partial<EjercicioComunArchivo> = {}): EjercicioComunArchivo {
@@ -313,7 +314,7 @@ describe('RepositorioComunAdapter', () => {
         await esperacion;
       });
 
-      it('no mueve main si GitHub rechaza el movimiento de la referencia', async () => {
+      it('no modifica main si GitHub detecta un conflicto al crear el commit', async () => {
         const promesa = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
         const esperacion = expect(promesa).rejects.toThrow(ErrorConflictoRemoto);
         httpMock.expectOne(`${API_REPOSITORIO}/git/ref/heads/main`).flush({ object: { sha: 'commit-base' } });
@@ -329,16 +330,9 @@ describe('RepositorioComunAdapter', () => {
           tree: [{ path: 'ejercicios/ej-1/ej-1.json', type: 'blob' }],
         });
         await flushMicrotareas();
-        httpMock.expectOne(`${API_REPOSITORIO}/git/blobs`).flush({ sha: 'blob-categorias' });
-        await flushMicrotareas();
-        httpMock.expectOne(`${API_REPOSITORIO}/git/trees`).flush({ sha: 'tree-nuevo' });
-        await flushMicrotareas();
-        httpMock.expectOne(`${API_REPOSITORIO}/git/commits`).flush({ sha: 'commit-nuevo' });
-        await flushMicrotareas();
-        httpMock.expectOne(`${API_REPOSITORIO}/git/refs/heads/main`).flush(
-          { message: 'Conflict' },
-          { status: 409, statusText: 'Conflict' }
-        );
+        httpMock.expectOne(API_GRAPHQL_GITHUB).flush({
+          errors: [{ message: 'expectedHeadOid does not match the current branch head' }],
+        });
         await esperacion;
       });
 
@@ -399,39 +393,37 @@ describe('RepositorioComunAdapter', () => {
         });
         await flushMicrotareas();
 
-        const blob = httpMock.expectOne(`${API_REPOSITORIO}/git/blobs`);
-        expect(blob.request.body.encoding).toBe('utf-8');
-        expect(JSON.parse(blob.request.body.content)).toEqual({
-          ...categorias,
-          categorias: [
-            { id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-2'] },
-            { id: 'cat-comun-2', nombre: 'Piernas', ejercicios: [] },
-            { id: 'cat-sin-indice', nombre: 'Sin índice' },
-          ],
+        const commit = httpMock.expectOne(API_GRAPHQL_GITHUB);
+        expect(commit.request.method).toBe('POST');
+        expect(commit.request.body.query).toContain('createCommitOnBranch');
+        expect(commit.request.body.variables.input).toEqual({
+          branch: {
+            repositoryNameWithOwner: 'rsolerv/common-data-physical-exercises',
+            branchName: 'main',
+          },
+          message: { headline: 'Eliminar ejercicio ej-1 del catálogo común' },
+          fileChanges: {
+            additions: [
+              {
+                path: 'categorias.json',
+                contents: codificarJSON({
+                  ...categorias,
+                  categorias: [
+                    { id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-2'] },
+                    { id: 'cat-comun-2', nombre: 'Piernas', ejercicios: [] },
+                    { id: 'cat-sin-indice', nombre: 'Sin índice' },
+                  ],
+                }),
+              },
+            ],
+            deletions: [
+              { path: 'ejercicios/ej-1/ej-1.json' },
+              { path: 'ejercicios/ej-1/imagenes/img-1.json' },
+            ],
+          },
+          expectedHeadOid: 'commit-base',
         });
-        blob.flush({ sha: 'blob-categorias' });
-        await flushMicrotareas();
-
-        const arbol = httpMock.expectOne(`${API_REPOSITORIO}/git/trees`);
-        expect(arbol.request.body.base_tree).toBe('tree-base');
-        expect(arbol.request.body.tree).toEqual([
-          { path: 'categorias.json', mode: '100644', type: 'blob', sha: 'blob-categorias' },
-          { path: 'ejercicios/ej-1/ej-1.json', mode: '100644', type: 'blob', sha: null },
-          { path: 'ejercicios/ej-1/imagenes/img-1.json', mode: '100644', type: 'blob', sha: null },
-        ]);
-        arbol.flush({ sha: 'tree-nuevo' });
-        await flushMicrotareas();
-
-        const commit = httpMock.expectOne(`${API_REPOSITORIO}/git/commits`);
-        expect(commit.request.body.parents).toEqual(['commit-base']);
-        expect(commit.request.body.tree).toBe('tree-nuevo');
-        commit.flush({ sha: 'commit-nuevo' });
-        await flushMicrotareas();
-
-        const actualizacion = httpMock.expectOne(`${API_REPOSITORIO}/git/refs/heads/main`);
-        expect(actualizacion.request.method).toBe('PATCH');
-        expect(actualizacion.request.body).toEqual({ sha: 'commit-nuevo', force: false });
-        actualizacion.flush({ ref: 'refs/heads/main' });
+        commit.flush({ data: { createCommitOnBranch: { commit: { oid: 'commit-nuevo' } } } });
         await expect(promesa).resolves.toBeUndefined();
       });
 

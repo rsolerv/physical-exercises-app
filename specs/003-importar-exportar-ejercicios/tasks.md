@@ -177,7 +177,7 @@ El propietario solicita añadir a US1 una ficha remota de solo lectura, accesibl
 ## Enmienda Living Spec - Administración del catálogo común (2026-10-31)
 
 - [X] T032 [US3] Acreditar a `rsolerv` consultando el login confirmado por `GET /user` con la PAT guardada; volver a validar en Application antes de las operaciones y añadir pruebas de identidad, permisos y falta de PAT.
-- [X] T033 [US3] Añadir el borrado atómico de GitHub `main` mediante Git Database API: quitar referencias de `categorias.json`, eliminar todos los archivos bajo `ejercicios/<id>/` y actualizar la referencia sin force; probar éxito, árbol truncado y conflictos.
+- [X] T033 [US3] Añadir el borrado atómico de GitHub `main`: quitar referencias de `categorias.json`, eliminar todos los archivos bajo `ejercicios/<id>/` y detectar conflictos mediante `expectedHeadOid`; probar éxito, árbol truncado y conflictos.
 - [X] T034 [US3] Permitir revertir la marca local `subidoRepositorioComun` solo tras acreditación y añadir la acción protegida en la ficha local.
 - [X] T035 [US3] Añadir confirmación y acciones administrativas en resultados y ficha remota; retirar de la vista los ejercicios borrados; cubrir visibilidad y flujos con pruebas de componente.
 - [X] T036 [US3] Actualizar spec, plan, research, contratos, modelo de datos y quickstart; registrar la decisión transversal de identidad y borrado en `specs/001-gestion-ejercicios-fisicos/research.md`.

@@ -23,6 +23,16 @@ const RAMA_LECTURA = 'main';
 const RAMA_ESCRITURA = 'requests';
 const RAW_BASE = `https://raw.githubusercontent.com/${OWNER_REPO}`;
 const API_CONTENTS = `${API_BASE_GITHUB}/${OWNER_REPO}/contents`;
+const API_GRAPHQL_GITHUB = 'https://api.github.com/graphql';
+const MUTACION_CREAR_COMMIT_EN_RAMA = `
+  mutation CrearCommitEnRama($input: CreateCommitOnBranchInput!) {
+    createCommitOnBranch(input: $input) {
+      commit {
+        oid
+      }
+    }
+  }
+`;
 
 interface DocumentoCategoriasComun {
   version: number;
@@ -53,8 +63,11 @@ interface ArbolGitHub {
   tree: { path: string; type: string }[];
 }
 
-interface BlobGitHub {
-  sha: string;
+interface RespuestaCrearCommitGitHub {
+  data?: {
+    createCommitOnBranch?: { commit?: { oid?: string } | null } | null;
+  } | null;
+  errors?: { message: string }[];
 }
 
 function esImagenArchivoValida(valor: unknown): valor is ImagenArchivoJSON {
@@ -290,52 +303,46 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
           ? { ejercicios: categoria.ejercicios.filter((id) => String(id) !== ejercicioId) }
           : {}),
       }));
-      const blob = await firstValueFrom(
-        this.http.post<BlobGitHub>(
-          `${API_BASE_GITHUB}/${OWNER_REPO}/git/blobs`,
+      const resultado = await firstValueFrom(
+        this.http.post<RespuestaCrearCommitGitHub>(
+          API_GRAPHQL_GITHUB,
           {
-            content: JSON.stringify({ ...documentoCategorias, categorias: categoriasActualizadas }),
-            encoding: 'utf-8',
+            query: MUTACION_CREAR_COMMIT_EN_RAMA,
+            variables: {
+              input: {
+                branch: { repositoryNameWithOwner: OWNER_REPO, branchName: RAMA_LECTURA },
+                message: { headline: `Eliminar ejercicio ${ejercicioId} del catálogo común` },
+                fileChanges: {
+                  additions: [
+                    {
+                      path: 'categorias.json',
+                      contents: aBase64(JSON.stringify({ ...documentoCategorias, categorias: categoriasActualizadas })),
+                    },
+                  ],
+                  deletions: rutasEjercicio.map((entrada) => ({ path: entrada.path })),
+                },
+                expectedHeadOid: referencia.object.sha,
+              },
+            },
           },
           { headers: cabecerasGitHub(credenciales.tokenPAT) }
         )
       );
-      const arbolNuevo = await firstValueFrom(
-        this.http.post<BlobGitHub>(
-          `${API_BASE_GITHUB}/${OWNER_REPO}/git/trees`,
-          {
-            base_tree: commitBase.tree.sha,
-            tree: [
-              { path: 'categorias.json', mode: '100644', type: 'blob', sha: blob.sha },
-              ...rutasEjercicio.map((entrada) => ({
-                path: entrada.path,
-                mode: '100644',
-                type: 'blob',
-                sha: null,
-              })),
-            ],
-          },
-          { headers: cabecerasGitHub(credenciales.tokenPAT) }
-        )
-      );
-      const commitNuevo = await firstValueFrom(
-        this.http.post<BlobGitHub>(
-          `${API_BASE_GITHUB}/${OWNER_REPO}/git/commits`,
-          {
-            message: `Eliminar ejercicio ${ejercicioId} del catálogo común`,
-            tree: arbolNuevo.sha,
-            parents: [referencia.object.sha],
-          },
-          { headers: cabecerasGitHub(credenciales.tokenPAT) }
-        )
-      );
-      await firstValueFrom(
-        this.http.patch(
-          `${API_BASE_GITHUB}/${OWNER_REPO}/git/refs/heads/${RAMA_LECTURA}`,
-          { sha: commitNuevo.sha, force: false },
-          { headers: cabecerasGitHub(credenciales.tokenPAT) }
-        )
-      );
+      if (resultado.errors?.length) {
+        const mensajes = resultado.errors.map((error) => error.message).join(' ');
+        if (/expectedHeadOid|branch.{0,30}(changed|updated|out of date)|non-fast-forward/i.test(mensajes)) {
+          throw new ErrorConflictoRemoto(
+            'El repositorio común ha cambiado o no permite esta operación. Actualiza los datos e inténtalo de nuevo.'
+          );
+        }
+        if (/permission|not authorized|resource not accessible/i.test(mensajes)) {
+          throw new ErrorAutenticacionGitHub('El token de GitHub no es válido o no tiene permisos suficientes.');
+        }
+        throw new ErrorRedSincronizacion(`GitHub no ha podido eliminar el ejercicio: ${mensajes}`);
+      }
+      if (!resultado.data?.createCommitOnBranch?.commit?.oid) {
+        throw new ErrorRedSincronizacion('GitHub no ha confirmado el borrado del ejercicio.');
+      }
     } catch (error) {
       if (error instanceof ErrorValidacion || error instanceof ErrorNoEncontrado) throw error;
       throw this.traducirError(error);

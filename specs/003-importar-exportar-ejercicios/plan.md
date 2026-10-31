@@ -14,7 +14,7 @@ La pantalla "Importar ejercicios" busca en el repositorio público `rsolerv/comm
 
 **Language/Version**: TypeScript sobre Angular 22.x (componentes standalone), Signals y `provideZonelessChangeDetection()`, conforme a `specs/001-gestion-ejercicios-fisicos/research.md` §§1-2 (sin NEEDS CLARIFICATION: se reutiliza la decisión ya vigente).
 
-**Primary Dependencies**: `@angular/common/http` (`HttpClient`) para llamar directamente a la API de contenidos de GitHub y a `raw.githubusercontent.com`; `@angular/forms/signals` (Signal Forms) para los diálogos de selección/mapeo de categorías, conforme a research.md §3-4 de 001 (RxJS confinado a Infrastructure, convertido a `Promise`/`Signal` antes de cruzar los puertos de Application).
+**Primary Dependencies**: `@angular/common/http` (`HttpClient`) para llamar directamente a las API REST/GraphQL de GitHub y a `raw.githubusercontent.com`; `@angular/forms/signals` (Signal Forms) para los diálogos de selección/mapeo de categorías, conforme a research.md §3-4 de 001 (RxJS confinado a Infrastructure, convertido a `Promise`/`Signal` antes de cruzar los puertos de Application).
 
 **Storage**: SQLite WASM (igual que 001): se añade una columna booleana a la tabla `ejercicio` existente (`subido_repositorio_comun`) mediante migración `ALTER TABLE`, sin nueva tabla. No hay almacenamiento adicional del lado remoto gestionado por la aplicación (el repositorio común vive fuera de su control).
 
