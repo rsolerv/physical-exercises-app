@@ -4,7 +4,12 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { RepositorioComunAdapter } from '../../../src/app/infrastructure/repositorio-comun/repositorio-comun.adapter';
-import { ErrorRedSincronizacion, ErrorValidacion } from '../../../src/app/domain/errores/errores-dominio';
+import {
+  ErrorAutenticacionGitHub,
+  ErrorConflictoRemoto,
+  ErrorRedSincronizacion,
+  ErrorValidacion,
+} from '../../../src/app/domain/errores/errores-dominio';
 import type { EjercicioComunArchivo } from '../../../src/app/application/ports/repositorio-comun.port';
 import type { ImagenArchivoJSON } from '../../../src/app/application/ports/github-sync.port';
 
@@ -182,6 +187,13 @@ describe('RepositorioComunAdapter', () => {
       httpMock.expectOne(`${RAW_BASE}/ejercicios/23/imagenes/233433.json`).flush({ id: '233433' });
       await esperacion;
     });
+
+    it('rechaza una imagen que no es un objeto', async () => {
+      const promesa = adapter.leerImagen('23', 'imagenes/233433.json');
+      const esperacion = expect(promesa).rejects.toThrow(ErrorValidacion);
+      httpMock.expectOne(`${RAW_BASE}/ejercicios/23/imagenes/233433.json`).flush(null);
+      await esperacion;
+    });
   });
 
   describe('existeEjercicioPorNombre', () => {
@@ -211,6 +223,21 @@ describe('RepositorioComunAdapter', () => {
         httpMock.expectOne('https://api.github.com/user').flush({});
         await esperacion;
       });
+
+      it('rechaza un login vacío y traduce un token rechazado por GitHub', async () => {
+        const loginVacio = adapter.obtenerLoginGitHub('pat-admin');
+        const errorLogin = expect(loginVacio).rejects.toThrow(ErrorValidacion);
+        httpMock.expectOne('https://api.github.com/user').flush({ login: '  ' });
+        await errorLogin;
+
+        const patRechazada = adapter.obtenerLoginGitHub('pat-invalida');
+        const errorAuth = expect(patRechazada).rejects.toThrow(ErrorAutenticacionGitHub);
+        httpMock.expectOne('https://api.github.com/user').flush(
+          { message: 'Bad credentials' },
+          { status: 401, statusText: 'Unauthorized' }
+        );
+        await errorAuth;
+      });
     });
 
     describe('eliminarEjercicio', () => {
@@ -233,7 +260,7 @@ describe('RepositorioComunAdapter', () => {
         const errorJson = expect(jsonInvalido).rejects.toThrow(ErrorValidacion);
         httpMock.expectOne(`${API_REPOSITORIO}/git/ref/heads/main`).flush({ object: { sha: 'commit-json' } });
         httpMock.expectOne(`${API_CONTENTS}/categorias.json?ref=main`).flush({
-          content: codificarJSON('no es json'),
+          content: btoa('no es json'),
           sha: 'sha-categorias',
         });
         await errorJson;
@@ -257,6 +284,35 @@ describe('RepositorioComunAdapter', () => {
           content: '%%% inválido',
           sha: 'sha-categorias',
         });
+        await esperacion;
+      });
+
+      it('no mueve main si GitHub rechaza el movimiento de la referencia', async () => {
+        const promesa = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
+        const esperacion = expect(promesa).rejects.toThrow(ErrorConflictoRemoto);
+        httpMock.expectOne(`${API_REPOSITORIO}/git/ref/heads/main`).flush({ object: { sha: 'commit-base' } });
+        httpMock.expectOne(`${API_CONTENTS}/categorias.json?ref=main`).flush({
+          content: codificarJSON(documentoCategorias()),
+          sha: 'sha-categorias',
+        });
+        await flushMicrotareas();
+        httpMock.expectOne(`${API_REPOSITORIO}/git/commits/commit-base`).flush({ tree: { sha: 'tree-base' } });
+        await flushMicrotareas();
+        httpMock.expectOne(`${API_REPOSITORIO}/git/trees/tree-base?recursive=1`).flush({
+          truncated: false,
+          tree: [{ path: 'ejercicios/ej-1/ej-1.json', type: 'blob' }],
+        });
+        await flushMicrotareas();
+        httpMock.expectOne(`${API_REPOSITORIO}/git/blobs`).flush({ sha: 'blob-categorias' });
+        await flushMicrotareas();
+        httpMock.expectOne(`${API_REPOSITORIO}/git/trees`).flush({ sha: 'tree-nuevo' });
+        await flushMicrotareas();
+        httpMock.expectOne(`${API_REPOSITORIO}/git/commits`).flush({ sha: 'commit-nuevo' });
+        await flushMicrotareas();
+        httpMock.expectOne(`${API_REPOSITORIO}/git/refs/heads/main`).flush(
+          { message: 'Conflict' },
+          { status: 409, statusText: 'Conflict' }
+        );
         await esperacion;
       });
 
@@ -295,6 +351,7 @@ describe('RepositorioComunAdapter', () => {
         const categorias = documentoCategorias([
           { id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-1', 'ej-2'] },
           { id: 'cat-comun-2', nombre: 'Piernas', ejercicios: ['ej-1'] },
+          { id: 'cat-sin-indice', nombre: 'Sin índice' },
         ]);
         const promesa = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
         httpMock.expectOne(`${API_REPOSITORIO}/git/ref/heads/main`).flush({ object: { sha: 'commit-base' } });
@@ -323,6 +380,7 @@ describe('RepositorioComunAdapter', () => {
           categorias: [
             { id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-2'] },
             { id: 'cat-comun-2', nombre: 'Piernas', ejercicios: [] },
+            { id: 'cat-sin-indice', nombre: 'Sin índice' },
           ],
         });
         blob.flush({ sha: 'blob-categorias' });
