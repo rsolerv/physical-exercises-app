@@ -40,6 +40,7 @@ describe('ImportarEjerciciosComponent', () => {
     mostrarError?: ReturnType<typeof vi.fn>;
     restaurarImportacion?: unknown;
     esAdministrador?: boolean;
+    eliminarEjercicioComun?: ReturnType<typeof vi.fn>;
   }) {
     const buscar = opciones.buscar ?? vi.fn().mockResolvedValue([]);
     const listarCategorias =
@@ -49,6 +50,7 @@ describe('ImportarEjerciciosComponent', () => {
     const importar = opciones.importar ?? vi.fn().mockResolvedValue({ creados: 0, imagenesOmitidas: 0 });
     const mostrarExito = opciones.mostrarExito ?? vi.fn();
     const mostrarError = opciones.mostrarError ?? vi.fn();
+    const eliminarEjercicioComun = opciones.eliminarEjercicioComun ?? vi.fn().mockResolvedValue(undefined);
     const dialogOpen = opciones.dialogOpen;
     const navigate = vi.fn().mockResolvedValue(true);
 
@@ -60,13 +62,28 @@ describe('ImportarEjerciciosComponent', () => {
         { provide: Location, useValue: { getState: () => ({ restaurarImportacion: opciones.restaurarImportacion }) } },
         { provide: BuscarEjerciciosComunesUseCase, useValue: { buscar, listarCategorias } },
         { provide: ImportarEjerciciosComunesUseCase, useValue: { obtenerCategoriasPendientes, importar } },
-        { provide: AdministrarRepositorioComunUseCase, useValue: { esAdministrador: vi.fn().mockResolvedValue(opciones.esAdministrador ?? false) } },
+        {
+          provide: AdministrarRepositorioComunUseCase,
+          useValue: {
+            esAdministrador: vi.fn().mockResolvedValue(opciones.esAdministrador ?? false),
+            eliminarEjercicio: eliminarEjercicioComun,
+          },
+        },
         { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue(opciones.categoriasLocales ?? [{ id: 'cat-local-1', nombre: 'Rodilla' }]) } },
         { provide: MensajeFeedbackService, useValue: { mostrarExito, mostrarError } },
         { provide: MatDialog, useValue: { open: dialogOpen ?? vi.fn() } },
       ],
     });
-    return { buscar, listarCategorias, obtenerCategoriasPendientes, importar, mostrarExito, mostrarError, navigate };
+    return {
+      buscar,
+      listarCategorias,
+      obtenerCategoriasPendientes,
+      importar,
+      mostrarExito,
+      mostrarError,
+      eliminarEjercicioComun,
+      navigate,
+    };
   }
 
   async function crearComponente() {
@@ -105,6 +122,36 @@ describe('ImportarEjerciciosComponent', () => {
     expect(
       fixture.nativeElement.querySelector('button[aria-label="Borrar del repositorio común Almeja"]')
     ).toBeNull();
+  });
+
+  it('elimina el resultado confirmado de la lista', async () => {
+    const ejercicio = ejercicioComun();
+    const dialogOpen = vi.fn().mockReturnValue({ afterClosed: () => of(true) });
+    const { eliminarEjercicioComun, mostrarExito } = configurar({
+      esAdministrador: true,
+      buscar: vi.fn().mockResolvedValue([ejercicio]),
+      dialogOpen,
+    });
+    const fixture = await crearComponente();
+    await fixture.componentInstance.buscar();
+
+    await fixture.componentInstance.eliminarEjercicio(ejercicio);
+    await fixture.whenStable();
+    expect(eliminarEjercicioComun).toHaveBeenCalledWith(ejercicio.id);
+    expect(fixture.componentInstance.resultados()).toEqual([]);
+    expect(mostrarExito).toHaveBeenCalledWith('Se ha borrado «Almeja» del repositorio común.');
+  });
+
+  it('no borra cuando se cancela el diálogo de confirmación', async () => {
+    const ejercicio = ejercicioComun();
+    const dialogCancelado = vi.fn().mockReturnValue({ afterClosed: () => of(false) });
+    const { eliminarEjercicioComun: noBorrar } = configurar({
+      esAdministrador: true,
+      dialogOpen: dialogCancelado,
+    });
+    const fixture = await crearComponente();
+    await fixture.componentInstance.eliminarEjercicio(ejercicio);
+    expect(noBorrar).not.toHaveBeenCalled();
   });
 
   it('fija los filtros y reserva espacio para que el listado no quede oculto', async () => {

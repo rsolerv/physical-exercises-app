@@ -464,6 +464,39 @@ describe('RepositorioComunAdapter', () => {
   });
 
   describe('subirEjercicio', () => {
+    it('no repite un id ya presente en la categoría seleccionada', async () => {
+      const ejercicio = ejercicioComun();
+      const promesa = adapter.subirEjercicio(CREDENCIALES, ejercicio, []);
+      const categorias = documentoCategorias([{ id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-1'] }]);
+      httpMock.expectOne(`${API_CONTENTS}/categorias.json?ref=requests`).flush({
+        content: codificarJSON(categorias),
+        sha: 'sha-categorias',
+      });
+      await flushMicrotareas();
+      httpMock.expectOne(`${API_CONTENTS}/ejercicios/ej-1/ej-1.json`).flush({ content: { sha: 'sha-ejercicio' } });
+      await flushMicrotareas();
+
+      const actualizar = httpMock.expectOne(`${API_CONTENTS}/categorias.json`);
+      expect(decodificarJSON(actualizar.request.body.content)).toEqual(categorias);
+      actualizar.flush({ content: { sha: 'sha-categorias' } });
+      await expect(promesa).resolves.toBeUndefined();
+    });
+
+    it('rechaza categorias.json ausente o con JSON inválido en requests', async () => {
+      const ausente = adapter.subirEjercicio(CREDENCIALES, ejercicioComun(), []);
+      const errorAusente = expect(ausente).rejects.toThrow(ErrorValidacion);
+      httpMock.expectOne(`${API_CONTENTS}/categorias.json?ref=requests`).flush({ content: '', sha: 'sha-categorias' });
+      await errorAusente;
+
+      const jsonInvalido = adapter.subirEjercicio(CREDENCIALES, ejercicioComun(), []);
+      const errorJson = expect(jsonInvalido).rejects.toThrow(ErrorValidacion);
+      httpMock.expectOne(`${API_CONTENTS}/categorias.json?ref=requests`).flush({
+        content: btoa('no es json'),
+        sha: 'sha-categorias',
+      });
+      await errorJson;
+    });
+
     it('sube imagen y ejercicio bajo su carpeta y actualiza categorias.json con su sha', async () => {
       const imagen: ImagenArchivoJSON = {
         id: 'img-1',
