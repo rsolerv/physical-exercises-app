@@ -271,7 +271,7 @@ describe('RepositorioComunAdapter', () => {
     describe('eliminarEjercicio', () => {
       async function prepararArbolRequests(
         categorias: unknown | null,
-        tree: { path: string; type: string }[],
+        tree: unknown[],
         truncated = false
       ): Promise<void> {
         httpMock.expectOne(`${API_REPOSITORIO}/git/ref/heads/requests`).flush({ object: { sha: 'requests-base' } });
@@ -387,6 +387,15 @@ describe('RepositorioComunAdapter', () => {
         const promesa = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
         const error = expect(promesa).rejects.toThrow(ErrorValidacion);
         await prepararArbolRequests(categorias, [], true);
+        await error;
+        httpMock.expectNone(API_GRAPHQL_GITHUB);
+      });
+
+      it('rechaza entradas inválidas en el árbol sin enviar cambios', async () => {
+        const categorias = documentoCategorias([{ id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-1'] }]);
+        const promesa = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
+        const error = expect(promesa).rejects.toThrow(ErrorValidacion);
+        await prepararArbolRequests(categorias, [{ path: 42, type: 'blob' }]);
         await error;
         httpMock.expectNone(API_GRAPHQL_GITHUB);
       });
