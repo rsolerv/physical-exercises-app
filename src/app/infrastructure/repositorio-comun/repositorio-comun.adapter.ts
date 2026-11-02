@@ -71,6 +71,13 @@ interface RespuestaCrearCommitGitHub {
   errors?: { message: string }[];
 }
 
+interface CambiosBorradoRama {
+  rama: string;
+  shaEsperado: string;
+  adiciones: { path: string; contents: string }[];
+  eliminaciones: { path: string }[];
+}
+
 function esImagenArchivoValida(valor: unknown): valor is ImagenArchivoJSON {
   if (typeof valor !== 'object' || valor === null) return false;
   const imagen = valor as Record<string, unknown>;
@@ -242,116 +249,174 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
     }
 
     try {
-      const rutaCategorias = `${API_CONTENTS}/categorias.json?ref=${RAMA_LECTURA}`;
-      const [referencia, documentoCategoriasRespuesta] = await Promise.all([
-        firstValueFrom(
-          this.http.get<ReferenciaGitHub>(`${API_BASE_GITHUB}/${OWNER_REPO}/git/ref/heads/${RAMA_LECTURA}`, {
-            headers: cabecerasGitHub(credenciales.tokenPAT),
-          })
-        ),
-        firstValueFrom(
-          this.http.get<ContenidoGitHub>(rutaCategorias, { headers: cabecerasGitHub(credenciales.tokenPAT) })
-        ),
-      ]);
+      const borradoMain = await this.prepararBorradoRama(credenciales, RAMA_LECTURA, ejercicioId, true);
+      const borradoRequests = await this.prepararBorradoRama(credenciales, RAMA_ESCRITURA, ejercicioId, false);
+      if (!borradoMain) throw new ErrorValidacion('No se han preparado los cambios para borrar el ejercicio de main.');
 
-      if (!documentoCategoriasRespuesta.content?.trim()) {
-        throw new ErrorValidacion('GitHub no ha devuelto el contenido de categorias.json en main.');
-      }
-      let contenidoCategorias: unknown;
-      try {
-        contenidoCategorias = JSON.parse(desdeBase64(documentoCategoriasRespuesta.content));
-      } catch (error) {
-        if (!(error instanceof SyntaxError)) throw error;
-        throw new ErrorValidacion('El documento categorias.json del repositorio común no contiene JSON válido.');
-      }
-      const documentoCategorias = this.validarDocumentoCategorias(contenidoCategorias as DocumentoCategoriasComun);
-      const apareceEnIndice = documentoCategorias.categorias.some((categoria) =>
-        (categoria.ejercicios ?? []).some((id) => String(id) === ejercicioId)
-      );
-      if (!apareceEnIndice) throw new ErrorNoEncontrado('El ejercicio ya no aparece en el catálogo común.');
-
-      const commitBase = await firstValueFrom(
-        this.http.get<CommitGitHub>(`${API_BASE_GITHUB}/${OWNER_REPO}/git/commits/${referencia.object.sha}`, {
-          headers: cabecerasGitHub(credenciales.tokenPAT),
-        })
-      );
-      const arbolBase = await firstValueFrom(
-        this.http.get<ArbolGitHub>(
-          `${API_BASE_GITHUB}/${OWNER_REPO}/git/trees/${commitBase.tree.sha}?recursive=1`,
-          { headers: cabecerasGitHub(credenciales.tokenPAT) }
-        )
-      );
-      if (arbolBase.truncated) {
-        throw new ErrorValidacion('GitHub ha truncado el árbol del repositorio; no se ha eliminado ningún archivo.');
-      }
-      if (
-        !Array.isArray(arbolBase.tree) ||
-        !arbolBase.tree.every(
-          (entrada) => typeof entrada?.path === 'string' && typeof entrada.type === 'string'
-        )
-      ) {
-        throw new ErrorValidacion('GitHub no ha devuelto un árbol válido del repositorio común.');
-      }
-
-      const prefijo = `ejercicios/${ejercicioId}/`;
-      const rutasEjercicio = arbolBase.tree.filter((entrada) => entrada.type === 'blob' && entrada.path.startsWith(prefijo));
-      const rutaDocumento = `${prefijo}${ejercicioId}.json`;
-      if (!rutasEjercicio.some((entrada) => entrada.path === rutaDocumento)) {
-        throw new ErrorNoEncontrado('No se ha encontrado el archivo publicado del ejercicio.');
-      }
-
-      const categoriasActualizadas = documentoCategorias.categorias.map((categoria) => ({
-        ...categoria,
-        ...(categoria.ejercicios
-          ? { ejercicios: categoria.ejercicios.filter((id) => String(id) !== ejercicioId) }
-          : {}),
-      }));
-      const resultado = await firstValueFrom(
-        this.http.post<RespuestaCrearCommitGitHub>(
-          API_GRAPHQL_GITHUB,
-          {
-            query: MUTACION_CREAR_COMMIT_EN_RAMA,
-            variables: {
-              input: {
-                branch: { repositoryNameWithOwner: OWNER_REPO, branchName: RAMA_LECTURA },
-                message: { headline: `Eliminar ejercicio ${ejercicioId} del catálogo común` },
-                fileChanges: {
-                  additions: [
-                    {
-                      path: 'categorias.json',
-                      contents: aBase64(JSON.stringify({ ...documentoCategorias, categorias: categoriasActualizadas })),
-                    },
-                  ],
-                  deletions: rutasEjercicio.map((entrada) => ({ path: entrada.path })),
-                },
-                expectedHeadOid: referencia.object.sha,
-              },
-            },
-          },
-          { headers: cabecerasGitHub(credenciales.tokenPAT) }
-        )
-      );
-      if (resultado.errors?.length) {
-        const mensajes = resultado.errors.map((error) => error.message).join(' ');
-        if (/expectedHeadOid|branch.{0,30}(changed|updated|out of date)|non-fast-forward/i.test(mensajes)) {
-          throw new ErrorConflictoRemoto(
-            'El repositorio común ha cambiado o no permite esta operación. Actualiza los datos e inténtalo de nuevo.'
-          );
-        }
-        if (/permission|not authorized|resource not accessible/i.test(mensajes)) {
-          throw new ErrorAutenticacionGitHub('El token de GitHub no es válido o no tiene permisos suficientes.');
-        }
-        throw new ErrorRedSincronizacion(`GitHub no ha podido eliminar el ejercicio: ${mensajes}`);
-      }
-      if (!resultado.data?.createCommitOnBranch?.commit?.oid) {
-        throw new ErrorRedSincronizacion('GitHub no ha confirmado el borrado del ejercicio.');
-      }
-      this.referenciaLectura = resultado.data.createCommitOnBranch.commit.oid;
+      if (borradoRequests) await this.aplicarBorradoRama(credenciales, ejercicioId, borradoRequests);
+      const shaNuevoMain = await this.aplicarBorradoRama(credenciales, ejercicioId, borradoMain);
+      this.referenciaLectura = shaNuevoMain;
       this.referenciaLecturaExpiraEn = Date.now() + DURACION_CACHE_RAW_MS;
     } catch (error) {
       if (error instanceof ErrorValidacion || error instanceof ErrorNoEncontrado) throw error;
       throw this.traducirError(error);
     }
+  }
+
+  private async prepararBorradoRama(
+    credenciales: CredencialesGitHub,
+    rama: string,
+    ejercicioId: string,
+    exigirEjercicioPublicado: boolean
+  ): Promise<CambiosBorradoRama | null> {
+    const cabeceras = cabecerasGitHub(credenciales.tokenPAT);
+    let referencia: ReferenciaGitHub;
+    try {
+      referencia = await firstValueFrom(
+        this.http.get<ReferenciaGitHub>(`${API_BASE_GITHUB}/${OWNER_REPO}/git/ref/heads/${rama}`, { headers: cabeceras })
+      );
+    } catch (error) {
+      if (!exigirEjercicioPublicado && error instanceof HttpErrorResponse && error.status === 404) return null;
+      throw error;
+    }
+
+    let documentoCategoriasRespuesta: ContenidoGitHub | null;
+    try {
+      documentoCategoriasRespuesta = await firstValueFrom(
+        this.http.get<ContenidoGitHub>(`${API_CONTENTS}/categorias.json?ref=${rama}`, { headers: cabeceras })
+      );
+    } catch (error) {
+      if (!exigirEjercicioPublicado && error instanceof HttpErrorResponse && error.status === 404) {
+        documentoCategoriasRespuesta = null;
+      } else {
+        throw error;
+      }
+    }
+
+    let documentoCategorias: DocumentoCategoriasComun | null = null;
+    if (documentoCategoriasRespuesta?.content?.trim()) {
+      let contenidoCategorias: unknown;
+      try {
+        contenidoCategorias = JSON.parse(desdeBase64(documentoCategoriasRespuesta.content));
+      } catch (error) {
+        if (!(error instanceof SyntaxError)) throw error;
+        throw new ErrorValidacion(`El documento categorias.json de ${rama} no contiene JSON válido.`);
+      }
+      documentoCategorias = this.validarDocumentoCategorias(contenidoCategorias as DocumentoCategoriasComun);
+    } else if (exigirEjercicioPublicado) {
+      throw new ErrorValidacion('GitHub no ha devuelto el contenido de categorias.json en main.');
+    }
+
+    const apareceEnIndice =
+      documentoCategorias?.categorias.some((categoria) =>
+        (categoria.ejercicios ?? []).some((id) => String(id) === ejercicioId)
+      ) ?? false;
+    if (exigirEjercicioPublicado && !apareceEnIndice) {
+      throw new ErrorNoEncontrado('El ejercicio ya no aparece en el catálogo común.');
+    }
+
+    const commitBase = await firstValueFrom(
+      this.http.get<CommitGitHub>(`${API_BASE_GITHUB}/${OWNER_REPO}/git/commits/${referencia.object.sha}`, {
+        headers: cabeceras,
+      })
+    );
+    const arbolBase = await firstValueFrom(
+      this.http.get<ArbolGitHub>(
+        `${API_BASE_GITHUB}/${OWNER_REPO}/git/trees/${commitBase.tree.sha}?recursive=1`,
+        { headers: cabeceras }
+      )
+    );
+    if (arbolBase.truncated) {
+      throw new ErrorValidacion(`GitHub ha truncado el árbol de ${rama}; no se ha eliminado ningún archivo.`);
+    }
+    if (
+      !Array.isArray(arbolBase.tree) ||
+      !arbolBase.tree.every((entrada) => typeof entrada?.path === 'string' && typeof entrada.type === 'string')
+    ) {
+      throw new ErrorValidacion('GitHub no ha devuelto un árbol válido del repositorio común.');
+    }
+
+    const prefijo = `ejercicios/${ejercicioId}/`;
+    const rutasEjercicio = arbolBase.tree.filter(
+      (entrada) => entrada.type === 'blob' && entrada.path.startsWith(prefijo)
+    );
+    const rutaDocumento = `${prefijo}${ejercicioId}.json`;
+    if (exigirEjercicioPublicado && !rutasEjercicio.some((entrada) => entrada.path === rutaDocumento)) {
+      throw new ErrorNoEncontrado('No se ha encontrado el archivo publicado del ejercicio.');
+    }
+
+    const adiciones =
+      documentoCategorias && apareceEnIndice
+        ? [
+            {
+              path: 'categorias.json',
+              contents: aBase64(
+                JSON.stringify({
+                  ...documentoCategorias,
+                  categorias: documentoCategorias.categorias.map((categoria) => ({
+                    ...categoria,
+                    ...(categoria.ejercicios
+                      ? { ejercicios: categoria.ejercicios.filter((id) => String(id) !== ejercicioId) }
+                      : {}),
+                  })),
+                })
+              ),
+            },
+          ]
+        : [];
+    const eliminaciones = rutasEjercicio.map((entrada) => ({ path: entrada.path }));
+    if (adiciones.length === 0 && eliminaciones.length === 0) return null;
+
+    return {
+      rama,
+      shaEsperado: referencia.object.sha,
+      adiciones,
+      eliminaciones,
+    };
+  }
+
+  private async aplicarBorradoRama(
+    credenciales: CredencialesGitHub,
+    ejercicioId: string,
+    cambios: CambiosBorradoRama
+  ): Promise<string> {
+    const resultado = await firstValueFrom(
+      this.http.post<RespuestaCrearCommitGitHub>(
+        API_GRAPHQL_GITHUB,
+        {
+          query: MUTACION_CREAR_COMMIT_EN_RAMA,
+          variables: {
+            input: {
+              branch: { repositoryNameWithOwner: OWNER_REPO, branchName: cambios.rama },
+              message: { headline: `Eliminar ejercicio ${ejercicioId} del catálogo común` },
+              fileChanges: {
+                ...(cambios.adiciones.length > 0 ? { additions: cambios.adiciones } : {}),
+                ...(cambios.eliminaciones.length > 0 ? { deletions: cambios.eliminaciones } : {}),
+              },
+              expectedHeadOid: cambios.shaEsperado,
+            },
+          },
+        },
+        { headers: cabecerasGitHub(credenciales.tokenPAT) }
+      )
+    );
+    if (resultado.errors?.length) {
+      const mensajes = resultado.errors.map((error) => error.message).join(' ');
+      if (/expectedHeadOid|branch.{0,30}(changed|updated|out of date)|non-fast-forward/i.test(mensajes)) {
+        throw new ErrorConflictoRemoto(
+          `La rama ${cambios.rama} ha cambiado o no permite esta operación. Actualiza los datos e inténtalo de nuevo.`
+        );
+      }
+      if (/permission|not authorized|resource not accessible/i.test(mensajes)) {
+        throw new ErrorAutenticacionGitHub('El token de GitHub no es válido o no tiene permisos suficientes.');
+      }
+      throw new ErrorRedSincronizacion(`GitHub no ha podido eliminar el ejercicio de ${cambios.rama}: ${mensajes}`);
+    }
+    const sha = resultado.data?.createCommitOnBranch?.commit?.oid;
+    if (!sha) {
+      throw new ErrorRedSincronizacion(`GitHub no ha confirmado el borrado del ejercicio en ${cambios.rama}.`);
+    }
+    return sha;
   }
 
   private async crearArchivo(credenciales: CredencialesGitHub, ruta: string, contenidoTexto: string): Promise<void> {

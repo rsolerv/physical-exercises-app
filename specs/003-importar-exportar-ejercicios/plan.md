@@ -1,5 +1,6 @@
 # Implementation Plan: Importación y exportación de ejercicios con el repositorio común
 
+
 **Branch**: `003-importar-exportar-ejercicios` | **Date**: 2026-10-28 | **Spec**: [spec.md](./spec.md)
 
 **Input**: Feature specification from `/specs/003-importar-exportar-ejercicios/spec.md`
@@ -8,7 +9,7 @@
 
 ## Summary
 
-La pantalla "Importar ejercicios" busca en el repositorio público `rsolerv/common-data-physical-exercises` (rama `main`, lectura sin credenciales) por texto y categoría común, permite seleccionar varios resultados e incorporarlos a la biblioteca del usuario (`datos.json` local), resolviendo antes la correspondencia de categorías no reconocidas. Desde cada resultado también se abre una ficha remota con opción para importar ese ejercicio. En la ficha y edición de un ejercicio propio se ofrece "Subir al repositorio común" y el envío va a `requests`. La cuenta `rsolerv` se acredita validando la PAT guardada con `GET /user`; solo esa cuenta ve y ejecuta las acciones administrativas para revertir la marca local y borrar ejercicios publicados. El borrado remoto prepara un único commit en `main` que actualiza el índice y retira todos los archivos del ejercicio.
+La pantalla "Importar ejercicios" busca en el repositorio público `rsolerv/common-data-physical-exercises` (rama `main`, lectura sin credenciales) por texto y categoría común, permite seleccionar varios resultados e incorporarlos a la biblioteca del usuario (`datos.json` local), resolviendo antes la correspondencia de categorías no reconocidas. Desde cada resultado también se abre una ficha remota con opción para importar ese ejercicio. En la ficha y edición de un ejercicio propio se ofrece "Subir al repositorio común" y el envío va a `requests`. La cuenta `rsolerv` se acredita validando la PAT guardada con `GET /user`; solo esa cuenta ve y ejecuta las acciones administrativas para revertir la marca local y borrar ejercicios publicados. El borrado prepara atómicamente cada rama afectada, limpia primero la copia pendiente de `requests` y después retira de `main` el ejercicio publicado y sus referencias.
 
 ## Technical Context
 
@@ -26,7 +27,7 @@ La pantalla "Importar ejercicios" busca en el repositorio público `rsolerv/comm
 
 **Performance Goals**: Una búsqueda explícita en "Importar ejercicios" (tras pulsar "Buscar") debe mostrar resultados en menos de 3 segundos con una conexión normal y un catálogo común de tamaño moderado (decenas a baja centena de ejercicios), coherente con SC-001. No se fija un objetivo de rendimiento para catálogos de gran escala (ver research.md, limitación conocida).
 
-**Constraints**: Sin backend ni servidor intermediario (constitución); autenticación solo con la PAT guardada (sin secretos de cliente embebidos); todas las llamadas de lectura pública deben funcionar sin ese token. Las operaciones administrativas requieren validar `login === 'rsolerv'`; el borrado necesita permiso de escritura sobre `main` y no fuerza cambios concurrentes. Debe seguir funcionando la aplicación local-first si el repositorio común no está disponible (solo se ve afectada esta feature, no el resto de la aplicación).
+**Constraints**: Sin backend ni servidor intermediario (constitución); autenticación solo con la PAT guardada (sin secretos de cliente embebidos); todas las llamadas de lectura pública deben funcionar sin ese token. Las operaciones administrativas requieren validar `login === 'rsolerv'`; el borrado necesita permiso de escritura sobre `main` y `requests`, prepara ambas ramas antes de escribir, no fuerza cambios concurrentes y puede requerir reintento si cambia `main` después de limpiar `requests`. Debe seguir funcionando la aplicación local-first si el repositorio común no está disponible (solo se ve afectada esta feature, no el resto de la aplicación).
 
 **Scale/Scope**: 3 historias de usuario (importar, subir, administración), 2 pantallas de importación (resultados y previsualización), ampliaciones de ficha/edición, 1 puerto nuevo, 4 casos de uso nuevos, 1 campo nuevo en una entidad existente.
 

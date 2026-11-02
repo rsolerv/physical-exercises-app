@@ -5,6 +5,7 @@
 
 
 
+
 **Input**: Design documents from `specs/003-importar-exportar-ejercicios/`
 
 **Prerequisites**: `plan.md`, `spec.md`, `research.md`, `data-model.md`, `contracts/`
@@ -181,3 +182,4 @@ El propietario solicita añadir a US1 una ficha remota de solo lectura, accesibl
 - [X] T034 [US3] Permitir revertir la marca local `subidoRepositorioComun` solo tras acreditación y añadir la acción protegida en la ficha local.
 - [X] T035 [US3] Añadir confirmación y acciones administrativas en resultados y ficha remota; retirar de la vista los ejercicios borrados; cubrir visibilidad y flujos con pruebas de componente.
 - [X] T036 [US3] Actualizar spec, plan, research, contratos, modelo de datos y quickstart; registrar la decisión transversal de identidad y borrado en `specs/001-gestion-ejercicios-fisicos/research.md`.
+- [X] T037 [US3] Ampliar el borrado administrativo para limpiar primero los archivos y referencias pendientes de `requests` (si existen) y después borrar de `main`; actualizar cobertura y documentar el reintento si falla la segunda rama.

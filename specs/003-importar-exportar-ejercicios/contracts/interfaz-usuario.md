@@ -1,6 +1,7 @@
 # Contrato de interfaz de usuario: Importar y subir ejercicios
 
 
+
 Complementa `spec.md` con el detalle de presentación necesario para implementar y para que `ux-ui-expert` prepare las historias de Storybook de la pantalla nueva (Constitución, principio V).
 
 ## Pantalla "Importar ejercicios" (nueva, US1)
@@ -49,7 +50,7 @@ Complementa `spec.md` con el detalle de presentación necesario para implementar
 - La aplicación consulta `GET https://api.github.com/user` con la PAT guardada y compara `login` sin distinguir mayúsculas/minúsculas con `rsolerv`. La presencia de un token sin validar no habilita acciones.
 - La acreditación se comprueba al entrar en la ficha local, los resultados y la previsualización, y se vuelve a comprobar dentro del caso de uso inmediatamente antes de ejecutar una acción administrativa.
 - Las acciones administrativas solo se muestran tras una respuesta afirmativa. Si GitHub no responde, se muestra un aviso y se mantienen ocultas.
-- El borrado remoto pide confirmación, crea en `main` una única actualización Git que quita el id del índice y borra todo el contenido bajo `ejercicios/<id>/`. La rama no se actualiza si no se puede preparar ese commit completo.
+- El borrado remoto pide confirmación, limpia primero en `requests` el ejercicio pendiente y sus referencias si existe, y después crea en `main` una única actualización Git que quita el id del índice y borra todo el contenido bajo `ejercicios/<id>/`. Si falla una actualización, se muestra el error y no se informa de éxito; si `requests` ya se limpió, se puede reintentar el borrado publicado.
 
 ### Diálogo "Subir al repositorio común" (nuevo, parte de US2)
 
