@@ -178,7 +178,7 @@ export class ExportarImportarDatosUseCase {
         imagenes: imagenesPorEjercicio.get(ejercicio.id) ?? [],
         series: ejercicio.series ?? pautaAnterior?.series,
         repeticiones: ejercicio.repeticiones ?? pautaAnterior?.repeticiones,
-        observaciones: pautaAnterior?.observaciones ?? ejercicio.observaciones,
+        observaciones: pautaAnterior ? pautaAnterior.observaciones : ejercicio.observaciones,
       };
       const creado = await this.ejercicioRepository.crear(datosCreacion);
       if (ejercicio.subidoRepositorioComun) {

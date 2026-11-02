@@ -52,7 +52,7 @@ export class SembrarCatalogoPredefinidoUseCase implements SembrarCatalogoPredefi
         imagenes: [],
         series: pauta?.series,
         repeticiones: pauta?.repeticiones,
-        observaciones: pauta?.observaciones ?? ejercicio.observaciones,
+        observaciones: pauta ? pauta.observaciones : ejercicio.observaciones,
       });
     }
 
