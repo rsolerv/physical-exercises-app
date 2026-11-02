@@ -13,7 +13,8 @@ import {
 import type { EjercicioComunArchivo } from '../../../src/app/application/ports/repositorio-comun.port';
 import type { ImagenArchivoJSON } from '../../../src/app/application/ports/github-sync.port';
 
-const RAW_BASE = 'https://raw.githubusercontent.com/rsolerv/common-data-physical-exercises/main';
+const RAW_REPOSITORIO = 'https://raw.githubusercontent.com/rsolerv/common-data-physical-exercises';
+const RAW_BASE = `${RAW_REPOSITORIO}/main`;
 const API_CONTENTS = 'https://api.github.com/repos/rsolerv/common-data-physical-exercises/contents';
 const API_REPOSITORIO = 'https://api.github.com/repos/rsolerv/common-data-physical-exercises';
 const API_GRAPHQL_GITHUB = 'https://api.github.com/graphql';
@@ -425,6 +426,14 @@ describe('RepositorioComunAdapter', () => {
         });
         commit.flush({ data: { createCommitOnBranch: { commit: { oid: 'commit-nuevo' } } } });
         await expect(promesa).resolves.toBeUndefined();
+
+        const categoriasActualizadas = adapter.listarCategorias();
+        httpMock
+          .expectOne(`${RAW_REPOSITORIO}/commit-nuevo/categorias.json`)
+          .flush(documentoCategorias([{ id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-2'] }]));
+        await expect(categoriasActualizadas).resolves.toEqual([
+          { id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-2'] },
+        ]);
       });
 
       it('no modifica el repositorio si el árbol devuelto está truncado', async () => {

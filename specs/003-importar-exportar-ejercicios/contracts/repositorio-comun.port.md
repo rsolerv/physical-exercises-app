@@ -51,7 +51,9 @@ interface RepositorioComunPort {
   // Verifica el índice y el árbol completo de main; crea un blob actualizado
   // de categorias.json y elimina todos los archivos del ejercicio mediante
   // una mutación GraphQL createCommitOnBranch con expectedHeadOid, para aplicar
-  // el borrado completo de forma atómica y detectar cambios concurrentes (FR-028/FR-029).
+  // el borrado completo de forma atómica y detectar cambios concurrentes.
+  // Tras el éxito, fija las lecturas de esta sesión al SHA del commit nuevo
+  // para no reutilizar datos cacheados bajo la referencia mutable main (FR-028/FR-029).
 }
 
 interface CategoriaComun {

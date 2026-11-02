@@ -90,11 +90,12 @@ function esImagenArchivoValida(valor: unknown): valor is ImagenArchivoJSON {
 @Injectable({ providedIn: 'root' })
 export class RepositorioComunAdapter implements RepositorioComunPort {
   private readonly http = inject(HttpClient);
+  private referenciaLectura = RAMA_LECTURA;
 
   async listarCategorias(): Promise<CategoriaComun[]> {
     try {
       const documento = await firstValueFrom(
-        this.http.get<DocumentoCategoriasComun>(`${RAW_BASE}/${RAMA_LECTURA}/categorias.json`)
+        this.http.get<DocumentoCategoriasComun>(this.urlRaw('categorias.json'))
       );
       return this.validarDocumentoCategorias(documento).categorias.map((categoria) => ({
         id: String(categoria.id),
@@ -130,7 +131,7 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
     try {
       return await firstValueFrom(
         this.http.get<EjercicioComunArchivo>(
-          `${RAW_BASE}/${RAMA_LECTURA}/ejercicios/${encodeURIComponent(id)}/${encodeURIComponent(id)}.json`
+          this.urlRaw(`ejercicios/${encodeURIComponent(id)}/${encodeURIComponent(id)}.json`)
         )
       );
     } catch (error) {
@@ -142,7 +143,7 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
   async leerImagen(ejercicioId: string, ruta: string): Promise<ImagenArchivoJSON> {
     try {
       const rutaImagen = this.rutaImagen(ejercicioId, ruta);
-      const documento = await firstValueFrom(this.http.get<unknown>(`${RAW_BASE}/${RAMA_LECTURA}/${rutaImagen}`));
+      const documento = await firstValueFrom(this.http.get<unknown>(this.urlRaw(rutaImagen)));
       if (!esImagenArchivoValida(documento)) {
         throw new ErrorValidacion(`El documento remoto «${ruta}» no contiene una imagen con formato válido.`);
       }
@@ -343,6 +344,7 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
       if (!resultado.data?.createCommitOnBranch?.commit?.oid) {
         throw new ErrorRedSincronizacion('GitHub no ha confirmado el borrado del ejercicio.');
       }
+      this.referenciaLectura = resultado.data.createCommitOnBranch.commit.oid;
     } catch (error) {
       if (error instanceof ErrorValidacion || error instanceof ErrorNoEncontrado) throw error;
       throw this.traducirError(error);
@@ -391,7 +393,7 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
     try {
       return await firstValueFrom(
         this.http.get<EjercicioComunArchivo>(
-          `${RAW_BASE}/${RAMA_LECTURA}/ejercicios/${encodeURIComponent(id)}/${encodeURIComponent(id)}.json`
+          this.urlRaw(`ejercicios/${encodeURIComponent(id)}/${encodeURIComponent(id)}.json`)
         )
       );
     } catch (error) {
@@ -456,6 +458,10 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
       .split('/')
       .map((segmento) => encodeURIComponent(segmento))
       .join('/')}`;
+  }
+
+  private urlRaw(ruta: string): string {
+    return `${RAW_BASE}/${this.referenciaLectura}/${ruta}`;
   }
 
   private traducirError(error: unknown): Error {
