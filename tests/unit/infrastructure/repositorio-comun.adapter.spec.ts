@@ -573,6 +573,59 @@ describe('RepositorioComunAdapter', () => {
         httpMock.expectNone(API_GRAPHQL_GITHUB);
       });
 
+      it('elimina archivos huérfanos de requests aunque no exista su índice de categorías', async () => {
+        const categorias = documentoCategorias();
+        const promesa = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
+
+        httpMock.expectOne(`${API_REPOSITORIO}/git/ref/heads/main`).flush({ object: { sha: 'main-base' } });
+        await flushMicrotareas();
+        httpMock.expectOne(`${API_CONTENTS}/categorias.json?ref=main`).flush({
+          content: codificarJSON(categorias),
+          sha: 'main-categorias',
+        });
+        await flushMicrotareas();
+        httpMock.expectOne(`${API_REPOSITORIO}/git/commits/main-base`).flush({ tree: { sha: 'main-tree' } });
+        await flushMicrotareas();
+        httpMock.expectOne(`${API_REPOSITORIO}/git/trees/main-tree?recursive=1`).flush({
+          truncated: false,
+          tree: [{ path: 'ejercicios/ej-1/ej-1.json', type: 'blob' }],
+        });
+        await flushMicrotareas();
+
+        httpMock.expectOne(`${API_REPOSITORIO}/git/ref/heads/requests`).flush({ object: { sha: 'requests-base' } });
+        await flushMicrotareas();
+        httpMock
+          .expectOne(`${API_CONTENTS}/categorias.json?ref=requests`)
+          .flush({ message: 'Not Found' }, { status: 404, statusText: 'Not Found' });
+        await flushMicrotareas();
+        httpMock.expectOne(`${API_REPOSITORIO}/git/commits/requests-base`).flush({ tree: { sha: 'requests-tree' } });
+        await flushMicrotareas();
+        httpMock.expectOne(`${API_REPOSITORIO}/git/trees/requests-tree?recursive=1`).flush({
+          truncated: false,
+          tree: [
+            { path: 'ejercicios/ej-1/ej-1.json', type: 'blob' },
+            { path: 'ejercicios/ej-1/imagenes/orphan.png.json', type: 'blob' },
+          ],
+        });
+        await flushMicrotareas();
+
+        const commitRequests = httpMock.expectOne(API_GRAPHQL_GITHUB);
+        expect(commitRequests.request.body.variables.input.branch.branchName).toBe('requests');
+        expect(commitRequests.request.body.variables.input.fileChanges).toEqual({
+          deletions: [
+            { path: 'ejercicios/ej-1/ej-1.json' },
+            { path: 'ejercicios/ej-1/imagenes/orphan.png.json' },
+          ],
+        });
+        commitRequests.flush({ data: { createCommitOnBranch: { commit: { oid: 'requests-limpiada' } } } });
+        await flushMicrotareas();
+
+        const commitMain = httpMock.expectOne(API_GRAPHQL_GITHUB);
+        expect(commitMain.request.body.variables.input.branch.branchName).toBe('main');
+        commitMain.flush({ data: { createCommitOnBranch: { commit: { oid: 'main-eliminada' } } } });
+        await expect(promesa).resolves.toBeUndefined();
+      });
+
       it('no modifica el repositorio si el árbol devuelto está truncado', async () => {
         const promesa = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
         const esperacion = expect(promesa).rejects.toThrow(ErrorValidacion);
