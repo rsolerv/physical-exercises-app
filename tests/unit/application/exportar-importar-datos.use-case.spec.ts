@@ -93,7 +93,11 @@ describe('ExportarImportarDatosUseCase', () => {
       )
     );
     const caso = configurar({
-      ejercicios: { listarTodos: vi.fn().mockResolvedValue([ejercicio()]) },
+      ejercicios: {
+        listarTodos: vi.fn().mockResolvedValue([
+          ejercicio({ series: 3, repeticiones: 10, subidoRepositorioComun: true }),
+        ]),
+      },
       categorias: { listarTodas: vi.fn().mockResolvedValue([{ id: 'cat-1', nombre: 'Piernas' } as Categoria]) },
       planificaciones: { listarTodas: vi.fn().mockResolvedValue([planificacion]) },
       progreso: { obtenerPorFecha },
@@ -102,6 +106,9 @@ describe('ExportarImportarDatosUseCase', () => {
     const resultado = await caso.exportar();
 
     expect(resultado.datos.ejercicios).toHaveLength(1);
+    expect(resultado.datos.ejercicios[0]).toEqual(
+      expect.objectContaining({ series: 3, repeticiones: 10, subidoRepositorioComun: true })
+    );
     expect(resultado.datos.categorias).toHaveLength(1);
     expect(resultado.datos.planificaciones).toHaveLength(1);
     expect(resultado.datos.progresoDiario).toHaveLength(1);
@@ -132,12 +139,14 @@ describe('ExportarImportarDatosUseCase', () => {
     const eliminarPlanificacion = vi.fn().mockResolvedValue(undefined);
     const eliminarCategoria = vi.fn().mockResolvedValue(undefined);
     const crearEjercicio = vi.fn().mockResolvedValue(ejercicio({ id: 'ej-nuevo' }));
+    const marcarSubidoRepositorioComun = vi.fn().mockResolvedValue(undefined);
 
     const caso = configurar({
       ejercicios: {
         listarTodos: vi.fn().mockResolvedValue([ejercicio({ id: 'ej-viejo' })]),
         eliminar: eliminarEjercicio,
         crear: crearEjercicio,
+        marcarSubidoRepositorioComun,
       },
       categorias: {
         listarTodas: vi.fn().mockResolvedValue([{ id: 'cat-vieja', nombre: 'Vieja' } as Categoria]),
@@ -150,14 +159,59 @@ describe('ExportarImportarDatosUseCase', () => {
     });
 
     await caso.importar(
-      { version: 1, ejercicios: [ejercicio()], categorias: [{ id: 'cat-1', nombre: 'Piernas' }], planificaciones: [], progresoDiario: [] },
+      {
+        version: 1,
+        ejercicios: [
+          ejercicio({
+            series: 4,
+            repeticiones: 8,
+            subidoRepositorioComun: true,
+            observaciones: 'Cuidado con la espalda.',
+          }),
+        ],
+        categorias: [{ id: 'cat-1', nombre: 'Piernas' }],
+        planificaciones: [],
+        progresoDiario: [],
+      },
       resolverImagenVacio
     );
 
     expect(eliminarEjercicio).toHaveBeenCalledWith('ej-viejo');
     expect(eliminarPlanificacion).toHaveBeenCalledWith('plan-vieja');
     expect(eliminarCategoria).toHaveBeenCalledWith('cat-vieja');
-    expect(crearEjercicio).toHaveBeenCalledWith(expect.objectContaining({ nombre: 'Sentadilla' }));
+    expect(crearEjercicio).toHaveBeenCalledWith(
+      expect.objectContaining({
+        nombre: 'Sentadilla',
+        series: 4,
+        repeticiones: 8,
+        observaciones: 'Cuidado con la espalda.',
+      })
+    );
+    expect(marcarSubidoRepositorioComun).toHaveBeenCalledWith('ej-nuevo');
+  });
+
+  it('importar() convierte las pautas incluidas en observaciones de copias anteriores', async () => {
+    const crearEjercicio = vi.fn().mockResolvedValue(ejercicio());
+    const caso = configurar({ ejercicios: { crear: crearEjercicio } });
+
+    await caso.importar(
+      {
+        version: 1,
+        ejercicios: [ejercicio({ observaciones: '3 series de 10 repeticiones. Mantén la espalda recta.' })],
+        categorias: [{ id: 'cat-1', nombre: 'Piernas' }],
+        planificaciones: [],
+        progresoDiario: [],
+      },
+      resolverImagenVacio
+    );
+
+    expect(crearEjercicio).toHaveBeenCalledWith(
+      expect.objectContaining({
+        series: 3,
+        repeticiones: 10,
+        observaciones: 'Mantén la espalda recta',
+      })
+    );
   });
 
   it('importar() rechaza ejercicios sin categoría antes de borrar los datos locales', async () => {

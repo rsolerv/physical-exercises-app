@@ -1,5 +1,5 @@
 import { Component, computed, inject, resource, signal } from '@angular/core';
-import { form, required, FormField } from '@angular/forms/signals';
+import { form, required, min, validate, FormField } from '@angular/forms/signals';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -32,12 +32,14 @@ const TAMANO_MAXIMO_IMAGEN_BYTES = 5 * 1024 * 1024;
 interface ModeloFormularioEjercicio {
   nombre: string;
   descripcion: string;
+  series: number | null;
+  repeticiones: number | null;
   observaciones: string;
 }
 
 /**
  * Formulario de alta/edición de ejercicio (Historia de Usuario 1). Los campos
- * simples (nombre, descripción, observaciones) usan Signal Forms; los enlaces,
+ * simples (nombre, descripción, pauta y observaciones) usan Signal Forms; los enlaces,
  * las imágenes y las categorías se gestionan con signals directos porque son
  * listas de longitud variable. En modo edición (ruta `ejercicios/:id/editar`)
  * precarga los datos existentes y llama a `actualizar()` en vez de `crear()`.
@@ -77,10 +79,24 @@ export class EjercicioFormularioComponent {
   protected readonly modoEdicion = this.ejercicioId !== null;
   protected readonly titulo = this.modoEdicion ? 'Editar ejercicio' : 'Nuevo ejercicio';
 
-  readonly modelo = signal<ModeloFormularioEjercicio>({ nombre: '', descripcion: '', observaciones: '' });
+  readonly modelo = signal<ModeloFormularioEjercicio>({
+    nombre: '',
+    descripcion: '',
+    series: null,
+    repeticiones: null,
+    observaciones: '',
+  });
   readonly formulario = form(this.modelo, (ruta) => {
     required(ruta.nombre, { message: 'El nombre del ejercicio no puede estar vacío.' });
     required(ruta.descripcion, { message: 'La descripción del ejercicio no puede estar vacía.' });
+    for (const [campo, nombre] of [[ruta.series, 'series'], [ruta.repeticiones, 'repeticiones']] as const) {
+      min(campo, 1, { message: `El número de ${nombre} debe ser mayor que cero.` });
+      validate(campo, ({ value }) =>
+        value() === null || Number.isSafeInteger(value())
+          ? undefined
+          : { kind: 'integer', message: `El número de ${nombre} debe ser un entero.` }
+      );
+    }
   });
 
   readonly categoriasCargando = signal(true);
@@ -177,6 +193,8 @@ export class EjercicioFormularioComponent {
       this.modelo.set({
         nombre: ejercicio.nombre,
         descripcion: ejercicio.descripcion,
+        series: ejercicio.series ?? null,
+        repeticiones: ejercicio.repeticiones ?? null,
         observaciones: ejercicio.observaciones ?? '',
       });
       this.categoriaIdsSeleccionadas.set(ejercicio.categoriaIds);
@@ -291,7 +309,11 @@ export class EjercicioFormularioComponent {
   }
 
   async guardar(): Promise<void> {
-    if (!this.formulario().valid() || this.erroresEnlaces().length > 0 || this.categoriaIdsSeleccionadas().length === 0) {
+    if (
+      !this.formulario().valid() ||
+      this.erroresEnlaces().length > 0 ||
+      this.categoriaIdsSeleccionadas().length === 0
+    ) {
       return;
     }
     this.guardando.set(true);
@@ -346,9 +368,12 @@ export class EjercicioFormularioComponent {
       categoriaIds: this.categoriaIdsSeleccionadas(),
       enlaces: this.enlaces(),
       imagenes: this.imagenes(),
+      series: this.modelo().series ?? undefined,
+      repeticiones: this.modelo().repeticiones ?? undefined,
       observaciones: this.modelo().observaciones,
     };
   }
+
 }
 
 function esUrlValida(url: string): boolean {

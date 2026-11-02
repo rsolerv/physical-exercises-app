@@ -29,6 +29,8 @@ Cada método (bloques 1 y 2) muestra una **etiqueta de estado de conexión** con
 | Tablet (768–1024 px) | Una o dos columnas adaptativas; bloque 3 puede ir junto al bloque 1 |
 | Escritorio (≥1280 px) | Bloque 1 como tarjeta principal y bloques 2 y 3 en columnas o secciones contiguas, sin ancho máximo fijo |
 
+La copia manual exporta e importa series y repeticiones como campos numéricos opcionales del ejercicio, separados de las observaciones, y conserva el indicador de si ya se ha enviado al repositorio común. Una copia anterior sin esos campos sigue siendo válida.
+
 ## Estados del bloque principal
 
 Hay como máximo un método activo (Google o GitHub) aunque ambos puedan estar conectados. La acción de sincronización se presenta en la barra común, fuera del bloque de Google, identificando el método activo. Estados comunes a ambos y casos específicos:

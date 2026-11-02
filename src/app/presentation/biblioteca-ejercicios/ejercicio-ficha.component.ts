@@ -138,16 +138,11 @@ export class EjercicioFichaComponent {
     () => this.recursoEjercicio.value()?.enlaces.filter((enlace) => enlace.tipo === 'web') ?? []
   );
 
-  protected readonly pautaObservaciones = computed(() => {
-    const observaciones = this.recursoEjercicio.value()?.observaciones;
-    if (!observaciones) return null;
-    const coincidencia = observaciones.match(/\b(\d+)\s+series?\s+de\s+(\d+)\s+repeticiones?\b/i);
-    if (!coincidencia) return null;
-    return {
-      series: coincidencia[1],
-      repeticiones: coincidencia[2],
-      detalle: observaciones.replace(coincidencia[0], '').replace(/^\s*[.,;]\s*/, '').trim(),
-    };
+  protected readonly pautaEjercicio = computed(() => {
+    const ejercicio = this.recursoEjercicio.value();
+    return ejercicio && (ejercicio.series !== undefined || ejercicio.repeticiones !== undefined)
+      ? { series: ejercicio.series, repeticiones: ejercicio.repeticiones }
+      : null;
   });
 
   protected imagenSrc(imagen: { tipo: 'url' | 'archivo'; valorUrl?: string; contenidoBase64?: string; tipoMime?: string }): string {

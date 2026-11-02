@@ -28,6 +28,9 @@ interface EjercicioCopia {
     | { id: string; tipo: 'url'; valorUrl: string }
     | { id: string; tipo: 'archivo'; ruta: string }
   )[];
+  series?: number;
+  repeticiones?: number;
+  subidoRepositorioComun?: boolean;
   observaciones?: string;
 }
 
@@ -135,8 +138,16 @@ function esEjercicioCopia(valor: unknown): valor is EjercicioCopia {
     valor['enlaces'].every(esEnlace) &&
     Array.isArray(valor['imagenes']) &&
     valor['imagenes'].every(esImagenEjercicio) &&
+    (valor['series'] === undefined || esEnteroPositivo(valor['series'])) &&
+    (valor['repeticiones'] === undefined ||
+      esEnteroPositivo(valor['repeticiones'])) &&
+    (valor['subidoRepositorioComun'] === undefined || typeof valor['subidoRepositorioComun'] === 'boolean') &&
     (valor['observaciones'] === undefined || typeof valor['observaciones'] === 'string')
   );
+}
+
+function esEnteroPositivo(valor: unknown): valor is number {
+  return typeof valor === 'number' && Number.isSafeInteger(valor) && valor > 0;
 }
 
 function esEnlace(valor: unknown): valor is EnlaceEjercicio {

@@ -180,9 +180,13 @@ describe('EjercicioFichaComponent', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('.ejercicio-ficha__progreso')).toBeNull();
   });
 
-  it('destaca series y repeticiones que ya figuran en observaciones, sin inventarlas', async () => {
+  it('destaca la pauta recomendada y muestra las observaciones por separado', async () => {
     configurar({
-      ejercicio: ejercicio({ observaciones: '3 series de 10 repeticiones. Mantén la espalda recta.' }),
+      ejercicio: ejercicio({
+        series: 3,
+        repeticiones: 10,
+        observaciones: 'Mantén la espalda recta.',
+      }),
     });
     const fixture = await crearComponente();
     const raiz = fixture.nativeElement as HTMLElement;
@@ -192,7 +196,7 @@ describe('EjercicioFichaComponent', () => {
     expect(raiz.querySelector('.ejercicio-ficha__observaciones')?.textContent).toContain('Mantén la espalda recta.');
   });
 
-  it('no inventa pauta de series y repeticiones si no aparece en las observaciones', async () => {
+  it('no inventa pauta de series y repeticiones si no están informadas', async () => {
     configurar({ ejercicio: ejercicio({ observaciones: 'Hazlo con control.' }) });
     const sinPauta = await crearComponente();
     expect((sinPauta.nativeElement as HTMLElement).querySelector('.ejercicio-ficha__pauta')).toBeNull();

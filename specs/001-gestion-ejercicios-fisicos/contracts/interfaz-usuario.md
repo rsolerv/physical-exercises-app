@@ -63,6 +63,7 @@ En móvil, las cabeceras no dejan más de 24 px entre el área segura superior y
 ### Formularios de ejercicio
 
 - Los campos obligatorios y opcionales se identifican antes de guardar; los errores aparecen junto al campo afectado.
+- La pauta recomendada ofrece campos numéricos opcionales e independientes de series y repeticiones. La ficha los presenta con el bloque "Pauta recomendada" y el mismo estilo visual que ya utilizaba para destacarlos dentro de las observaciones; las observaciones siguen apareciendo por separado.
 - Al crear un ejercicio, si existe una planificación activa para esta semana, se ofrece antes de las acciones la casilla "Agregar a los ejercicios de hoy". Si se marca, el ejercicio se asigna al día actual al guardarse; la casilla no aparece al editar ni cuando no existe planificación activa.
 - Si la asignación a la planificación falla tras guardar el ejercicio, se informa del guardado y del fallo de asignación por separado.
 - En móvil no se muestra información textual sobre si el formulario está guardado o tiene cambios pendientes.

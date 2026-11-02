@@ -17,6 +17,9 @@ export interface EjercicioExportado {
   categoriaIds: string[];
   enlaces: EnlaceEjercicio[];
   imagenes: ImagenEjercicioExportada[];
+  series?: number;
+  repeticiones?: number;
+  subidoRepositorioComun?: boolean;
   observaciones?: string;
 }
 

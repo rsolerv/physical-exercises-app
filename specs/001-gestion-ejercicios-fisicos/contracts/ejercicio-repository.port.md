@@ -27,6 +27,8 @@ interface EjercicioRepositoryPort {
   actualizar(id: string, cambios: Partial<DatosNuevoEjercicio>): Promise<Ejercicio>;
   // Mismas validaciones que crear() sobre los campos modificados.
   // Lanza ErrorNoEncontrado si el id no existe.
+  // series y repeticiones son enteros positivos opcionales y se persisten en
+  // columnas independientes de observaciones.
 
   eliminar(id: string): Promise<void>;
   // Debe propagar la eliminación a todas las planificaciones que lo referencien (FR-028).

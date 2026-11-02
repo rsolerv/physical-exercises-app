@@ -143,21 +143,23 @@
       </section>
     }
 
-    @if (pautaObservaciones(); as pauta) {
+    @if (pautaEjercicio(); as pauta) {
       <dl class="ejercicio-ficha__pauta" aria-label="Pauta recomendada">
-        <div>
-          <dt>Series</dt>
-          <dd>{{ pauta.series }}</dd>
-        </div>
-        <div>
-          <dt>Repeticiones</dt>
-          <dd>{{ pauta.repeticiones }}</dd>
-        </div>
+        @if (pauta.series !== undefined) {
+          <div>
+            <dt>Series</dt>
+            <dd>{{ pauta.series }}</dd>
+          </div>
+        }
+        @if (pauta.repeticiones !== undefined) {
+          <div>
+            <dt>Repeticiones</dt>
+            <dd>{{ pauta.repeticiones }}</dd>
+          </div>
+        }
       </dl>
-      @if (pauta.detalle) {
-        <p class="ejercicio-ficha__observaciones">{{ pauta.detalle }}</p>
-      }
-    } @else if (ejercicio.observaciones) {
+    }
+    @if (ejercicio.observaciones) {
       <p class="ejercicio-ficha__observaciones">{{ ejercicio.observaciones }}</p>
     }
 

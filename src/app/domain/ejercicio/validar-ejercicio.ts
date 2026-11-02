@@ -19,6 +19,11 @@ export function validarEjercicio(datos: DatosNuevoEjercicio): void {
   if (!datos.categoriaIds || datos.categoriaIds.length < 1) {
     throw new ErrorValidacion('El ejercicio debe pertenecer al menos a una categoría.');
   }
+  for (const [campo, valor] of [['series', datos.series], ['repeticiones', datos.repeticiones]] as const) {
+    if (valor !== undefined && (!Number.isSafeInteger(valor) || valor < 1)) {
+      throw new ErrorValidacion(`El número de ${campo} debe ser un entero mayor que cero.`);
+    }
+  }
 
   for (const enlace of datos.enlaces ?? []) {
     if (!esUrlValida(enlace.url)) {

@@ -17,6 +17,8 @@ copia-ejercicios-AAAA-MM-DD.zip
 ```
 
 `ExportacionJSON` e `ImagenArchivoJSON` son los de [la feature 001](../../001-gestion-ejercicios-fisicos/contracts/github-sync.port.md). En `datos.json`, las imágenes de archivo referencian `imagenes/<id>.json`. Cada archivo de imagen contiene un objeto `ImagenArchivoJSON` con `id`, `nombreArchivo`, `tipoMime` y `contenidoBase64`. El ZIP no incluye ajustes, tokens, correo ni información de la cuenta (FR-018).
+Cada ejercicio puede incluir `series` y `repeticiones` como enteros positivos opcionales, separados de `observaciones`, y el indicador opcional `subidoRepositorioComun`. Los campos ausentes en copias anteriores se importan como no informados y el indicador ausente se interpreta como `false`.
+Cada ejercicio puede incluir `series` y `repeticiones` como enteros positivos opcionales, separados de `observaciones`. Los campos ausentes en copias anteriores se importan como no informados.
 
 ## Casos de uso (Application)
 
@@ -58,3 +60,4 @@ Presentation rechaza también un ZIP que no pueda abrirse o que no contenga `dat
 | Importar un archivo inválido o incompleto | Mensaje claro y datos locales intactos (historia 4 · 3) |
 | Cancelar en la confirmación | Sin cambios (historia 4 · 4) |
 | Revisar el contenido exportado | `datos.json` e imágenes no contienen credenciales ni información de cuenta (historia 4 · 5) |
+| Importar datos de ejercicios desde una copia | Los campos opcionales de series y repeticiones se mantienen independientes de las observaciones; los campos ausentes en copias anteriores no invalidan la importación |

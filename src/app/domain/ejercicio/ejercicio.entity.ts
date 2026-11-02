@@ -29,6 +29,8 @@ export interface Ejercicio {
   categoriaIds: string[];
   enlaces: EnlaceEjercicio[];
   imagenes: ImagenEjercicio[];
+  series?: number;
+  repeticiones?: number;
   observaciones?: string;
   /** Pasa a `true` tras una subida correcta al repositorio común; nunca vuelve a `false` (FR-021). */
   subidoRepositorioComun: boolean;

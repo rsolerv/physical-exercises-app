@@ -14,6 +14,8 @@ interface FilaEjercicio {
   id: string;
   nombre: string;
   descripcion: string;
+  series: number | null;
+  repeticiones: number | null;
   observaciones: string | null;
   subido_repositorio_comun: number;
 }
@@ -70,8 +72,17 @@ export class EjercicioRepositorySqlite implements EjercicioRepositoryPort {
 
   private async guardarEjercicio(id: string, datos: DatosNuevoEjercicio, subidoRepositorioComun = false): Promise<void> {
     await this.conexion.ejecutarSinResultado(
-      'INSERT INTO ejercicio (id, nombre, descripcion, observaciones, subido_repositorio_comun) VALUES (?, ?, ?, ?, ?)',
-      [id, datos.nombre, datos.descripcion, datos.observaciones ?? null, subidoRepositorioComun ? 1 : 0]
+      'INSERT INTO ejercicio (id, nombre, descripcion, series, repeticiones, observaciones, subido_repositorio_comun) ' +
+        'VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [
+        id,
+        datos.nombre,
+        datos.descripcion,
+        datos.series ?? null,
+        datos.repeticiones ?? null,
+        datos.observaciones ?? null,
+        subidoRepositorioComun ? 1 : 0,
+      ]
     );
     await this.guardarRelaciones(id, datos);
   }
@@ -86,13 +97,22 @@ export class EjercicioRepositorySqlite implements EjercicioRepositoryPort {
       categoriaIds: cambios.categoriaIds ?? actual.categoriaIds,
       enlaces: cambios.enlaces ?? actual.enlaces,
       imagenes: cambios.imagenes ?? actual.imagenes,
+      series: 'series' in cambios ? cambios.series : actual.series,
+      repeticiones: 'repeticiones' in cambios ? cambios.repeticiones : actual.repeticiones,
       observaciones: cambios.observaciones ?? actual.observaciones,
     };
     validarEjercicio(fusionado);
 
     await this.conexion.ejecutarSinResultado(
-      'UPDATE ejercicio SET nombre = ?, descripcion = ?, observaciones = ? WHERE id = ?',
-      [fusionado.nombre, fusionado.descripcion, fusionado.observaciones ?? null, id]
+      'UPDATE ejercicio SET nombre = ?, descripcion = ?, series = ?, repeticiones = ?, observaciones = ? WHERE id = ?',
+      [
+        fusionado.nombre,
+        fusionado.descripcion,
+        fusionado.series ?? null,
+        fusionado.repeticiones ?? null,
+        fusionado.observaciones ?? null,
+        id,
+      ]
     );
     await this.borrarRelaciones(id);
     await this.guardarRelaciones(id, fusionado);
@@ -141,6 +161,8 @@ export class EjercicioRepositorySqlite implements EjercicioRepositoryPort {
       id: fila.id,
       nombre: fila.nombre,
       descripcion: fila.descripcion,
+      series: fila.series ?? undefined,
+      repeticiones: fila.repeticiones ?? undefined,
       observaciones: fila.observaciones ?? undefined,
       categoriaIds: categorias.map((c) => c.categoria_id),
       enlaces: enlaces.map((e): EnlaceEjercicio => ({ tipo: e.tipo, url: e.url })),

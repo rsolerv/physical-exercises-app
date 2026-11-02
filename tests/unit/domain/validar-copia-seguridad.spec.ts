@@ -112,6 +112,9 @@ describe('validarCopiaSeguridad', () => {
           { tipo: 'youtube', url: 'https://youtube.com/watch?v=demo' },
         ],
         imagenes: [{ id: 'img-url', tipo: 'url', valorUrl: 'https://ejemplo.es/foto.png' }],
+        series: 3,
+        repeticiones: 10,
+        subidoRepositorioComun: true,
         observaciones: 'Tres series.',
       }],
       categorias: [{ id: 'cat-1', nombre: 'Piernas', descripcion: 'Fuerza' }],
@@ -125,6 +128,34 @@ describe('validarCopiaSeguridad', () => {
     });
 
     expect(() => validarCopiaSeguridad(contenido, {})).not.toThrow();
+  });
+
+  it('rechaza series o repeticiones que no sean enteros positivos', () => {
+    const ejercicioValido = {
+      id: 'ej-1',
+      nombre: 'Sentadilla',
+      descripcion: 'desc',
+      categoriaIds: ['cat-1'],
+      enlaces: [],
+      imagenes: [],
+    };
+    for (const pauta of [
+      { series: 0 },
+      { series: 1.5 },
+      { repeticiones: -1 },
+      { repeticiones: '10' },
+      { subidoRepositorioComun: 'sí' },
+    ]) {
+      expect(() =>
+        validarCopiaSeguridad(
+          datos({
+            ejercicios: [{ ...ejercicioValido, ...pauta }],
+            categorias: [{ id: 'cat-1', nombre: 'Piernas' }],
+          }),
+          {}
+        )
+      ).toThrow(new ErrorValidacion('El fichero está dañado o incompleto.'));
+    }
   });
 
   it('acepta imágenes con relleno base64 de uno o dos caracteres', () => {

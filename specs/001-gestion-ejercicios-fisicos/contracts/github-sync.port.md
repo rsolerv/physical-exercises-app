@@ -73,6 +73,8 @@ Tras `subir`, resolver un conflicto con `conservar_local`, se guarda el nuevo SH
 Documento JSON único (`datos.json`) con el estado íntegro de los datos del usuario: ejercicios, categorías, planificaciones con sus días y progreso diario, acorde al mandato de exportación/importación JSON de la constitución.
 
 - Las imágenes de tipo `url` se guardan como texto dentro del JSON.
+- Cada ejercicio puede incluir los campos numéricos opcionales `series` y `repeticiones`, independientes de `observaciones`. Se aceptan copias anteriores sin estos campos.
+- Cada ejercicio transporta el indicador opcional `subidoRepositorioComun`; los documentos anteriores que no lo incluyan se interpretan como `false`.
 - Las imágenes de tipo `archivo` NO se incrustan en `datos.json`: este guarda solo su ruta `imagenes/<id>.json`. El contenido de cada imagen (base64) vive en su propio documento JSON `imagenes/<id>.json` (`ImagenArchivoJSON`), manteniendo todo el repositorio de datos en formato JSON, tal como exige la constitución, sin necesidad de incrustar imágenes grandes dentro de `datos.json` (FR-036).
 - El JSON **nunca** contiene el token, el repositorio ni ningún otro dato de "Ajustes de aplicación" (FR-037).
 

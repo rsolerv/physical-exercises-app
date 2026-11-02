@@ -163,6 +163,26 @@
       </section>
 
       <section class="ejercicio-formulario__seccion">
+        <h3>Pauta recomendada</h3>
+        <mat-form-field appearance="outline">
+          <mat-label>Series (opcional)</mat-label>
+          <input matInput type="number" [formField]="formulario.series" />
+          <mat-hint>Número entero mayor que cero.</mat-hint>
+          @if (formulario.series().errors().length > 0 && formulario.series().touched()) {
+            <mat-error>{{ formulario.series().errors()[0].message }}</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Repeticiones (opcional)</mat-label>
+          <input matInput type="number" [formField]="formulario.repeticiones" />
+          <mat-hint>Número entero mayor que cero.</mat-hint>
+          @if (formulario.repeticiones().errors().length > 0 && formulario.repeticiones().touched()) {
+            <mat-error>{{ formulario.repeticiones().errors()[0].message }}</mat-error>
+          }
+        </mat-form-field>
+      </section>
+
+      <section class="ejercicio-formulario__seccion">
         <h3>Observaciones</h3>
         <mat-form-field appearance="outline">
           <mat-label>Observaciones (opcional)</mat-label>

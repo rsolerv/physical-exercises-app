@@ -84,6 +84,32 @@ describe('EjercicioFormularioComponent', () => {
     expect(componente.formulario().valid()).toBe(true);
   });
 
+  it('muestra la pauta como opcional y guarda los valores indicados', async () => {
+    const fixture = crearComponente();
+    const componente = fixture.componentInstance;
+    componente.formulario.nombre().value.set('Sentadilla');
+    componente.formulario.descripcion().value.set('Flexionar rodillas');
+    componente.formulario.series().value.set(3);
+    componente.formulario.repeticiones().value.set(10);
+    componente.alternarCategoria('cat-1');
+    fixture.detectChanges();
+
+    const inputs = (fixture.nativeElement as HTMLElement).querySelectorAll('input[type="number"]');
+    expect(inputs).toHaveLength(2);
+
+    await componente.guardar();
+
+    expect(TestBed.inject(GestionarEjercicioUseCase).crear).toHaveBeenCalledWith(
+      expect.objectContaining({ series: 3, repeticiones: 10 })
+    );
+  });
+
+  it('mantiene vacíos los campos opcionales si no se indican', () => {
+    const fixture = crearComponente();
+    expect(fixture.componentInstance.modelo().series).toBeNull();
+    expect(fixture.componentInstance.modelo().repeticiones).toBeNull();
+  });
+
   it('ofrece áreas táctiles de 48 px para categorías y selectores del formulario', () => {
     crearComponente();
     const estilos = Array.from(document.querySelectorAll('style'), (estilo) => estilo.textContent ?? '').join('\n');
@@ -563,6 +589,8 @@ describe('EjercicioFormularioComponent', () => {
         categoriaIds: string[];
         enlaces: unknown[];
         imagenes: unknown[];
+        series?: number;
+        repeticiones?: number;
         observaciones?: string;
       },
       puedeOfrecerSubida: ReturnType<typeof vi.fn> = vi.fn().mockResolvedValue(true)
@@ -596,6 +624,8 @@ describe('EjercicioFormularioComponent', () => {
         categoriaIds: ['cat-1'],
         enlaces: [],
         imagenes: [],
+        series: 4,
+        repeticiones: 8,
         observaciones: 'Cuidado con la espalda',
       });
       const fixture = crearComponente();
@@ -604,6 +634,8 @@ describe('EjercicioFormularioComponent', () => {
       const componente = fixture.componentInstance;
 
       expect(componente.modelo().nombre).toBe('Sentadilla');
+      expect(componente.modelo().series).toBe(4);
+      expect(componente.modelo().repeticiones).toBe(8);
       expect(componente.modelo().observaciones).toBe('Cuidado con la espalda');
       expect(componente.categoriaIdsSeleccionadas()).toEqual(['cat-1']);
     });

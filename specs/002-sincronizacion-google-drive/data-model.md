@@ -2,7 +2,7 @@
 
 **Feature**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md) | **Investigación**: [research.md](./research.md)
 
-Esta feature no añade ni modifica ninguna entidad de negocio (Ejercicio, Categoría, Planificación, Día de planificación, Progreso diario). El modelo vigente está en [el modelo de datos de la feature 001](../001-gestion-ejercicios-fisicos/data-model.md). Los cambios afectan a la entidad técnica **Ajustes de aplicación**, a un documento descargable nuevo y a estados que solo existen en memoria.
+El modelo de entidades de negocio está en [el modelo de datos de la feature 001](../001-gestion-ejercicios-fisicos/data-model.md). Esta feature mantiene la copia remota y la copia manual con el formato común `ExportacionJSON`, que incluye las series y repeticiones opcionales y el indicador `subidoRepositorioComun` del Ejercicio. Los campos que faltan en documentos antiguos se interpretan como no informados o `false`, respectivamente. Los cambios propios de sincronización afectan a la entidad técnica **Ajustes de aplicación**, a un documento descargable nuevo y a estados que solo existen en memoria.
 
 ## Resumen
 
@@ -73,7 +73,7 @@ La **versión remota** es el campo `version` de `datos.json`. El documento nunca
 
 ## Copia de seguridad en fichero
 
-Archivo ZIP único que la persona descarga e importa en otro dispositivo (ver [contrato](./contracts/copia-seguridad-archivo.md)). Conserva la estructura lógica de sincronización:
+Archivo ZIP único que la persona descarga e importa en otro dispositivo (ver [contrato](./contracts/copia-seguridad-archivo.md)). Conserva la estructura lógica de sincronización y transporta `series` y `repeticiones` como campos numéricos opcionales de cada ejercicio, sin mezclarlos con `observaciones`, junto con el indicador `subidoRepositorioComun`. Las copias anteriores que no incluyan estos campos siguen siendo válidas; el indicador ausente se considera `false`:
 
 | Ruta ZIP | Contenido |
 |---|---|

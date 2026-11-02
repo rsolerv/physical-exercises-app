@@ -36,7 +36,9 @@ export const EJERCICIOS_DEMO: Ejercicio[] = [
     categoriaIds: ['fuerza'],
     enlaces: [],
     imagenes: [],
-    observaciones: '3 series de 12 repeticiones. Descansa 60 segundos entre series.',
+    series: 3,
+    repeticiones: 12,
+    observaciones: 'Descansa 60 segundos entre series.',
     subidoRepositorioComun: false,
   },
   {
@@ -46,7 +48,8 @@ export const EJERCICIOS_DEMO: Ejercicio[] = [
     categoriaIds: ['fuerza'],
     enlaces: [],
     imagenes: [],
-    observaciones: '3 series de 10 repeticiones.',
+    series: 3,
+    repeticiones: 10,
     subidoRepositorioComun: false,
   },
   {

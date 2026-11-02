@@ -1,5 +1,6 @@
 import type { Database, BindingSpec } from '@sqlite.org/sqlite-wasm';
 import { ESQUEMA_SQL } from './esquema';
+import { extraerPautaObservaciones } from '../../domain/ejercicio/extraer-pauta-observaciones';
 
 /**
  * Envoltorio fino sobre una instancia `Database` de `@sqlite.org/sqlite-wasm`
@@ -79,8 +80,28 @@ export class MotorSqlite {
       returnValue: 'resultRows',
       rowMode: 'object',
     }) as { name: string }[];
+    for (const columna of ['series', 'repeticiones']) {
+      if (!columnasEjercicio.some((existente) => existente.name === columna)) {
+        this.db.exec(`ALTER TABLE ejercicio ADD COLUMN ${columna} INTEGER`);
+      }
+    }
     if (!columnasEjercicio.some((columna) => columna.name === 'subido_repositorio_comun')) {
       this.db.exec('ALTER TABLE ejercicio ADD COLUMN subido_repositorio_comun INTEGER NOT NULL DEFAULT 0');
+    }
+    const pautasAnteriores = this.db.exec({
+      sql: 'SELECT id, observaciones FROM ejercicio WHERE observaciones IS NOT NULL ' +
+        'AND series IS NULL AND repeticiones IS NULL',
+      returnValue: 'resultRows',
+      rowMode: 'object',
+    }) as { id: string; observaciones: string }[];
+    for (const fila of pautasAnteriores) {
+      const pauta = extraerPautaObservaciones(fila.observaciones);
+      if (pauta) {
+        this.db.exec({
+          sql: 'UPDATE ejercicio SET series = ?, repeticiones = ?, observaciones = ? WHERE id = ?',
+          bind: [pauta.series, pauta.repeticiones, pauta.observaciones ?? null, fila.id],
+        });
+      }
     }
 
     const columnasCategoria = this.db.exec({

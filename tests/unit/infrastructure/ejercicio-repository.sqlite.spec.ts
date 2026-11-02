@@ -26,6 +26,8 @@ describe('EjercicioRepositorySqlite', () => {
       categoriaIds: ['cat-rodilla'],
       enlaces: [{ tipo: 'youtube', url: 'https://www.youtube.com/watch?v=abc123' }],
       imagenes: [{ id: 'img-1', tipo: 'url', valorUrl: 'https://example.com/foto.jpg' }],
+      series: 3,
+      repeticiones: 10,
       observaciones: 'Hacerlo despacio.',
       ...sobrescribir,
     };
@@ -40,6 +42,8 @@ describe('EjercicioRepositorySqlite', () => {
     expect(leido?.categoriaIds).toEqual(['cat-rodilla']);
     expect(leido?.enlaces).toEqual([{ tipo: 'youtube', url: 'https://www.youtube.com/watch?v=abc123' }]);
     expect(leido?.imagenes).toEqual([{ id: 'img-1', tipo: 'url', valorUrl: 'https://example.com/foto.jpg' }]);
+    expect(leido?.series).toBe(3);
+    expect(leido?.repeticiones).toBe(10);
     expect(leido?.observaciones).toBe('Hacerlo despacio.');
   });
 
@@ -84,6 +88,14 @@ describe('EjercicioRepositorySqlite', () => {
     expect(actualizado.enlaces).toEqual([{ tipo: 'web', url: 'https://example.com/guia' }]);
     // El resto de campos no modificados se conserva.
     expect(actualizado.descripcion).toBe('Flexionar las rodillas.');
+  });
+
+  it('actualiza y persiste de forma independiente los campos opcionales de pauta', async () => {
+    const creado = await repositorio.crear(datos());
+    const actualizado = await repositorio.actualizar(creado.id, { series: undefined, repeticiones: 12 });
+
+    expect(actualizado.series).toBeUndefined();
+    expect(actualizado.repeticiones).toBe(12);
   });
 
   it('actualizar lanza ErrorNoEncontrado si el id no existe', async () => {
@@ -173,14 +185,15 @@ describe('EjercicioRepositorySqlite', () => {
     expect((await repositorio.obtenerPorId(creado.id))?.subidoRepositorioComun).toBe(false);
   });
 
-  it('migra bases de datos existentes añadiendo la columna subido_repositorio_comun con valor 0 (ALTER TABLE)', async () => {
+  it('migra bases de datos existentes y separa una pauta antigua de observaciones', async () => {
     await conexion.cerrar();
     const motor: MotorSqlite = await crearMotorSqliteEnMemoria();
     await motor.ejecutarSinResultado(
       'CREATE TABLE ejercicio (id TEXT PRIMARY KEY, nombre TEXT NOT NULL, descripcion TEXT NOT NULL, observaciones TEXT)',
     );
     await motor.ejecutarSinResultado(
-      "INSERT INTO ejercicio (id, nombre, descripcion) VALUES ('ej-antiguo', 'Sentadilla', 'Flexionar las rodillas.')",
+      "INSERT INTO ejercicio (id, nombre, descripcion, observaciones) " +
+        "VALUES ('ej-antiguo', 'Sentadilla', 'Flexionar las rodillas.', '3 series de 10 repeticiones. Mantén la espalda recta.')",
     );
     await motor.aplicarEsquema();
     TestBed.resetTestingModule();
@@ -189,6 +202,9 @@ describe('EjercicioRepositorySqlite', () => {
     const repositorioMigrado = TestBed.inject(EjercicioRepositorySqlite);
     const ejercicioMigrado = await repositorioMigrado.obtenerPorId('ej-antiguo');
     expect(ejercicioMigrado?.subidoRepositorioComun).toBe(false);
+    expect(ejercicioMigrado?.series).toBe(3);
+    expect(ejercicioMigrado?.repeticiones).toBe(10);
+    expect(ejercicioMigrado?.observaciones).toBe('Mantén la espalda recta');
     await motor.cerrar();
   });
 });

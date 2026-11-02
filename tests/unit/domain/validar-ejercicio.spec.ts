@@ -20,6 +20,19 @@ describe('validarEjercicio', () => {
     expect(() => validarEjercicio(datosValidos())).not.toThrow();
   });
 
+  it('acepta series y repeticiones cuando se indican como enteros positivos', () => {
+    expect(() => validarEjercicio(datosValidos({ series: 3, repeticiones: 10 }))).not.toThrow();
+  });
+
+  it.each([
+    ['series', 0],
+    ['series', 1.5],
+    ['repeticiones', -1],
+    ['repeticiones', Number.MAX_SAFE_INTEGER + 1],
+  ] as const)('rechaza %s si no es un entero positivo', (campo, valor) => {
+    expect(() => validarEjercicio(datosValidos({ [campo]: valor }))).toThrow(ErrorValidacion);
+  });
+
   it('rechaza un nombre vacío (FR-005)', () => {
     expect(() => validarEjercicio(datosValidos({ nombre: '' }))).toThrow(ErrorValidacion);
     expect(() => validarEjercicio(datosValidos({ nombre: '   ' }))).toThrow(ErrorValidacion);

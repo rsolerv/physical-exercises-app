@@ -87,6 +87,9 @@ describe('SembrarCatalogoPredefinidoUseCase', () => {
 
     const primeraLlamada = (ejercicioRepo.crear as ReturnType<typeof vi.fn>).mock.calls[0][0] as DatosNuevoEjercicio;
     expect(primeraLlamada.categoriaIds.every((id) => id.startsWith('cat-'))).toBe(true);
+    expect(primeraLlamada.series).toBe(2);
+    expect(primeraLlamada.repeticiones).toBe(10);
+    expect(primeraLlamada.observaciones).toBeUndefined();
   });
 
   it('no se repite en arranques posteriores (marca catalogoPredefinidoCargado) y NO marca cambiosLocalesPendientes (FR-034)', async () => {

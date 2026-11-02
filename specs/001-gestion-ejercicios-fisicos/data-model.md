@@ -1,6 +1,7 @@
 # Data Model: Gestión de Ejercicios Físicos y Planificación Semanal
 
 
+
 **Feature**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md) | **Fecha**: 2026-10-20
 
 Este modelo recoge las entidades descritas en la sección "Key Entities" del spec, junto con los campos, relaciones y reglas de validación que se derivan de los requisitos funcionales (FR), reglas de negocio y casos límite. Todos los nombres de campo se dan en español, en línea con el Principio I de la constitución (el modelo de dominio no es texto de interfaz, pero se mantiene el mismo idioma por coherencia y porque algunos de estos nombres pueden aparecer en mensajes de validación mostrados al usuario).
@@ -29,6 +30,8 @@ Actividad física concreta que el usuario puede consultar, planificar y marcar c
 | enlacesWeb | lista de URLs | No | Cada URL debe tener formato válido antes de guardarse (FR-007); se puede visualizar embebida dentro de la app cuando el sitio lo permita (FR-016) |
 | enlacesYoutube | lista de URLs de YouTube | No | Cada URL debe tener formato válido antes de guardarse (FR-007); se previsualiza con reproductor embebido (FR-015); si el vídeo deja de estar disponible, el ejercicio se sigue mostrando indicándolo (FR-033) |
 | imágenes | lista de imágenes, cada una `{ id, tipo: "url" \| "archivo", valor }` (el `id` es único dentro de ese ejercicio, no globalmente) | No | `tipo: "url"` guarda una URL externa; `tipo: "archivo"` guarda el contenido binario de la imagen en el almacenamiento local, con un máximo de 5 MB por imagen (FR-036). Al sincronizar, cada imagen de archivo se sube como un archivo independiente del repositorio y el documento JSON solo guarda su ruta |
+| series | entero positivo | No | Número recomendado de series; se guarda como `NULL` si no se informa |
+| repeticiones | entero positivo | No | Número recomendado de repeticiones; se guarda como `NULL` si no se informa |
 | observaciones | texto | No | Campo libre opcional (FR-014) |
 
 **Relaciones**: N:M con Categoría. N:M con Día de planificación (a través de Planificación). 1:N con Progreso diario (un ejercicio puede tener una entrada de progreso por cada fecha en la que estaba planificado).
@@ -114,7 +117,7 @@ El contenido de fábrica (FR-034) está en el anexo [catalogo-predefinido.json](
 |---|---|---|
 | version | número | Versión del formato del catálogo (actualmente `1`) |
 | categorias[] | `{ nombre, descripcion }` | Nombres únicos; contiene todas las categorías que utiliza el catálogo |
-| ejercicios[] | `{ nombre, descripcion, categorias[], enlacesYoutube[], enlacesWeb[], imagenes[], observaciones }` | Cada ejercicio cumple las reglas de Ejercicio; `categorias` contiene nombres de `categorias[]` (al menos uno); `imagenes` solo admite el tipo `url` |
+| ejercicios[] | `{ nombre, descripcion, categorias[], enlacesYoutube[], enlacesWeb[], imagenes[], series?, repeticiones?, observaciones? }` | Cada ejercicio cumple las reglas de Ejercicio; `categorias` contiene nombres de `categorias[]` (al menos uno); `imagenes` solo admite el tipo `url`. La siembra separa pautas antiguas escritas en observaciones. |
 
 Los identificadores no vienen en el archivo: el caso de uso de siembra los genera al insertar, resolviendo las categorías de cada ejercicio por su nombre.
 

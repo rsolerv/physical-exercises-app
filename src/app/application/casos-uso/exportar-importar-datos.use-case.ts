@@ -8,6 +8,7 @@ import { PlanificacionRepositoryPort } from '../ports/planificacion-repository.p
 import { ProgresoDiarioRepositoryPort } from '../ports/progreso-diario-repository.port';
 import { ErrorValidacion } from '../../domain/errores/errores-dominio';
 import { TAMANO_MAXIMO_IMAGEN_BYTES } from '../../domain/ejercicio/validar-ejercicio';
+import { extraerPautaObservaciones } from '../../domain/ejercicio/extraer-pauta-observaciones';
 import {
   type EjercicioExportado,
   type ExportacionJSON,
@@ -50,6 +51,9 @@ export class ExportarImportarDatosUseCase {
       descripcion: ejercicio.descripcion,
       categoriaIds: ejercicio.categoriaIds,
       enlaces: ejercicio.enlaces,
+      series: ejercicio.series,
+      repeticiones: ejercicio.repeticiones,
+      subidoRepositorioComun: ejercicio.subidoRepositorioComun,
       observaciones: ejercicio.observaciones,
       imagenes: ejercicio.imagenes.map((imagen): ImagenEjercicioExportada => {
         if (imagen.tipo === 'url') {
@@ -163,15 +167,23 @@ export class ExportarImportarDatosUseCase {
 
     const idsEjercicios = new Map<string, string>();
     for (const ejercicio of datos.ejercicios) {
+      const pautaAnterior = ejercicio.series === undefined || ejercicio.repeticiones === undefined
+        ? extraerPautaObservaciones(ejercicio.observaciones ?? '')
+        : null;
       const datosCreacion: DatosNuevoEjercicio = {
         nombre: ejercicio.nombre,
         descripcion: ejercicio.descripcion,
         categoriaIds: ejercicio.categoriaIds.map((id) => idsCategorias.get(id) ?? id),
         enlaces: ejercicio.enlaces,
         imagenes: imagenesPorEjercicio.get(ejercicio.id) ?? [],
-        observaciones: ejercicio.observaciones,
+        series: ejercicio.series ?? pautaAnterior?.series,
+        repeticiones: ejercicio.repeticiones ?? pautaAnterior?.repeticiones,
+        observaciones: pautaAnterior?.observaciones ?? ejercicio.observaciones,
       };
       const creado = await this.ejercicioRepository.crear(datosCreacion);
+      if (ejercicio.subidoRepositorioComun) {
+        await this.ejercicioRepository.marcarSubidoRepositorioComun(creado.id);
+      }
       idsEjercicios.set(ejercicio.id, creado.id);
     }
 
