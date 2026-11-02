@@ -176,7 +176,9 @@ export class PrevisualizarEjercicioComunComponent {
   private async confirmarEliminacion(ejercicio: EjercicioComunArchivo): Promise<void> {
     try {
       await this.administrarRepositorioComun.eliminarEjercicio(ejercicio.id);
-      this.mensajeFeedback.mostrarExito(`Se ha borrado «${ejercicio.nombre}» del repositorio común.`);
+      this.mensajeFeedback.mostrarExito(
+        `Se ha enviado el borrado de «${ejercicio.nombre}». El catálogo común se actualizará al completarse la validación automática.`
+      );
       const state = this.location.getState();
       const estadoImportacion =
         typeof state === 'object' && state !== null && 'estadoImportacion' in state

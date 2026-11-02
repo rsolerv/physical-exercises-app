@@ -21,7 +21,6 @@ import { API_BASE_GITHUB, aBase64, cabecerasGitHub, desdeBase64 } from '../githu
 const OWNER_REPO = 'rsolerv/common-data-physical-exercises';
 const RAMA_LECTURA = 'main';
 const RAMA_ESCRITURA = 'requests';
-const DURACION_CACHE_RAW_MS = 5 * 60 * 1000;
 const RAW_BASE = `https://raw.githubusercontent.com/${OWNER_REPO}`;
 const API_CONTENTS = `${API_BASE_GITHUB}/${OWNER_REPO}/contents`;
 const API_GRAPHQL_GITHUB = 'https://api.github.com/graphql';
@@ -249,14 +248,14 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
     }
 
     try {
-      const borradoMain = await this.prepararBorradoRama(credenciales, RAMA_LECTURA, ejercicioId, true);
-      const borradoRequests = await this.prepararBorradoRama(credenciales, RAMA_ESCRITURA, ejercicioId, false);
-      if (!borradoMain) throw new ErrorValidacion('No se han preparado los cambios para borrar el ejercicio de main.');
+      const borradoRequests = await this.prepararBorradoRama(credenciales, RAMA_ESCRITURA, ejercicioId);
+      if (!borradoRequests) {
+        throw new ErrorNoEncontrado('No se han encontrado archivos ni referencias del ejercicio en requests.');
+      }
 
-      if (borradoRequests) await this.aplicarBorradoRama(credenciales, ejercicioId, borradoRequests);
-      const shaNuevoMain = await this.aplicarBorradoRama(credenciales, ejercicioId, borradoMain);
-      this.referenciaLectura = shaNuevoMain;
-      this.referenciaLecturaExpiraEn = Date.now() + DURACION_CACHE_RAW_MS;
+      await this.aplicarBorradoRama(credenciales, ejercicioId, borradoRequests);
+      this.referenciaLectura = RAMA_LECTURA;
+      this.referenciaLecturaExpiraEn = 0;
     } catch (error) {
       if (error instanceof ErrorValidacion || error instanceof ErrorNoEncontrado) throw error;
       throw this.traducirError(error);
@@ -266,8 +265,7 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
   private async prepararBorradoRama(
     credenciales: CredencialesGitHub,
     rama: string,
-    ejercicioId: string,
-    exigirEjercicioPublicado: boolean
+    ejercicioId: string
   ): Promise<CambiosBorradoRama | null> {
     const cabeceras = cabecerasGitHub(credenciales.tokenPAT);
     let referencia: ReferenciaGitHub;
@@ -276,7 +274,7 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
         this.http.get<ReferenciaGitHub>(`${API_BASE_GITHUB}/${OWNER_REPO}/git/ref/heads/${rama}`, { headers: cabeceras })
       );
     } catch (error) {
-      if (!exigirEjercicioPublicado && error instanceof HttpErrorResponse && error.status === 404) return null;
+      if (error instanceof HttpErrorResponse && error.status === 404) return null;
       throw error;
     }
 
@@ -286,7 +284,7 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
         this.http.get<ContenidoGitHub>(`${API_CONTENTS}/categorias.json?ref=${rama}`, { headers: cabeceras })
       );
     } catch (error) {
-      if (!exigirEjercicioPublicado && error instanceof HttpErrorResponse && error.status === 404) {
+      if (error instanceof HttpErrorResponse && error.status === 404) {
         documentoCategoriasRespuesta = null;
       } else {
         throw error;
@@ -294,7 +292,10 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
     }
 
     let documentoCategorias: DocumentoCategoriasComun | null = null;
-    if (documentoCategoriasRespuesta?.content?.trim()) {
+    if (documentoCategoriasRespuesta) {
+      if (!documentoCategoriasRespuesta.content?.trim()) {
+        throw new ErrorValidacion(`GitHub no ha devuelto el contenido de categorias.json en ${rama}.`);
+      }
       let contenidoCategorias: unknown;
       try {
         contenidoCategorias = JSON.parse(desdeBase64(documentoCategoriasRespuesta.content));
@@ -303,18 +304,12 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
         throw new ErrorValidacion(`El documento categorias.json de ${rama} no contiene JSON válido.`);
       }
       documentoCategorias = this.validarDocumentoCategorias(contenidoCategorias as DocumentoCategoriasComun);
-    } else if (exigirEjercicioPublicado) {
-      throw new ErrorValidacion('GitHub no ha devuelto el contenido de categorias.json en main.');
     }
 
     const apareceEnIndice =
       documentoCategorias?.categorias.some((categoria) =>
         (categoria.ejercicios ?? []).some((id) => String(id) === ejercicioId)
       ) ?? false;
-    if (exigirEjercicioPublicado && !apareceEnIndice) {
-      throw new ErrorNoEncontrado('El ejercicio ya no aparece en el catálogo común.');
-    }
-
     const commitBase = await firstValueFrom(
       this.http.get<CommitGitHub>(`${API_BASE_GITHUB}/${OWNER_REPO}/git/commits/${referencia.object.sha}`, {
         headers: cabeceras,
@@ -340,10 +335,6 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
     const rutasEjercicio = arbolBase.tree.filter(
       (entrada) => entrada.type === 'blob' && entrada.path.startsWith(prefijo)
     );
-    const rutaDocumento = `${prefijo}${ejercicioId}.json`;
-    if (exigirEjercicioPublicado && !rutasEjercicio.some((entrada) => entrada.path === rutaDocumento)) {
-      throw new ErrorNoEncontrado('No se ha encontrado el archivo publicado del ejercicio.');
-    }
 
     const adiciones =
       documentoCategorias && apareceEnIndice

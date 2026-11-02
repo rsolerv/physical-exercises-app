@@ -48,12 +48,10 @@ interface RepositorioComunPort {
   // No escribe en `main` ni gestiona la pull request ni sus reglas.
 
   eliminarEjercicio(credenciales: CredencialesGitHub, ejercicioId: string): Promise<void>;
-  // Prepara requests y main, eliminando de requests (si existe) la copia
-  // pendiente y sus referencias antes de borrar de main el ejercicio publicado.
-  // Cada rama se actualiza en un commit GraphQL createCommitOnBranch con
-  // expectedHeadOid; el proceso entre ramas no es atómico y permite reintento.
-  // Durante cinco minutos tras el éxito, fija las lecturas de esta sesión al
-  // SHA del commit nuevo para no reutilizar datos cacheados bajo main (FR-028/FR-029).
+  // Elimina todos los archivos de ejercicios/<id>/ y su id de categorias.json
+  // de requests en un commit GraphQL createCommitOnBranch con expectedHeadOid.
+  // Los workflows validan y propagan el cambio a main; el adaptador no escribe
+  // directamente en main. Tras el commit invalida su referencia local de lectura.
 }
 
 interface CategoriaComun {
@@ -83,7 +81,7 @@ interface ImagenEjercicioComun {
 // application/ports/github-sync.port.ts (mismo formato, mismo token).
 ```
 
-**Errores que puede lanzar la implementación**: `ErrorRedSincronizacion` (repositorio común no disponible o sin conexión, FR-023), `ErrorAutenticacionGitHub` (token inválido o sin permisos), `ErrorConflictoRemoto` (la referencia cambió o GitHub rechaza la mutación de una rama), `ErrorNoEncontrado` (el ejercicio no está publicado en `main`) y `ErrorValidacion` (documento remoto con formato inválido o árbol truncado). Cada rama se modifica solo al aceptar su mutación; `expectedHeadOid` impide sobrescribir cambios concurrentes. Si falla `main` tras limpiar `requests`, la operación informa del error y se puede reintentar.
+**Errores que puede lanzar la implementación**: `ErrorRedSincronizacion` (repositorio común no disponible o sin conexión, FR-023), `ErrorAutenticacionGitHub` (token inválido o sin permisos), `ErrorConflictoRemoto` (la referencia de `requests` cambió o GitHub rechaza la mutación), `ErrorNoEncontrado` (no se encontraron archivos ni referencias del ejercicio en `requests`) y `ErrorValidacion` (documento remoto con formato inválido o árbol truncado). `expectedHeadOid` impide sobrescribir cambios concurrentes. La validación de la eliminación y la propagación a `main` son responsabilidad de los workflows del repositorio común, que solo permiten borrados a la cuenta `rsolerv`.
 
 ## Reglas de decisión de Application (sin lógica de dominio adicional)
 

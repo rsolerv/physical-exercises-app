@@ -209,7 +209,9 @@ export class ImportarEjerciciosComponent {
         return siguientes;
       });
       if (this.resultados().length === 0) this.estado.set('vacio');
-      this.mensajeFeedback.mostrarExito(`Se ha borrado «${ejercicio.nombre}» del repositorio común.`);
+      this.mensajeFeedback.mostrarExito(
+        `Se ha enviado el borrado de «${ejercicio.nombre}». El catálogo común se actualizará al completarse la validación automática.`
+      );
     } catch (error) {
       this.mensajeFeedback.mostrarError(error instanceof Error ? error.message : 'No se ha podido borrar el ejercicio común.');
     }

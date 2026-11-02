@@ -76,6 +76,6 @@ export abstract class RepositorioComunPort {
     imagenesArchivo: ImagenArchivoJSON[]
   ): Promise<void>;
 
-  /** Elimina del catálogo publicado el ejercicio, sus imágenes y sus referencias de categorías en una sola actualización de main. */
+  /** Elimina el ejercicio, sus imágenes y sus referencias de categorías de requests en una sola actualización. */
   abstract eliminarEjercicio(credenciales: CredencialesGitHub, ejercicioId: string): Promise<void>;
 }
