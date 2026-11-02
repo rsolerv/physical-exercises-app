@@ -48,10 +48,10 @@ interface RepositorioComunPort {
   // No escribe en `main` ni gestiona la pull request ni sus reglas.
 
   eliminarEjercicio(credenciales: CredencialesGitHub, ejercicioId: string): Promise<void>;
-  // Elimina todos los archivos de ejercicios/<id>/ y su id de categorias.json
-  // de requests en un commit GraphQL createCommitOnBranch con expectedHeadOid.
-  // Los workflows validan y propagan el cambio a main; el adaptador no escribe
-  // directamente en main. Tras el commit invalida su referencia local de lectura.
+  // Prepara requests y main; elimina archivos y referencias en cada rama
+  // mediante commits GraphQL createCommitOnBranch con expectedHeadOid.
+  // Actualiza primero requests y luego main; si falla main, permite reintentar.
+  // Tras el commit de main, fija las lecturas al SHA nuevo durante cinco minutos.
 }
 
 interface CategoriaComun {
@@ -81,7 +81,7 @@ interface ImagenEjercicioComun {
 // application/ports/github-sync.port.ts (mismo formato, mismo token).
 ```
 
-**Errores que puede lanzar la implementación**: `ErrorRedSincronizacion` (repositorio común no disponible o sin conexión, FR-023), `ErrorAutenticacionGitHub` (token inválido o sin permisos), `ErrorConflictoRemoto` (la referencia de `requests` cambió o GitHub rechaza la mutación), `ErrorNoEncontrado` (no se encontraron archivos ni referencias del ejercicio en `requests`) y `ErrorValidacion` (documento remoto con formato inválido o árbol truncado). `expectedHeadOid` impide sobrescribir cambios concurrentes. La validación de la eliminación y la propagación a `main` son responsabilidad de los workflows del repositorio común, que solo permiten borrados a la cuenta `rsolerv`.
+**Errores que puede lanzar la implementación**: `ErrorRedSincronizacion` (repositorio común no disponible o sin conexión, FR-023), `ErrorAutenticacionGitHub` (token inválido o sin permisos), `ErrorConflictoRemoto` (la referencia de alguna rama cambió o GitHub rechaza la mutación), `ErrorNoEncontrado` (no se encontraron archivos ni referencias del ejercicio en ninguna rama) y `ErrorValidacion` (documento remoto con formato inválido o árbol truncado). `expectedHeadOid` impide sobrescribir cambios concurrentes. Si falla `main` después de limpiar `requests`, la operación informa del error y se puede reintentar.
 
 ## Reglas de decisión de Application (sin lógica de dominio adicional)
 

@@ -178,9 +178,9 @@ El propietario solicita añadir a US1 una ficha remota de solo lectura, accesibl
 ## Enmienda Living Spec - Administración del catálogo común (2026-10-31)
 
 - [X] T032 [US3] Acreditar a `rsolerv` consultando el login confirmado por `GET /user` con la PAT guardada; volver a validar en Application antes de las operaciones y añadir pruebas de identidad, permisos y falta de PAT.
-- [X] T033 [US3] Añadir el borrado atómico en `requests`: quitar referencias de `categorias.json`, eliminar todos los archivos bajo `ejercicios/<id>/` y detectar conflictos mediante `expectedHeadOid`; probar éxito, árbol truncado y conflictos.
+- [X] T033 [US3] Añadir el borrado atómico de `requests` y `main`: quitar referencias de `categorias.json`, eliminar todos los archivos bajo `ejercicios/<id>/` y detectar conflictos mediante `expectedHeadOid`; probar éxito, árbol truncado y conflictos.
 - [X] T034 [US3] Permitir revertir la marca local `subidoRepositorioComun` solo tras acreditación y añadir la acción protegida en la ficha local.
 - [X] T035 [US3] Añadir confirmación y acciones administrativas en resultados y ficha remota; retirar de la vista los ejercicios borrados; cubrir visibilidad y flujos con pruebas de componente.
 - [X] T036 [US3] Actualizar spec, plan, research, contratos, modelo de datos y quickstart; registrar la decisión transversal de identidad y borrado en `specs/001-gestion-ejercicios-fisicos/research.md`.
-- [X] T037 [US3] Corregir el borrado administrativo para eliminar de forma atómica el ejercicio, sus imágenes y referencias solo en `requests`, invalidar la referencia local de lectura y dejar que los workflows existentes propaguen el cambio a `main`.
+- [X] T037 [US3] Corregir el borrado administrativo para eliminar de forma atómica el ejercicio, sus imágenes y referencias primero en `requests` y después en `main`, fijando las lecturas al SHA nuevo de `main` para evitar caché obsoleta.
 - [ ] T038 [US3] Tras la revisión del propietario, permitir en `rsolerv/common-data-physical-exercises` los borrados de archivos del catálogo únicamente cuando el actor GitHub sea `rsolerv`.

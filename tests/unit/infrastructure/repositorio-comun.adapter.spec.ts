@@ -269,92 +269,135 @@ describe('RepositorioComunAdapter', () => {
     });
 
     describe('eliminarEjercicio', () => {
-      async function prepararArbolRequests(
+      async function prepararArbolRama(
+        rama: 'main' | 'requests',
+        sha: string,
         categorias: unknown | null,
         tree: unknown[],
         truncated = false
       ): Promise<void> {
-        httpMock.expectOne(`${API_REPOSITORIO}/git/ref/heads/requests`).flush({ object: { sha: 'requests-base' } });
+        httpMock.expectOne(`${API_REPOSITORIO}/git/ref/heads/${rama}`).flush({ object: { sha } });
         await flushMicrotareas();
 
-        const lecturaCategorias = httpMock.expectOne(`${API_CONTENTS}/categorias.json?ref=requests`);
+        const lecturaCategorias = httpMock.expectOne(`${API_CONTENTS}/categorias.json?ref=${rama}`);
         if (categorias === null) {
           lecturaCategorias.flush({ message: 'Not Found' }, { status: 404, statusText: 'Not Found' });
         } else {
-          lecturaCategorias.flush({ content: codificarJSON(categorias), sha: 'sha-categorias' });
+          lecturaCategorias.flush({ content: codificarJSON(categorias), sha: `sha-${rama}-categorias` });
         }
         await flushMicrotareas();
 
-        httpMock.expectOne(`${API_REPOSITORIO}/git/commits/requests-base`).flush({ tree: { sha: 'requests-tree' } });
+        httpMock.expectOne(`${API_REPOSITORIO}/git/commits/${sha}`).flush({ tree: { sha: `tree-${rama}` } });
         await flushMicrotareas();
-        httpMock.expectOne(`${API_REPOSITORIO}/git/trees/requests-tree?recursive=1`).flush({ truncated, tree });
+        httpMock.expectOne(`${API_REPOSITORIO}/git/trees/tree-${rama}?recursive=1`).flush({ truncated, tree });
         await flushMicrotareas();
       }
 
       it('rechaza identificadores que no se pueden usar como carpeta', async () => {
         await expect(adapter.eliminarEjercicio(CREDENCIALES, '../otro')).rejects.toThrow(ErrorValidacion);
+        httpMock.expectNone(`${API_REPOSITORIO}/git/ref/heads/main`);
         httpMock.expectNone(`${API_REPOSITORIO}/git/ref/heads/requests`);
       });
 
-      it('elimina el documento, todas las imagenes y referencias de categoria solo en requests', async () => {
+      it('prepara ambas ramas y elimina documentos, imagenes e indices antes de invalidar la cache', async () => {
         const categorias = documentoCategorias([
           { id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-1', 'ej-2'] },
           { id: 'cat-comun-2', nombre: 'Piernas', ejercicios: ['ej-1'] },
-          { id: 'cat-sin-indice', nombre: 'Sin índice' },
+          { id: 'cat-sin-indice', nombre: 'Sin indice', ejercicios: [] },
+        ]);
+        const categoriasActualizadas = documentoCategorias([
+          { id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-2'] },
+          { id: 'cat-comun-2', nombre: 'Piernas', ejercicios: [] },
+          { id: 'cat-sin-indice', nombre: 'Sin indice', ejercicios: [] },
         ]);
         const promesa = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
-        await prepararArbolRequests(categorias, [
+
+        await prepararArbolRama('main', 'main-base', categorias, [
           { path: 'ejercicios/ej-1/ej-1.json', type: 'blob' },
-          { path: 'ejercicios/ej-1/imagenes/img-1.json', type: 'blob' },
-          { path: 'ejercicios/ej-1/imagenes/img-2.json', type: 'blob' },
+          { path: 'ejercicios/ej-1/imagenes/main.png.json', type: 'blob' },
+          { path: 'ejercicios/ej-2/ej-2.json', type: 'blob' },
+        ]);
+        await prepararArbolRama('requests', 'requests-base', categorias, [
+          { path: 'ejercicios/ej-1/ej-1.json', type: 'blob' },
+          { path: 'ejercicios/ej-1/imagenes/requests.png.json', type: 'blob' },
           { path: 'ejercicios/ej-2/ej-2.json', type: 'blob' },
         ]);
 
-        const commit = httpMock.expectOne(API_GRAPHQL_GITHUB);
-        expect(commit.request.body.variables.input).toEqual({
-          branch: {
-            repositoryNameWithOwner: 'rsolerv/common-data-physical-exercises',
-            branchName: 'requests',
-          },
-          message: { headline: 'Eliminar ejercicio ej-1 del catálogo común' },
-          fileChanges: {
-            additions: [
-              {
-                path: 'categorias.json',
-                contents: codificarJSON({
-                  ...categorias,
-                  categorias: [
-                    { id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-2'] },
-                    { id: 'cat-comun-2', nombre: 'Piernas', ejercicios: [] },
-                    { id: 'cat-sin-indice', nombre: 'Sin índice' },
-                  ],
-                }),
-              },
-            ],
-            deletions: [
-              { path: 'ejercicios/ej-1/ej-1.json' },
-              { path: 'ejercicios/ej-1/imagenes/img-1.json' },
-              { path: 'ejercicios/ej-1/imagenes/img-2.json' },
-            ],
-          },
-          expectedHeadOid: 'requests-base',
-        });
-        commit.flush({ data: { createCommitOnBranch: { commit: { oid: 'requests-nuevo' } } } });
-        await expect(promesa).resolves.toBeUndefined();
-        httpMock.expectNone(`${API_REPOSITORIO}/git/ref/heads/main`);
-
-        const categoriasActualizadas = adapter.listarCategorias();
-        httpMock.expectOne(`${RAW_BASE}/categorias.json`).flush(
-          documentoCategorias([{ id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-2'] }])
-        );
-        await expect(categoriasActualizadas).resolves.toEqual([
-          { id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-2'] },
+        const commitRequests = httpMock.expectOne(API_GRAPHQL_GITHUB);
+        expect(commitRequests.request.body.variables.input.branch.branchName).toBe('requests');
+        expect(commitRequests.request.body.variables.input.fileChanges.deletions).toEqual([
+          { path: 'ejercicios/ej-1/ej-1.json' },
+          { path: 'ejercicios/ej-1/imagenes/requests.png.json' },
         ]);
+        expect(JSON.parse(atob(commitRequests.request.body.variables.input.fileChanges.additions[0].contents)).categorias)
+          .toEqual(categoriasActualizadas.categorias);
+        commitRequests.flush({ data: { createCommitOnBranch: { commit: { oid: 'requests-nuevo' } } } });
+        await flushMicrotareas();
+
+        const commitMain = httpMock.expectOne(API_GRAPHQL_GITHUB);
+        expect(commitMain.request.body.variables.input.branch.branchName).toBe('main');
+        expect(commitMain.request.body.variables.input.expectedHeadOid).toBe('main-base');
+        expect(commitMain.request.body.variables.input.fileChanges.deletions).toEqual([
+          { path: 'ejercicios/ej-1/ej-1.json' },
+          { path: 'ejercicios/ej-1/imagenes/main.png.json' },
+        ]);
+        commitMain.flush({ data: { createCommitOnBranch: { commit: { oid: 'main-nuevo' } } } });
+        await expect(promesa).resolves.toBeUndefined();
+
+        const lecturaActualizada = adapter.listarCategorias();
+        httpMock.expectOne(`${RAW_REPOSITORIO}/main-nuevo/categorias.json`).flush(categoriasActualizadas);
+        await expect(lecturaActualizada).resolves.toEqual(categoriasActualizadas.categorias);
       });
 
-      it('elimina archivos huerfanos aunque categorias.json no exista en requests', async () => {
+      it('actualiza solo requests cuando main ya no contiene el ejercicio', async () => {
+        const categorias = documentoCategorias([{ id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-2'] }]);
         const promesa = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
-        await prepararArbolRequests(null, [
+        await prepararArbolRama('main', 'main-base', categorias, [
+          { path: 'ejercicios/ej-2/ej-2.json', type: 'blob' },
+        ]);
+        await prepararArbolRama('requests', 'requests-base', categorias, [
+          { path: 'ejercicios/ej-1/ej-1.json', type: 'blob' },
+          { path: 'ejercicios/ej-2/ej-2.json', type: 'blob' },
+        ]);
+
+        const commitRequests = httpMock.expectOne(API_GRAPHQL_GITHUB);
+        expect(commitRequests.request.body.variables.input.branch.branchName).toBe('requests');
+        commitRequests.flush({ data: { createCommitOnBranch: { commit: { oid: 'requests-nuevo' } } } });
+        await expect(promesa).resolves.toBeUndefined();
+
+        const lecturaCategorias = adapter.listarCategorias();
+        httpMock.expectOne(`${RAW_BASE}/categorias.json`).flush(categorias);
+        await expect(lecturaCategorias).resolves.toEqual(categorias.categorias);
+      });
+
+      it('completa en main un borrado ya realizado en requests', async () => {
+        const categoriasMain = documentoCategorias([{ id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-1'] }]);
+        const categoriasRequests = documentoCategorias([{ id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-2'] }]);
+        const promesa = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
+        await prepararArbolRama('main', 'main-base', categoriasMain, [
+          { path: 'ejercicios/ej-1/ej-1.json', type: 'blob' },
+        ]);
+        await prepararArbolRama('requests', 'requests-base', categoriasRequests, [
+          { path: 'ejercicios/ej-2/ej-2.json', type: 'blob' },
+        ]);
+
+        const commitMain = httpMock.expectOne(API_GRAPHQL_GITHUB);
+        expect(commitMain.request.body.variables.input.branch.branchName).toBe('main');
+        expect(commitMain.request.body.variables.input.fileChanges.deletions).toEqual([
+          { path: 'ejercicios/ej-1/ej-1.json' },
+        ]);
+        commitMain.flush({ data: { createCommitOnBranch: { commit: { oid: 'main-nuevo' } } } });
+        await expect(promesa).resolves.toBeUndefined();
+        httpMock.expectNone(API_GRAPHQL_GITHUB);
+      });
+
+      it('elimina archivos huerfanos aunque categorias.json no exista en una rama', async () => {
+        const promesa = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
+        await prepararArbolRama('main', 'main-base', null, [
+          { path: 'ejercicios/ej-1/ej-1.json', type: 'blob' },
+          { path: 'ejercicios/ej-1/imagenes/main.png.json', type: 'blob' },
+        ]);
+        await prepararArbolRama('requests', 'requests-base', null, [
           { path: 'ejercicios/ej-1/ej-1.json', type: 'blob' },
           { path: 'ejercicios/ej-1/imagenes/orphan.png.json', type: 'blob' },
         ]);
@@ -367,49 +410,59 @@ describe('RepositorioComunAdapter', () => {
             { path: 'ejercicios/ej-1/imagenes/orphan.png.json' },
           ],
         });
-        commit.flush({ data: { createCommitOnBranch: { commit: { oid: 'requests-limpiada' } } } });
+        commit.flush({ data: { createCommitOnBranch: { commit: { oid: 'requests-nuevo' } } } });
+        await flushMicrotareas();
+
+        const commitMain = httpMock.expectOne(API_GRAPHQL_GITHUB);
+        expect(commitMain.request.body.variables.input.branch.branchName).toBe('main');
+        expect(commitMain.request.body.variables.input.fileChanges).toEqual({
+          deletions: [
+            { path: 'ejercicios/ej-1/ej-1.json' },
+            { path: 'ejercicios/ej-1/imagenes/main.png.json' },
+          ],
+        });
+        commitMain.flush({ data: { createCommitOnBranch: { commit: { oid: 'main-nuevo' } } } });
         await expect(promesa).resolves.toBeUndefined();
-        httpMock.expectNone(`${API_REPOSITORIO}/git/ref/heads/main`);
       });
 
-      it('rechaza si el ejercicio no tiene archivos ni referencias en requests', async () => {
+      it('rechaza si el ejercicio no tiene archivos ni referencias en ninguna rama', async () => {
         const categorias = documentoCategorias([{ id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-2'] }]);
         const promesa = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
         const error = expect(promesa).rejects.toThrow('No se han encontrado');
-        await prepararArbolRequests(categorias, [{ path: 'ejercicios/ej-2/ej-2.json', type: 'blob' }]);
+        await prepararArbolRama('main', 'main-base', categorias, [{ path: 'ejercicios/ej-2/ej-2.json', type: 'blob' }]);
+        await prepararArbolRama('requests', 'requests-base', categorias, [{ path: 'ejercicios/ej-2/ej-2.json', type: 'blob' }]);
         await error;
         httpMock.expectNone(API_GRAPHQL_GITHUB);
-        httpMock.expectNone(`${API_REPOSITORIO}/git/ref/heads/main`);
       });
 
-      it('rechaza un arbol incompleto sin enviar cambios', async () => {
+      it('rechaza entradas invalidas en el arbol antes de escribir en ninguna rama', async () => {
         const categorias = documentoCategorias([{ id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-1'] }]);
         const promesa = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
         const error = expect(promesa).rejects.toThrow(ErrorValidacion);
-        await prepararArbolRequests(categorias, [], true);
+        await prepararArbolRama('main', 'main-base', categorias, [{ path: 42, type: 'blob' }]);
         await error;
         httpMock.expectNone(API_GRAPHQL_GITHUB);
       });
 
-      it('rechaza entradas inválidas en el árbol sin enviar cambios', async () => {
-        const categorias = documentoCategorias([{ id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-1'] }]);
-        const promesa = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
-        const error = expect(promesa).rejects.toThrow(ErrorValidacion);
-        await prepararArbolRequests(categorias, [{ path: 42, type: 'blob' }]);
-        await error;
-        httpMock.expectNone(API_GRAPHQL_GITHUB);
-      });
-
-      it('informa del conflicto de rama sin escribir en main', async () => {
+      it('permite reintentar en main si requests ya se actualizo y el commit de main falla', async () => {
         const categorias = documentoCategorias([{ id: 'cat-comun-1', nombre: 'Rodilla', ejercicios: ['ej-1'] }]);
         const promesa = adapter.eliminarEjercicio(CREDENCIALES, 'ej-1');
         const error = expect(promesa).rejects.toThrow(ErrorConflictoRemoto);
-        await prepararArbolRequests(categorias, [{ path: 'ejercicios/ej-1/ej-1.json', type: 'blob' }]);
+        await prepararArbolRama('main', 'main-base', categorias, [
+          { path: 'ejercicios/ej-1/ej-1.json', type: 'blob' },
+        ]);
+        await prepararArbolRama('requests', 'requests-base', categorias, [
+          { path: 'ejercicios/ej-1/ej-1.json', type: 'blob' },
+        ]);
+
+        httpMock.expectOne(API_GRAPHQL_GITHUB).flush({
+          data: { createCommitOnBranch: { commit: { oid: 'requests-nuevo' } } },
+        });
+        await flushMicrotareas();
         httpMock.expectOne(API_GRAPHQL_GITHUB).flush({
           errors: [{ message: 'expectedHeadOid does not match the current branch head' }],
         });
         await error;
-        httpMock.expectNone(`${API_REPOSITORIO}/git/ref/heads/main`);
       });
     });
 

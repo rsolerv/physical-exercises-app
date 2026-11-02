@@ -50,7 +50,7 @@ Guía de validación manual end-to-end de las dos historias de usuario. No susti
 1. Con la PAT de `rsolerv` guardada, abrir la ficha de un ejercicio propio cuya marca de subida sea `true`: comprobar que aparece "Quitar marca de subida". Activarla y verificar que la marca pasa a `false` y la disponibilidad de subida vuelve a evaluarse.
 2. Abrir "Importar ejercicios" y buscar un ejercicio común. Comprobar que aparece "Borrar del repositorio común" en el resultado y en su ficha.
 3. Pulsar "Borrar" y cancelar: comprobar que el ejercicio permanece.
-4. Repetir y confirmar: comprobar que el JSON del ejercicio, todos los ficheros bajo `ejercicios/<id>/` y sus referencias desaparecen de `requests` en un único commit; comprobar que el workflow valida el cambio y lo propaga a `main` automáticamente. La lista actual debe retirar el ejercicio e invalidar su referencia de lectura local (FR-028/FR-029).
+4. Repetir y confirmar: comprobar que el JSON del ejercicio, todos los ficheros bajo `ejercicios/<id>/` y sus referencias desaparecen en commits de `requests` y `main`. Verificar que la lista actual retira el ejercicio y que las lecturas usan el SHA nuevo de `main` para evitar datos cacheados (FR-028/FR-029).
 5. Guardar una PAT de otra cuenta o quitar la PAT, volver a las mismas pantallas y comprobar que las acciones administrativas no aparecen. Si GitHub no está disponible al verificar la identidad, debe mostrarse un aviso y mantenerse ocultas.
 
 ## Verificación cruzada

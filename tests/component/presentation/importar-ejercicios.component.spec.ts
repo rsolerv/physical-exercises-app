@@ -139,9 +139,7 @@ describe('ImportarEjerciciosComponent', () => {
     await fixture.whenStable();
     expect(eliminarEjercicioComun).toHaveBeenCalledWith(ejercicio.id);
     expect(fixture.componentInstance.resultados()).toEqual([]);
-    expect(mostrarExito).toHaveBeenCalledWith(
-      'Se ha enviado el borrado de «Almeja». El catálogo común se actualizará al completarse la validación automática.'
-    );
+    expect(mostrarExito).toHaveBeenCalledWith('Se ha borrado «Almeja» del repositorio común.');
   });
 
   it('no borra cuando se cancela el diálogo de confirmación', async () => {

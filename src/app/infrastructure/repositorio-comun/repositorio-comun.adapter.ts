@@ -21,6 +21,7 @@ import { API_BASE_GITHUB, aBase64, cabecerasGitHub, desdeBase64 } from '../githu
 const OWNER_REPO = 'rsolerv/common-data-physical-exercises';
 const RAMA_LECTURA = 'main';
 const RAMA_ESCRITURA = 'requests';
+const DURACION_CACHE_RAW_MS = 5 * 60 * 1000;
 const RAW_BASE = `https://raw.githubusercontent.com/${OWNER_REPO}`;
 const API_CONTENTS = `${API_BASE_GITHUB}/${OWNER_REPO}/contents`;
 const API_GRAPHQL_GITHUB = 'https://api.github.com/graphql';
@@ -248,14 +249,20 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
     }
 
     try {
+      const borradoMain = await this.prepararBorradoRama(credenciales, RAMA_LECTURA, ejercicioId);
       const borradoRequests = await this.prepararBorradoRama(credenciales, RAMA_ESCRITURA, ejercicioId);
-      if (!borradoRequests) {
-        throw new ErrorNoEncontrado('No se han encontrado archivos ni referencias del ejercicio en requests.');
+      if (!borradoMain && !borradoRequests) {
+        throw new ErrorNoEncontrado('No se han encontrado archivos ni referencias del ejercicio en main o requests.');
       }
 
-      await this.aplicarBorradoRama(credenciales, ejercicioId, borradoRequests);
-      this.referenciaLectura = RAMA_LECTURA;
-      this.referenciaLecturaExpiraEn = 0;
+      if (borradoRequests) await this.aplicarBorradoRama(credenciales, ejercicioId, borradoRequests);
+      if (borradoMain) {
+        this.referenciaLectura = await this.aplicarBorradoRama(credenciales, ejercicioId, borradoMain);
+        this.referenciaLecturaExpiraEn = Date.now() + DURACION_CACHE_RAW_MS;
+      } else {
+        this.referenciaLectura = RAMA_LECTURA;
+        this.referenciaLecturaExpiraEn = 0;
+      }
     } catch (error) {
       if (error instanceof ErrorValidacion || error instanceof ErrorNoEncontrado) throw error;
       throw this.traducirError(error);
