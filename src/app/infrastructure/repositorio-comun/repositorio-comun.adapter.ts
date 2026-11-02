@@ -21,6 +21,7 @@ import { API_BASE_GITHUB, aBase64, cabecerasGitHub, desdeBase64 } from '../githu
 const OWNER_REPO = 'rsolerv/common-data-physical-exercises';
 const RAMA_LECTURA = 'main';
 const RAMA_ESCRITURA = 'requests';
+const DURACION_CACHE_RAW_MS = 5 * 60 * 1000;
 const RAW_BASE = `https://raw.githubusercontent.com/${OWNER_REPO}`;
 const API_CONTENTS = `${API_BASE_GITHUB}/${OWNER_REPO}/contents`;
 const API_GRAPHQL_GITHUB = 'https://api.github.com/graphql';
@@ -91,6 +92,7 @@ function esImagenArchivoValida(valor: unknown): valor is ImagenArchivoJSON {
 export class RepositorioComunAdapter implements RepositorioComunPort {
   private readonly http = inject(HttpClient);
   private referenciaLectura = RAMA_LECTURA;
+  private referenciaLecturaExpiraEn = 0;
 
   async listarCategorias(): Promise<CategoriaComun[]> {
     try {
@@ -345,6 +347,7 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
         throw new ErrorRedSincronizacion('GitHub no ha confirmado el borrado del ejercicio.');
       }
       this.referenciaLectura = resultado.data.createCommitOnBranch.commit.oid;
+      this.referenciaLecturaExpiraEn = Date.now() + DURACION_CACHE_RAW_MS;
     } catch (error) {
       if (error instanceof ErrorValidacion || error instanceof ErrorNoEncontrado) throw error;
       throw this.traducirError(error);
@@ -461,7 +464,9 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
   }
 
   private urlRaw(ruta: string): string {
-    return `${RAW_BASE}/${this.referenciaLectura}/${ruta}`;
+    const referencia =
+      Date.now() < this.referenciaLecturaExpiraEn ? this.referenciaLectura : RAMA_LECTURA;
+    return `${RAW_BASE}/${referencia}/${ruta}`;
   }
 
   private traducirError(error: unknown): Error {

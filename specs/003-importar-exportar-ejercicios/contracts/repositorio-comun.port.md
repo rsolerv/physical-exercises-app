@@ -52,8 +52,8 @@ interface RepositorioComunPort {
   // de categorias.json y elimina todos los archivos del ejercicio mediante
   // una mutación GraphQL createCommitOnBranch con expectedHeadOid, para aplicar
   // el borrado completo de forma atómica y detectar cambios concurrentes.
-  // Tras el éxito, fija las lecturas de esta sesión al SHA del commit nuevo
-  // para no reutilizar datos cacheados bajo la referencia mutable main (FR-028/FR-029).
+  // Durante cinco minutos tras el éxito, fija las lecturas de esta sesión al
+  // SHA del commit nuevo para no reutilizar datos cacheados bajo main (FR-028/FR-029).
 }
 
 interface CategoriaComun {
