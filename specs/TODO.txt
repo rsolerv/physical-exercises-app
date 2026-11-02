@@ -9,11 +9,6 @@ Para ello:
    agregará los 20 siguientes, y si vuelve a ejecutarse loadMore cargará los otros 20. Como siempre estará cargada una categoria no tendremos demasiados registros.
 
 
-
-Copilot hará:
---------------
-- Formulario ejercicio: Las series y repeticiones en campos separados no obligatorios. Ademas deberian estar vinculados a la planificacion, no al ejercicio?.
-
 Hecho
 -------
 - Eliminar el tratamiento de "Sin categoría": todos los ejercicios deben tener al menos una categoría; el borrado se bloquea si dejaría un ejercicio sin categoría.
@@ -41,3 +36,4 @@ Que quepa completamente. Incluir la descripción completa también en pantalla d
 los datos por usuario.
 - En la sincronización, Configuracion de Github no parece un link o algo pulsable, arreglar para que se entienda que se puede pulsar.
 - Repositorio común de ejercicios para subir y descargar mediante la aplicación
+- Formulario ejercicio: Las series y repeticiones en campos separados no obligatorios. Ademas deberian estar vinculados a la planificacion, no al ejercicio?.
