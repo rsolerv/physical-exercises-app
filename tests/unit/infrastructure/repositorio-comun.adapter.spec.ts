@@ -205,8 +205,24 @@ describe('RepositorioComunAdapter', () => {
       await expect(promesa).resolves.toEqual(imagen);
     });
 
-    it('rechaza rutas de imagen que no sean relativas a imagenes/', async () => {
+    it('acepta una ruta completa del repositorio si corresponde al ejercicio', async () => {
+      const ejercicioId = 'feb6c09f-19db-48a1-abd8-71d5d6666599';
+      const imagenId = '3f951d8e-4d07-463d-9bd9-11ca9e0a4f89';
+      const promesa = adapter.leerImagen(ejercicioId, `ejercicios/${ejercicioId}/imagenes/${imagenId}.json`);
+      const peticion = httpMock.expectOne(`${RAW_BASE}/ejercicios/${ejercicioId}/imagenes/${imagenId}.json`);
+      const imagen = {
+        id: imagenId,
+        nombreArchivo: 'cangrejo-rodilla.png',
+        tipoMime: 'image/png',
+        contenidoBase64: 'QUJD',
+      };
+      peticion.flush(imagen);
+      await expect(promesa).resolves.toEqual(imagen);
+    });
+
+    it('rechaza rutas de imagen ajenas al directorio del ejercicio', async () => {
       await expect(adapter.leerImagen('23', '../categorias.json')).rejects.toThrow(ErrorValidacion);
+      await expect(adapter.leerImagen('23', 'ejercicios/24/imagenes/233433.json')).rejects.toThrow(ErrorValidacion);
     });
 
     it('rechaza documentos remotos que no tienen formato de imagen', async () => {

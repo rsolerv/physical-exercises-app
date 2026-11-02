@@ -25,7 +25,7 @@ Representación de un ejercicio en el repositorio común, como fichero JSON inde
 | `descripcion` | texto | Sí | Igual que en Ejercicio local. |
 | `categoriaIds` | lista de referencias a Categoría común, al menos 1 | Sí | Un ejercicio común puede tener una o varias categorías comunes (ver `categorias.json`). Al **subir**, contiene las categorías comunes elegidas por el usuario (una o varias, FR-016); al **importar**, se traduce a categorías propias del usuario (ver más abajo). |
 | `enlaces` | lista de `{ tipo: 'web' \| 'youtube'; url }` | No | Misma forma que `Ejercicio.enlaces` en el modelo local (sin conversión). |
-| `imagenes` | lista de `{ id; tipo: 'url' \| 'archivo'; valorUrl? ; ruta? }` | No | `tipo: 'archivo'` conserva la referencia relativa `imagenes/<id>.json`; el documento se encuentra en `ejercicios/<id-ejercicio>/imagenes/<id-imagen>.json` (ver Imagen de archivo común); `tipo: 'url'` guarda la URL directamente en `valorUrl`. |
+| `imagenes` | lista de `{ id; tipo: 'url' \| 'archivo'; valorUrl? ; ruta? }` | No | `tipo: 'archivo'` admite `imagenes/<id>.json` y la ruta completa `ejercicios/<id-ejercicio>/imagenes/<id>.json`, que debe pertenecer al ejercicio que la referencia; las subidas nuevas conservan la forma relativa. El documento se encuentra en `ejercicios/<id-ejercicio>/imagenes/<id-imagen>.json` (ver Imagen de archivo común); `tipo: 'url'` guarda la URL directamente en `valorUrl`. |
 | `observaciones` | texto | No | Igual que en Ejercicio local; se omite en el fichero si está vacío. |
 
 **Relaciones**: N:M con Categoría común (por `categoriaIds`). No tiene relación con Planificación, Progreso diario ni Ajustes: estos nunca se leen ni se escriben en el repositorio común (FR-013).

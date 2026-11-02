@@ -22,7 +22,9 @@ interface RepositorioComunPort {
   // sin credenciales. Devuelve null si el documento no existe (FR-024).
 
   leerImagen(ejercicioId: string, ruta: string): Promise<ImagenArchivoJSON>;
-  // Descarga y parsea ejercicios/<ejercicioId>/imagenes/<id>.json de `main`.
+  // Acepta "imagenes/<id>.json" o "ejercicios/<ejercicioId>/imagenes/<id>.json";
+  // una ruta completa de otro ejercicio se rechaza. Descarga y parsea el
+  // documento correspondiente de `main`.
   // Lanza ErrorValidacion si el documento no tiene el formato de ImagenArchivoJSON
   // (la aplicación debe capturarlo y omitir solo esa imagen, FR-011).
 
@@ -74,7 +76,7 @@ interface ImagenEjercicioComun {
   id: string;
   tipo: 'url' | 'archivo';
   valorUrl?: string; // presente cuando tipo === 'url'
-  ruta?: string; // presente cuando tipo === 'archivo': "imagenes/<id>.json", relativa a la carpeta del ejercicio
+  ruta?: string; // presente cuando tipo === 'archivo': ruta relativa o ruta completa perteneciente al ejercicio
 }
 
 // ImagenArchivoJSON y CredencialesGitHub se reutilizan tal cual de

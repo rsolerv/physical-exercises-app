@@ -26,7 +26,7 @@
 ## Decisiones de producto
 
 - Repositorio común: GitHub público `rsolerv/common-data-physical-exercises`, con un directorio `ejercicios/<id>/` por ejercicio, que contiene `<id>.json` y un subdirectorio `imagenes/` con un fichero JSON por imagen de archivo. El fichero `categorias.json` al nivel raíz contiene las categorías comunes (`id`, `nombre`) y los ids de los ejercicios asociados a cada categoría. La estructura JSON de ejercicios e imágenes no cambia.
-- Cada fichero `ejercicios/<id>/<id>.json` conserva el formato de ejercicio común y sus rutas de imagen permanecen relativas (`imagenes/<id-imagen>.json`); cada imagen se lee desde `ejercicios/<id>/imagenes/<id-imagen>.json`. El documento contiene `id`, `nombre`, `descripcion`, `categoriaIds` (una o varias referencias por `id` a `categorias.json`), `enlaces` e `imagenes`; por ejemplo:
+- Cada fichero `ejercicios/<id>/<id>.json` conserva el formato de ejercicio común. La aplicación acepta las rutas de imagen relativas (`imagenes/<id-imagen>.json`) y las rutas completas del repositorio (`ejercicios/<id>/imagenes/<id-imagen>.json`), siempre que la ruta completa corresponda al ejercicio; ambas resuelven al documento `ejercicios/<id>/imagenes/<id-imagen>.json`. Las subidas nuevas conservan la ruta relativa. El documento contiene `id`, `nombre`, `descripcion`, `categoriaIds` (una o varias referencias por `id` a `categorias.json`), `enlaces` e `imagenes`; por ejemplo:
   ```json
   {
     "id": "32baae03-9dd4-49f5-bb8b-ad9df443f1b9",

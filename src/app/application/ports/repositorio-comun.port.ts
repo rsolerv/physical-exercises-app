@@ -14,7 +14,7 @@ export interface ImagenEjercicioComun {
   tipo: 'url' | 'archivo';
   /** Presente cuando `tipo === 'url'`. */
   valorUrl?: string;
-  /** Presente cuando `tipo === 'archivo'`: `"imagenes/<id>.json"`. */
+  /** Presente cuando `tipo === 'archivo'`: `"imagenes/<id>.json"` o la ruta completa del repositorio para este ejercicio. */
   ruta?: string;
 }
 
@@ -51,7 +51,7 @@ export abstract class RepositorioComunPort {
   /** Descarga un ejercicio publicado de `main` por su id; devuelve `null` si no existe. No requiere credenciales. */
   abstract obtenerEjercicioPorId(id: string): Promise<EjercicioComunArchivo | null>;
 
-  /** Descarga `ejercicios/<ejercicioId>/imagenes/<id>.json` de `main`, conservando `ruta` relativa del ejercicio. */
+  /** Descarga una imagen de `main`; acepta la ruta relativa al ejercicio o la ruta completa si corresponde al mismo ejercicio. */
   abstract leerImagen(ejercicioId: string, ruta: string): Promise<ImagenArchivoJSON>;
 
   /**

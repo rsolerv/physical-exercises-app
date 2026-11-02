@@ -517,13 +517,20 @@ export class RepositorioComunAdapter implements RepositorioComunPort {
   }
 
   private rutaImagen(ejercicioId: string, ruta: string): string {
-    if (!/^imagenes\/[^/]+\.json$/.test(ruta)) {
+    const segmentos = ruta.split('/');
+    const rutaRelativa =
+      segmentos.length === 2 && segmentos[0] === 'imagenes' && /^[^/]+\.json$/.test(segmentos[1]);
+    const rutaCompleta =
+      segmentos.length === 4 &&
+      segmentos[0] === 'ejercicios' &&
+      segmentos[1] === ejercicioId &&
+      segmentos[2] === 'imagenes' &&
+      /^[^/]+\.json$/.test(segmentos[3]);
+    const nombreArchivo = rutaRelativa ? segmentos[1] : rutaCompleta ? segmentos[3] : null;
+    if (!nombreArchivo) {
       throw new ErrorValidacion(`La ruta de imagen «${ruta}» no tiene un formato válido.`);
     }
-    return `ejercicios/${encodeURIComponent(ejercicioId)}/${ruta
-      .split('/')
-      .map((segmento) => encodeURIComponent(segmento))
-      .join('/')}`;
+    return `ejercicios/${encodeURIComponent(ejercicioId)}/imagenes/${encodeURIComponent(nombreArchivo)}`;
   }
 
   private urlRaw(ruta: string): string {
