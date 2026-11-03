@@ -112,5 +112,5 @@
   <button mat-flat-button color="primary" type="submit" [disabled]="guardando()">Guardar planificación</button>
 </form>
 } @else {
-  <app-agregar-ejercicio (seleccionados)="anyadirEjerciciosADia($event)"/>
+  <app-agregar-ejercicio (seleccionados)="actualizarSeleccionEjercicio($event.ejercicioId, $event.seleccionado)" />
 }

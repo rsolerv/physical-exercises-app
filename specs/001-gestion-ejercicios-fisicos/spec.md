@@ -127,6 +127,7 @@ Como usuario quiero crear planificaciones semanales (concretas o como plantillas
 16. **Given** que el usuario añade ejercicios desde la pantalla de selección, **When** busca por una parte del nombre o filtra por categoría, **Then** cada resultado muestra el nombre, la descripción completa y las categorías, y cada ejercicio seleccionado se añade inmediatamente al día elegido, sin exigir una confirmación adicional.
 17. **Given** que el usuario edita una planificación en un móvil, **When** cambia su fecha de inicio, **Then** puede abrir y usar el calendario desde un control visible y accesible, sin que lo oculten el teclado o la navegación.
 18. **Given** que el usuario consulta la planificación semanal en móvil, **When** se abre la semana actual, **Then** el día actual ya está seleccionado y no se muestra un control o rótulo redundante “Hoy” que comprima la tira de días.
+19. **Given** que el usuario selecciona un ejercicio en la pantalla de edición de una planificación, **When** lo desmarca antes de salir del selector, **Then** el ejercicio se elimina inmediatamente de ese día y de la planificación persistida.
 
 ---
 

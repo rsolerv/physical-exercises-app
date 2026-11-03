@@ -195,8 +195,12 @@ export class PlanificacionConstructorComponent {
     this.fechaInicio.set(valor);
   }
 
-  anyadirEjerciciosADia(ejerciciosIds: string[]){
-    ejerciciosIds.forEach(e => this.anadirEjercicioADia(this.diaSeleccion(), e))
+  async actualizarSeleccionEjercicio(ejercicioId: string, seleccionado: boolean): Promise<void> {
+    if (seleccionado) {
+      await this.anadirEjercicioADia(this.diaSeleccion(), ejercicioId);
+    } else {
+      await this.quitarEjercicioDeDia(this.diaSeleccion(), ejercicioId);
+    }
   }
 
   async anadirEjercicioADia(dia: DiaSemana, ejercicioId: string): Promise<void> {

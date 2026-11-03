@@ -41,7 +41,7 @@ export class AgregarEjercicioComponent {
     return error instanceof Error ? error.message : 'No se han podido cargar los ejercicios.';
   });
 
-readonly seleccionados = output<string[]>();
+readonly seleccionados = output<{ ejercicioId: string; seleccionado: boolean }>();
 
   protected readonly recursoTotalEjercicios = resource({
     loader: () => this.ejercicioRepository.listarTodos(),

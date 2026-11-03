@@ -125,6 +125,43 @@ describe('PlanificacionConstructorComponent', () => {
     expect(fixture.componentInstance.ejerciciosPorDia().martes).toEqual(['ej-1']);
   });
 
+  it('elimina de la planificación un ejercicio al desmarcarlo en el selector', async () => {
+    const dias = crearDiasVacios();
+    const planificacionExistente: Planificacion = {
+      id: 'plan-1',
+      nombre: 'Semana original',
+      dias,
+    };
+    const asignarEjercicioADia = vi.fn().mockResolvedValue(undefined);
+    const quitarEjercicioDeDia = vi.fn().mockResolvedValue(undefined);
+    configurar({
+      idRuta: 'plan-1',
+      planificacionExistente,
+      ejercicios: [ejercicio('ej-1', 'Sentadilla')],
+      asignarEjercicioADia,
+      quitarEjercicioDeDia,
+    });
+    const fixture = await crearComponente();
+    const raiz = fixture.nativeElement as HTMLElement;
+
+    raiz.querySelector<HTMLButtonElement>('section[aria-label="Lunes"] button')?.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const opcion = raiz.querySelector<HTMLElement>('mat-list-option');
+    opcion?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    opcion?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(asignarEjercicioADia).toHaveBeenCalledWith('plan-1', 'lunes', 'ej-1');
+    expect(quitarEjercicioDeDia).toHaveBeenCalledWith('plan-1', 'lunes', 'ej-1');
+    expect(fixture.componentInstance.ejerciciosPorDia().lunes).toEqual([]);
+  });
+
   it('muestra la descripción completa y las categorías al añadir ejercicios en una planificación editada', async () => {
     const dias = crearDiasVacios();
     const planificacionExistente: Planificacion = {
