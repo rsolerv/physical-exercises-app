@@ -3,7 +3,7 @@ import { CategoriaRepositoryPort } from '../ports/categoria-repository.port';
 import { EjercicioRepositoryPort } from '../ports/ejercicio-repository.port';
 import { AjustesRepositoryPort } from '../ports/ajustes-repository.port';
 import { SembrarCatalogoPredefinidoPort } from '../ports/sembrar-catalogo-predefinido.port';
-import type { EnlaceEjercicio } from '../../domain/ejercicio/ejercicio.entity';
+import type { EnlaceEjercicio, ImagenEjercicio } from '../../domain/ejercicio/ejercicio.entity';
 import { extraerPautaObservaciones } from '../../domain/ejercicio/extraer-pauta-observaciones';
 import catalogoPredefinido from '../../../assets/catalogo-predefinido/catalogo.json';
 
@@ -43,16 +43,21 @@ export class SembrarCatalogoPredefinidoUseCase implements SembrarCatalogoPredefi
         ...ejercicio.enlacesWeb.map((url): EnlaceEjercicio => ({ tipo: 'web', url })),
         ...ejercicio.enlacesYoutube.map((url): EnlaceEjercicio => ({ tipo: 'youtube', url })),
       ];
+      const imagenes: ImagenEjercicio[] = ejercicio.imagenes.map((imagen) => ({
+        id: imagen.id,
+        tipo: 'url' as const,
+        valorUrl: imagen.valorUrl,
+      }));
       const pauta = extraerPautaObservaciones(ejercicio.observaciones ?? '');
       await this.ejercicioRepository.crear({
         nombre: ejercicio.nombre,
         descripcion: ejercicio.descripcion,
         categoriaIds,
         enlaces,
-        imagenes: [],
+        imagenes,
         series: pauta?.series,
         repeticiones: pauta?.repeticiones,
-        observaciones: pauta ? pauta.observaciones : ejercicio.observaciones,
+        observaciones: pauta ? pauta.observaciones : ejercicio.observaciones || undefined,
       });
     }
 

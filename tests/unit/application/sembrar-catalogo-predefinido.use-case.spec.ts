@@ -87,9 +87,42 @@ describe('SembrarCatalogoPredefinidoUseCase', () => {
 
     const primeraLlamada = (ejercicioRepo.crear as ReturnType<typeof vi.fn>).mock.calls[0][0] as DatosNuevoEjercicio;
     expect(primeraLlamada.categoriaIds.every((id) => id.startsWith('cat-'))).toBe(true);
-    expect(primeraLlamada.series).toBe(2);
-    expect(primeraLlamada.repeticiones).toBe(10);
+    expect(primeraLlamada.series).toBeUndefined();
+    expect(primeraLlamada.repeticiones).toBeUndefined();
     expect(primeraLlamada.observaciones).toBeUndefined();
+  });
+
+  it('no incluye pautas de series o repeticiones en los ejercicios predefinidos', () => {
+    expect(catalogoPredefinido.ejercicios.every((ejercicio) => !ejercicio.observaciones)).toBe(true);
+  });
+
+  it('conserva los vídeos e imágenes URL incluidos en el catálogo', async () => {
+    await caso.sembrarSiNecesario();
+
+    const ejerciciosCreados = (ejercicioRepo.crear as ReturnType<typeof vi.fn>).mock.calls.map(
+      ([datos]) => datos as DatosNuevoEjercicio
+    );
+    const sentadilla = ejerciciosCreados.find((ejercicio) => ejercicio.nombre === 'Sentadilla');
+    const flexion = ejerciciosCreados.find((ejercicio) => ejercicio.nombre === 'Flexión de brazos');
+
+    expect(sentadilla?.enlaces).toContainEqual({
+      tipo: 'youtube',
+      url: 'https://www.youtube.com/watch?v=MHd7Jfh05sw',
+    });
+    expect(sentadilla?.imagenes).toContainEqual({
+      id: 'miniatura-sentadilla',
+      tipo: 'url' as const,
+      valorUrl: 'https://i.ytimg.com/vi/MHd7Jfh05sw/hqdefault.jpg',
+    });
+    expect(flexion?.enlaces).toContainEqual({
+      tipo: 'youtube',
+      url: 'https://www.youtube.com/watch?v=Yb-GsrtBOcA',
+    });
+    expect(flexion?.imagenes).toContainEqual({
+      id: 'miniatura-flexion-brazos',
+      tipo: 'url',
+      valorUrl: 'https://i.ytimg.com/vi/Yb-GsrtBOcA/hqdefault.jpg',
+    });
   });
 
   it('no se repite en arranques posteriores (marca catalogoPredefinidoCargado) y NO marca cambiosLocalesPendientes (FR-034)', async () => {
@@ -119,7 +152,11 @@ describe('Integridad del catálogo predefinido (catalogo.json)', () => {
           ...ejercicio.enlacesWeb.map((url) => ({ tipo: 'web' as const, url })),
           ...ejercicio.enlacesYoutube.map((url) => ({ tipo: 'youtube' as const, url })),
         ],
-        imagenes: [],
+        imagenes: ejercicio.imagenes.map((imagen) => ({
+          id: imagen.id,
+          tipo: 'url',
+          valorUrl: imagen.valorUrl,
+        })),
         observaciones: ejercicio.observaciones,
       };
       expect(() => validarEjercicio(datos)).not.toThrow();
