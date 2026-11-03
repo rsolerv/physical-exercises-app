@@ -25,10 +25,12 @@
 
     @if (ejerciciosDeHoy().length === 0) {
       <app-estado-vacio icono="event_available" mensaje="Día de descanso. No hay ejercicios programados para hoy.">
-        <a accion mat-flat-button color="primary" routerLink="/planificacion/nueva">
-          <mat-icon>add</mat-icon>
-          Crear una planificación
-        </a>
+        @if (!recursoPlanificacionHoy.value()) {
+          <a accion mat-flat-button color="primary" routerLink="/planificacion/nueva">
+            <mat-icon>add</mat-icon>
+            Crear una planificación
+          </a>
+        }
       </app-estado-vacio>
       @if (proximaSesion(); as sesion) {
         <section class="dia-actual__proxima-sesion" aria-label="Próxima sesión">

@@ -91,6 +91,7 @@ describe('DiaActualComponent', () => {
     expect(texto.toLowerCase()).toContain('no hay ejercicios programados para hoy');
     expect(texto).toContain('Día de descanso');
     expect(texto).toContain('Sin planificación activa');
+    expect((fixture.nativeElement as HTMLElement).querySelector('a[href="/planificacion/nueva"]')).not.toBeNull();
   });
 
   it('muestra el mismo mensaje cuando hay planificación activa pero hoy no tiene ejercicios', async () => {
@@ -100,6 +101,7 @@ describe('DiaActualComponent', () => {
 
     const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(texto.toLowerCase()).toContain('no hay ejercicios programados para hoy');
+    expect((fixture.nativeElement as HTMLElement).querySelector('a[href="/planificacion/nueva"]')).toBeNull();
   });
 
   it('muestra la próxima sesión de la semana cuando el día actual es descanso', async () => {

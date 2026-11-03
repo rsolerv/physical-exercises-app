@@ -128,6 +128,7 @@ Como usuario quiero crear planificaciones semanales (concretas o como plantillas
 17. **Given** que el usuario edita una planificación en un móvil, **When** cambia su fecha de inicio, **Then** puede abrir y usar el calendario desde un control visible y accesible, sin que lo oculten el teclado o la navegación.
 18. **Given** que el usuario consulta la planificación semanal en móvil, **When** se abre la semana actual, **Then** el día actual ya está seleccionado y no se muestra un control o rótulo redundante “Hoy” que comprima la tira de días.
 19. **Given** que el usuario selecciona un ejercicio en la pantalla de edición de una planificación, **When** lo desmarca antes de salir del selector, **Then** el ejercicio se elimina inmediatamente de ese día y de la planificación persistida.
+20. **Given** que hoy no tiene ejercicios programados, **When** el usuario consulta la pantalla “Hoy”, **Then** se ofrece “Crear una planificación” solo si no existe una planificación activa.
 
 ---
 
@@ -333,6 +334,7 @@ Como usuario quiero reconocer rápidamente dónde estoy, encontrar las acciones 
 - **FR-082**: La pantalla independiente de selección de ejercicios DEBE permitir buscar por una parte del nombre mediante un campo situado en la parte superior y filtrar por categoría. Cada resultado DEBE mostrar el nombre, la descripción completa y las categorías del ejercicio, sin recortarlos. El usuario DEBE poder seleccionar ejercicios de forma sucesiva y cada selección DEBE incorporarse inmediatamente al día elegido, sin una confirmación adicional.
 - **FR-083**: Durante la edición de una planificación en móvil, el calendario de fecha de inicio DEBE poder abrirse desde un control visible y accesible, y permanecer utilizable sin quedar oculto por el teclado virtual o la navegación del dispositivo. Debe conservarse la regla de que la fecha concreta corresponde a un lunes; una fecha vacía crea una plantilla.
 - **FR-084**: En móvil, el botón flotante "+" DEBE situarse en la zona superior de la pantalla para no cubrir contenido. Si abre un menú de acciones, DEBE mostrar un control de cierre que oculte dicho menú al activarse por tacto o teclado.
+- **FR-085**: En la pantalla “Hoy”, cuando no hay ejercicios programados, el sistema DEBE ofrecer la acción “Crear una planificación” únicamente si no existe una planificación activa.
 
 
 ### Key Entities *(include if feature involves data)*

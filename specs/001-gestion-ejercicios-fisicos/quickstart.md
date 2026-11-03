@@ -55,7 +55,7 @@ Abre la URL que muestra `npm start`. El primer arranque debe cargar el catálogo
 2. Marca un ejercicio y observa el recuento parcial; pulsa "Deshacer" mientras aparece la notificación y confirma que vuelve al estado anterior.
 3. Marca todos los ejercicios. **Esperado**: se muestra una confirmación visual del 100 %.
 4. Abre la ficha de un ejercicio planificado para hoy. Marca y desmarca desde la ficha; comprueba que el acceso a la ficha y el control del progreso son independientes.
-5. Sin ejercicios planificados para hoy, comprueba el mensaje de descanso y que se indica la próxima sesión cuando exista.
+5. Sin ejercicios planificados para hoy, comprueba el mensaje de descanso y que se indica la próxima sesión cuando exista. **Esperado**: "Crear una planificación" solo aparece cuando no existe una planificación activa.
 
 ## US5 — Sincronización
 
