@@ -12,6 +12,7 @@ import {
   ErrorConflictoRemoto,
   ErrorRedSincronizacion,
 } from '../../../src/app/domain/errores/errores-dominio';
+import { crearCatalogoPaginacion } from '../../fixtures/crear-catalogo-paginacion';
 
 const DATOS_VACIOS: ExportacionJSON = { version: 1, ejercicios: [], categorias: [], planificaciones: [], progresoDiario: [] };
 
@@ -32,6 +33,7 @@ function ajustes(sobrescribir: Partial<AjustesAplicacion> = {}): AjustesAplicaci
 describe('SincronizarUseCase', () => {
   function configurar(opciones: {
     ajustes: AjustesAplicacion;
+    exportar?: ReturnType<typeof vi.fn>;
     obtenerAjustes?: ReturnType<typeof vi.fn>;
     leerRemoto?: ReturnType<typeof vi.fn>;
     escribirRemoto?: ReturnType<typeof vi.fn>;
@@ -39,7 +41,7 @@ describe('SincronizarUseCase', () => {
   }) {
     const registrarSincronizacionCompletada = vi.fn().mockResolvedValue(undefined);
     const marcarCambiosLocalesPendientes = vi.fn().mockResolvedValue(undefined);
-    const exportar = vi.fn().mockResolvedValue({ datos: DATOS_VACIOS, imagenesParaSubir: [] });
+    const exportar = opciones.exportar ?? vi.fn().mockResolvedValue({ datos: DATOS_VACIOS, imagenesParaSubir: [] });
     const importar = vi.fn().mockResolvedValue({ imagenesOmitidas: 0 });
     const leerRemoto = opciones.leerRemoto ?? vi.fn().mockResolvedValue({ existe: false });
     const escribirRemoto = opciones.escribirRemoto ?? vi.fn().mockResolvedValue({ versionNueva: 'v-nueva' });
@@ -76,6 +78,49 @@ describe('SincronizarUseCase', () => {
       importar,
     };
   }
+
+  it.each(['github', 'google'] as const)('sincroniza %s sin truncar los 125 registros ni separar relaciones/medios', async (metodo) => {
+    const { datos, imagenes } = crearCatalogoPaginacion(125);
+    const exportar = vi.fn().mockResolvedValue({ datos, imagenesParaSubir: Object.values(imagenes) });
+    const leerImagen = vi.fn(async (ruta: string) => imagenes[ruta]);
+    const configuracion = ajustes({
+      metodoSincronizacion: metodo,
+      cuentaGoogle: metodo === 'google' ? 'Persona@example.com' : null,
+      cambiosLocalesPendientes: true,
+    });
+    const { caso, escribirRemoto, importar, registrarSincronizacionCompletada } = configurar({
+      ajustes: configuracion, exportar, leerImagen,
+    });
+
+    await expect(caso.sincronizar()).resolves.toEqual({ tipo: 'completada', accion: 'subir' });
+    expect(exportar).toHaveBeenCalledOnce();
+    expect(escribirRemoto).toHaveBeenCalledWith(datos, Object.values(imagenes), null);
+    const [enviados] = escribirRemoto.mock.calls[0] as [ExportacionJSON];
+    expect(enviados.ejercicios.map((e) => e.id)).toEqual(datos.ejercicios.map((e) => e.id));
+    expect(enviados.planificaciones[0].dias[0].ejercicioIds).toContain(datos.ejercicios[124].id);
+    expect(enviados.progresoDiario[0].ejercicioId).toBe(datos.ejercicios[124].id);
+    expect(registrarSincronizacionCompletada).toHaveBeenCalledWith(
+      metodo === 'google' ? 'google:persona@example.com' : 'github:owner/data',
+      'v-nueva', expect.any(Date), false
+    );
+
+    TestBed.resetTestingModule();
+    const descarga = configurar({
+      ajustes: ajustes({ ...configuracion, ultimaVersionSincronizada: 'v-anterior', cambiosLocalesPendientes: false }),
+      leerRemoto: vi.fn().mockResolvedValue({ existe: true, datos, version: 'v-nueva' }),
+      leerImagen,
+    });
+    await expect(descarga.caso.sincronizar()).resolves.toEqual({
+      tipo: 'completada', accion: 'descargar', imagenesOmitidas: 0,
+    });
+    expect(descarga.importar).toHaveBeenCalledWith(datos, expect.any(Function), true);
+    const resolver = descarga.importar.mock.calls[0][1] as (ruta: string) => Promise<unknown>;
+    for (const [ruta, imagen] of Object.entries(imagenes)) {
+      await expect(resolver(ruta)).resolves.toEqual(imagen);
+    }
+    expect(leerImagen).toHaveBeenCalledTimes(Object.keys(imagenes).length);
+    expect(importar).not.toHaveBeenCalled();
+  });
 
   it('sube los datos al destino activo y registra que los datos locales no cambiaron', async () => {
     const { caso, escribirRemoto, registrarSincronizacionCompletada } = configurar({

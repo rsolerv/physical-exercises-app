@@ -33,6 +33,10 @@ CREATE TABLE IF NOT EXISTS ejercicio_categoria (
   PRIMARY KEY (ejercicio_id, categoria_id)
 );
 
+CREATE INDEX IF NOT EXISTS idx_ejercicio_nombre_id ON ejercicio(nombre, id);
+CREATE INDEX IF NOT EXISTS idx_ejercicio_categoria_categoria_ejercicio
+  ON ejercicio_categoria(categoria_id, ejercicio_id);
+
 CREATE TABLE IF NOT EXISTS ejercicio_enlace (
   id TEXT PRIMARY KEY,
   ejercicio_id TEXT NOT NULL REFERENCES ejercicio(id) ON DELETE CASCADE,

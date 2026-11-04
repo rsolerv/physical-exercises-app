@@ -27,8 +27,8 @@ describe('SembrarCatalogoPredefinidoUseCase', () => {
     ejercicioRepo = {
       obtenerPorId: vi.fn(),
       listarTodos: vi.fn(),
-      buscarPorTexto: vi.fn(),
-      buscarPorCategorias: vi.fn(),
+      buscarPaginado: vi.fn(),
+      contarTodos: vi.fn(),
       crear: vi.fn().mockImplementation(async (datos: DatosNuevoEjercicio) => ({ id: 'ej-x', ...datos })),
       actualizar: vi.fn(),
       eliminar: vi.fn(),

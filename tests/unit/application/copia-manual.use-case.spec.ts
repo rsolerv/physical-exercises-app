@@ -6,6 +6,8 @@ import { ExportarImportarDatosUseCase } from '../../../src/app/application/casos
 import { AjustesRepositoryPort } from '../../../src/app/application/ports/ajustes-repository.port';
 import type { ExportacionJSON, ImagenArchivoJSON } from '../../../src/app/application/ports/github-sync.port';
 import { ErrorValidacion } from '../../../src/app/domain/errores/errores-dominio';
+import { crearCatalogoPaginacion } from '../../fixtures/crear-catalogo-paginacion';
+import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 
 const DATOS: ExportacionJSON = { version: 1, ejercicios: [], categorias: [], planificaciones: [], progresoDiario: [] };
 
@@ -44,6 +46,36 @@ describe('CopiaManualUseCase', () => {
     expect(JSON.parse(resultado.archivos['imagenes/img-1.json'])).toEqual(imagen);
     expect(JSON.stringify(resultado.archivos)).not.toMatch(/token|correo|cuenta/i);
     expect(importar).not.toHaveBeenCalled();
+  });
+
+  it('copia y restaura 125 ejercicios completos con medios y planificación más allá del primer bloque', async () => {
+    const { datos, imagenes, archivos } = crearCatalogoPaginacion(125);
+    const { caso, exportar, importar, marcarCambiosLocalesPendientes } = configurar(
+      vi.fn().mockResolvedValue({ datos, imagenesParaSubir: Object.values(imagenes) })
+    );
+    const copia = await caso.exportar();
+    const comprimido = zipSync(Object.fromEntries(
+      Object.entries(copia.archivos).map(([ruta, contenido]) => [ruta, strToU8(contenido)])
+    ));
+    const restaurados = Object.fromEntries(
+      Object.entries(unzipSync(comprimido)).map(([ruta, contenido]) => [ruta, strFromU8(contenido)])
+    );
+    expect(exportar).toHaveBeenCalledOnce();
+    expect(restaurados).toEqual(archivos);
+    expect(JSON.parse(restaurados['datos.json']).ejercicios.map((e: { id: string }) => e.id))
+      .toEqual(datos.ejercicios.map((e) => e.id));
+
+    const { ['datos.json']: documento, ...imagenesZip } = restaurados;
+    await caso.importar(documento, imagenesZip);
+
+    expect(importar).toHaveBeenCalledWith(datos, expect.any(Function));
+    const resolver = importar.mock.calls[0][1] as (ruta: string) => Promise<ImagenArchivoJSON>;
+    for (const [ruta, imagen] of Object.entries(imagenes)) {
+      await expect(resolver(ruta)).resolves.toEqual(imagen);
+    }
+    expect(datos.planificaciones[0].dias[0].ejercicioIds).toContain(datos.ejercicios[124].id);
+    expect(datos.progresoDiario[0].ejercicioId).toBe(datos.ejercicios[124].id);
+    expect(marcarCambiosLocalesPendientes).toHaveBeenCalledOnce();
   });
 
   it('rechaza una copia inválida antes de modificar datos o ajustes', async () => {

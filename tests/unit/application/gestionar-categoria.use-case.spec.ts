@@ -25,8 +25,8 @@ describe('GestionarCategoriaUseCase', () => {
     ejercicioRepo = {
       obtenerPorId: vi.fn(),
       listarTodos: vi.fn().mockResolvedValue([]),
-      buscarPorTexto: vi.fn(),
-      buscarPorCategorias: vi.fn(),
+      buscarPaginado: vi.fn(),
+      contarTodos: vi.fn(),
       crear: vi.fn(),
       actualizar: vi.fn().mockResolvedValue({}),
       eliminar: vi.fn(),

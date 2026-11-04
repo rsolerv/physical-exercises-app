@@ -1,4 +1,5 @@
 import type { DatosNuevoEjercicio, Ejercicio } from '../../domain/ejercicio/ejercicio.entity';
+import type { CriteriosBusquedaEjercicios, PaginaEjercicios } from '../models/busqueda-ejercicios';
 
 /**
  * Puerto que Application usa para leer y escribir Ejercicios, sin conocer el
@@ -9,11 +10,9 @@ export abstract class EjercicioRepositoryPort {
 
   abstract listarTodos(): Promise<Ejercicio[]>;
 
-  /** Busca coincidencias parciales, sin distinguir mayúsculas/minúsculas (FR-013, CA6). */
-  abstract buscarPorTexto(texto: string): Promise<Ejercicio[]>;
+  abstract buscarPaginado(criterios: CriteriosBusquedaEjercicios): Promise<PaginaEjercicios>;
 
-  /** Devuelve ejercicios que pertenezcan a alguna de las categorías indicadas (FR-012, CA7). */
-  abstract buscarPorCategorias(categoriaIds: string[]): Promise<Ejercicio[]>;
+  abstract contarTodos(): Promise<number>;
 
   abstract crear(datos: DatosNuevoEjercicio): Promise<Ejercicio>;
 

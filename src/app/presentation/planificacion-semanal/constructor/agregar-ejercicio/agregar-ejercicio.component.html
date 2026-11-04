@@ -7,22 +7,27 @@
     [(categoriaIdsSeleccionadas)]="categoriaIdsSeleccionadas"
   />
 
+  @if (errorSeleccion()) {
+    <p class="busqueda-ejercicios__error" role="alert">{{ errorSeleccion() }}</p>
+  }
   @if (errorCarga()) {
     <p class="busqueda-ejercicios__error" role="alert">{{ errorCarga() }}</p>
-  } @else if (recursoTotalEjercicios.isLoading() || recursoResultados.isLoading()) {
+    <button mat-stroked-button type="button" (click)="reintentar()">Reintentar</button>
+  } @else if (recursoTotalEjercicios.isLoading() || cargandoInicial()) {
     <app-estado-carga mensaje="Cargando ejercicios" [cantidad]="4" />
-  } @else if ((recursoTotalEjercicios.value() ?? []).length === 0) {
+  } @else if (recursoTotalEjercicios.value() === 0) {
     <app-estado-vacio icono="search_off" mensaje="No hay ejercicios registrados todavía." />
-  } @else if ((recursoResultados.value() ?? []).length === 0) {
+  } @else if (resultados().length === 0) {
     <app-estado-vacio icono="search_off" mensaje="No se han encontrado ejercicios con los criterios seleccionados." />
   } @else {
     <div class="busqueda-ejercicios__disposicion">
       <mat-selection-list class="busqueda-ejercicios__resultados" aria-label="Resultados de ejercicios">
-        @for (ejercicio of recursoResultados.value(); track ejercicio.id) {
+        @for (ejercicio of resultados(); track ejercicio.id) {
             <mat-list-option
               [value]="ejercicio.id"
+              [selected]="ejercicioIdsSeleccionados().includes(ejercicio.id)"
               class="agregar-ejercicio__opcion"
-              (selectedChange)="seleccionados.emit({ ejercicioId: ejercicio.id, seleccionado: $event })"
+              (selectedChange)="cambiarSeleccion(ejercicio.id, $event)"
             >
                 <span matListItemTitle>{{ ejercicio.nombre }}</span>
                 <span matListItemLine class="agregar-ejercicio__descripcion">{{ ejercicio.descripcion }}</span>
@@ -34,7 +39,22 @@
             </mat-list-option>
         }
       </mat-selection-list>
-
+      <div class="agregar-ejercicio__paginacion">
+        <p #contador tabindex="-1">
+          Mostrando {{ resultados().length }} de {{ totalResultados() }}
+          · {{ cantidadSeleccionada() }} {{ cantidadSeleccionada() === 1 ? 'ejercicio seleccionado' : 'ejercicios seleccionados' }}
+        </p>
+        @if (errorMas()) {
+          <p class="busqueda-ejercicios__error" role="alert">{{ errorMas() }}</p>
+        }
+        @if (hayMas() || errorMas()) {
+          <button #botonCarga mat-stroked-button type="button"
+            [disabled]="cargandoMas()" (click)="cargarMas()">
+            {{ cargandoMas() ? 'Cargando ejercicios…' : errorMas() ? 'Reintentar' : 'Cargar más' }}
+          </button>
+        }
+        <span class="cdk-visually-hidden" aria-live="polite">{{ anuncio() }}</span>
+      </div>
     </div>
   }
 </section>

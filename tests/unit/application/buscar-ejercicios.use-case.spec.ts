@@ -3,19 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { BuscarEjerciciosUseCase } from '../../../src/app/application/casos-uso/buscar-ejercicios.use-case';
 import { EjercicioRepositoryPort } from '../../../src/app/application/ports/ejercicio-repository.port';
-import type { Ejercicio } from '../../../src/app/domain/ejercicio/ejercicio.entity';
-
-function ejercicio(id: string, nombre: string, categoriaIds: string[] = ['cat-1']): Ejercicio {
-  return {
-    id,
-    nombre,
-    descripcion: `Descripción de ${nombre}`,
-    categoriaIds,
-    enlaces: [],
-    imagenes: [],
-    subidoRepositorioComun: false,
-  };
-}
+import { ErrorValidacion } from '../../../src/app/domain/errores/errores-dominio';
 
 describe('BuscarEjerciciosUseCase', () => {
   function configurar(repo: Partial<EjercicioRepositoryPort>) {
@@ -25,61 +13,49 @@ describe('BuscarEjerciciosUseCase', () => {
     return TestBed.inject(BuscarEjerciciosUseCase);
   }
 
-  it('sin texto ni categorías, devuelve todos los ejercicios', async () => {
-    const listarTodos = vi.fn().mockResolvedValue([ejercicio('1', 'Sentadilla')]);
-    const caso = configurar({ listarTodos });
-
-    const resultado = await caso.buscar('', []);
-
-    expect(listarTodos).toHaveBeenCalled();
-    expect(resultado).toHaveLength(1);
+  it('delega sin cargar el catálogo completo, con página inicial 0 y tamaño 50', async () => {
+    const buscarPaginado = vi.fn().mockResolvedValue({ resultados: [], total: 0 });
+    const listarTodos = vi.fn();
+    const caso = configurar({ buscarPaginado, listarTodos });
+    expect(await caso.buscarPaginado('  senta  ', ['cat-1', 'cat-1', 'cat-2'])).toEqual({
+      resultados: [],
+      total: 0,
+    });
+    expect(buscarPaginado).toHaveBeenCalledWith({
+      texto: 'senta', categoriaIds: ['cat-1', 'cat-2'], pagina: 0, tamanoPagina: 50,
+    });
+    expect(listarTodos).not.toHaveBeenCalled();
   });
 
-  it('busca por texto parcial sin distinguir mayúsculas sobre nombre o descripción (FR-013, CA6)', async () => {
-    const buscarPorTexto = vi.fn().mockResolvedValue([ejercicio('1', 'Sentadilla')]);
-    const caso = configurar({ buscarPorTexto });
-
-    const resultado = await caso.buscar('senta', []);
-
-    expect(buscarPorTexto).toHaveBeenCalledWith('senta');
-    expect(resultado).toHaveLength(1);
+  it('transmite página y tamaño explícitos, y consulta el total ligero', async () => {
+    const buscarPaginado = vi.fn().mockResolvedValue({ resultados: [], total: 125 });
+    const contarTodos = vi.fn().mockResolvedValue(125);
+    const caso = configurar({ buscarPaginado, contarTodos });
+    await caso.buscarPaginado('', [], 2, 25);
+    expect(buscarPaginado).toHaveBeenCalledWith({
+      texto: '', categoriaIds: [], pagina: 2, tamanoPagina: 25,
+    });
+    expect(await caso.contarTotal()).toBe(125);
+    expect(contarTodos).toHaveBeenCalledOnce();
   });
 
-  it('busca por una o varias categorías (FR-012, CA7)', async () => {
-    const buscarPorCategorias = vi.fn().mockResolvedValue([ejercicio('1', 'Sentadilla', ['cat-1', 'cat-2'])]);
-    const caso = configurar({ buscarPorCategorias });
-
-    const resultado = await caso.buscar('', ['cat-1', 'cat-2']);
-
-    expect(buscarPorCategorias).toHaveBeenCalledWith(['cat-1', 'cat-2']);
-    expect(resultado).toHaveLength(1);
+  it.each([
+    [-1, 50], [0.5, 50], [Number.NaN, 50], [Number.MAX_SAFE_INTEGER + 1, 50],
+    [0, 0], [0, 101], [0, 1.5], [0, Infinity], [Number.MAX_SAFE_INTEGER, 50],
+  ])('rechaza página/tamaño inválidos (%s, %s)', async (pagina, tamano) => {
+    const buscarPaginado = vi.fn();
+    const caso = configurar({ buscarPaginado });
+    expect(() => caso.buscarPaginado('', [], pagina, tamano)).toThrow(ErrorValidacion);
+    expect(buscarPaginado).not.toHaveBeenCalled();
   });
 
-  it('combina texto y categorías con intersección (coincide con ambos criterios)', async () => {
-    const buscarPorTexto = vi.fn().mockResolvedValue([ejercicio('1', 'Sentadilla'), ejercicio('2', 'Plancha')]);
-    const buscarPorCategorias = vi.fn().mockResolvedValue([ejercicio('2', 'Plancha')]);
-    const caso = configurar({ buscarPorTexto, buscarPorCategorias });
-
-    const resultado = await caso.buscar('a', ['cat-1']);
-
-    expect(resultado.map((e) => e.id)).toEqual(['2']);
-  });
-
-  it('devuelve una lista vacía sin lanzar error cuando no hay coincidencias (CL3)', async () => {
-    const buscarPorTexto = vi.fn().mockResolvedValue([]);
-    const caso = configurar({ buscarPorTexto });
-
-    const resultado = await caso.buscar('inexistente', []);
-
-    expect(resultado).toEqual([]);
-  });
-
-  it('devuelve una lista vacía cuando la biblioteca está vacía (CL1)', async () => {
-    const listarTodos = vi.fn().mockResolvedValue([]);
-    const caso = configurar({ listarTodos });
-
-    const resultado = await caso.buscar('', []);
-
-    expect(resultado).toEqual([]);
+  it('propaga errores de búsqueda y conteo', async () => {
+    const fallo = new Error('SQLite no disponible');
+    const caso = configurar({
+      buscarPaginado: vi.fn().mockRejectedValue(fallo),
+      contarTodos: vi.fn().mockRejectedValue(fallo),
+    });
+    await expect(caso.buscarPaginado('', [])).rejects.toBe(fallo);
+    await expect(caso.contarTotal()).rejects.toBe(fallo);
   });
 });

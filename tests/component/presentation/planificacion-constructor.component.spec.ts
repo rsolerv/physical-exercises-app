@@ -1,9 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { PlanificacionConstructorComponent } from '../../../src/app/presentation/planificacion-semanal/constructor/planificacion-constructor.component';
+import { AgregarEjercicioComponent } from '../../../src/app/presentation/planificacion-semanal/constructor/agregar-ejercicio/agregar-ejercicio.component';
 import { GestionarPlanificacionUseCase } from '../../../src/app/application/casos-uso/gestionar-planificacion.use-case';
 import { BuscarEjerciciosUseCase } from '../../../src/app/application/casos-uso/buscar-ejercicios.use-case';
 import { CategoriaRepositoryPort } from '../../../src/app/application/ports/categoria-repository.port';
@@ -25,6 +27,7 @@ describe('PlanificacionConstructorComponent', () => {
     ejercicios?: Ejercicio[];
     categorias?: Categoria[];
     listarEjercicios?: () => Promise<Ejercicio[]>;
+    buscarPaginado?: ReturnType<typeof vi.fn>;
     crear?: ReturnType<typeof vi.fn>;
     actualizar?: ReturnType<typeof vi.fn>;
     duplicar?: ReturnType<typeof vi.fn>;
@@ -48,7 +51,13 @@ describe('PlanificacionConstructorComponent', () => {
         { provide: CategoriaRepositoryPort, useValue: { listarTodas: vi.fn().mockResolvedValue(opciones.categorias ?? []) } },
         {
           provide: BuscarEjerciciosUseCase,
-          useValue: { buscar: vi.fn().mockResolvedValue(opciones.ejercicios ?? []) },
+          useValue: {
+            buscarPaginado: opciones.buscarPaginado ?? vi.fn(async (_texto: string, _ids: string[], pagina: number, tamano: number) => ({
+              resultados: (opciones.ejercicios ?? []).slice(pagina * tamano, (pagina + 1) * tamano),
+              total: (opciones.ejercicios ?? []).length,
+            })),
+            contarTotal: vi.fn().mockResolvedValue((opciones.ejercicios ?? []).length),
+          },
         },
         {
           provide: GestionarPlanificacionUseCase,
@@ -70,6 +79,11 @@ describe('PlanificacionConstructorComponent', () => {
     await fixture.whenStable();
     fixture.detectChanges();
     return fixture;
+  }
+
+  function abrirSelectorDia(raiz: HTMLElement, dia: string): void {
+    const botones = raiz.querySelectorAll<HTMLButtonElement>(`section[aria-label="${dia}"] button`);
+    Array.from(botones).find((boton) => boton.textContent?.includes('Añadir ejercicio'))?.click();
   }
 
   it('el selector de fecha solo permite lunes', async () => {
@@ -141,10 +155,11 @@ describe('PlanificacionConstructorComponent', () => {
       asignarEjercicioADia,
       quitarEjercicioDeDia,
     });
+
     const fixture = await crearComponente();
     const raiz = fixture.nativeElement as HTMLElement;
 
-    raiz.querySelector<HTMLButtonElement>('section[aria-label="Lunes"] button')?.click();
+    abrirSelectorDia(raiz, 'Lunes');
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -160,6 +175,101 @@ describe('PlanificacionConstructorComponent', () => {
     expect(asignarEjercicioADia).toHaveBeenCalledWith('plan-1', 'lunes', 'ej-1');
     expect(quitarEjercicioDeDia).toHaveBeenCalledWith('plan-1', 'lunes', 'ej-1');
     expect(fixture.componentInstance.ejerciciosPorDia().lunes).toEqual([]);
+  });
+
+  it('impide incorporar dos veces el mismo ejercicio al día desde el selector', async () => {
+    configurar({ ejercicios: [ejercicio('ej-1', 'Sentadilla')] });
+    const fixture = await crearComponente();
+    const raiz = fixture.nativeElement as HTMLElement;
+    raiz.querySelector<HTMLButtonElement>('section[aria-label="Lunes"] button')?.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    raiz.querySelector<HTMLElement>('mat-list-option')?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.componentInstance.anadirEjercicioADia('lunes', 'ej-1');
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.ejerciciosPorDia().lunes).toEqual(['ej-1']);
+    expect(fixture.componentInstance.errorDia()).toContain('ya está asignado');
+    expect((fixture.nativeElement as HTMLElement).querySelector('[role="alert"]')?.textContent)
+      .toContain('ya está asignado');
+  });
+
+  it('pasa solo las selecciones del día activo al selector, también al cambiar de día', async () => {
+    const dias = crearDiasVacios();
+    dias[0].ejercicioIds = ['ej-lunes'];
+    dias[1].ejercicioIds = ['ej-martes'];
+    const buscarPaginado = vi.fn(async (_texto: string, _ids: string[], pagina: number) => ({
+      resultados: pagina === 0 ? [ejercicio('ej-lunes', 'Sentadilla'), ejercicio('ej-martes', 'Flexión')] : [],
+      total: 2,
+    }));
+    configurar({
+      idRuta: 'plan-1',
+      planificacionExistente: { id: 'plan-1', nombre: 'Semana', dias },
+      ejercicios: [ejercicio('ej-lunes', 'Sentadilla'), ejercicio('ej-martes', 'Flexión')],
+      buscarPaginado,
+    });
+    const fixture = await crearComponente();
+    const raiz = fixture.nativeElement as HTMLElement;
+
+    abrirSelectorDia(raiz, 'Lunes');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    let selector = fixture.debugElement.query(By.directive(AgregarEjercicioComponent)).componentInstance as AgregarEjercicioComponent;
+    expect(selector.ejercicioIdsSeleccionados()).toEqual(['ej-lunes']);
+    expect(raiz.querySelectorAll('mat-list-option')).toHaveLength(2);
+    expect(raiz.textContent).toContain('1 ejercicio seleccionado');
+
+    const volver = Array.from(raiz.querySelectorAll('button')).find((boton) => boton.textContent?.includes('Volver'));
+    volver?.click();
+    fixture.detectChanges();
+    abrirSelectorDia(raiz, 'Martes');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    selector = fixture.debugElement.query(By.directive(AgregarEjercicioComponent)).componentInstance as AgregarEjercicioComponent;
+    expect(selector.ejercicioIdsSeleccionados()).toEqual(['ej-martes']);
+    expect(raiz.textContent).toContain('1 ejercicio seleccionado');
+    expect(buscarPaginado).toHaveBeenCalledWith('', [], 0, 50);
+  });
+
+  it('cuenta los ejercicios asignados fuera del bloque visible sin utilizar las referencias del constructor como catálogo', async () => {
+    const dias = crearDiasVacios();
+    dias[0].ejercicioIds = ['ej-59'];
+    const catalogo = Array.from({ length: 60 }, (_, indice) => ejercicio(`ej-${indice}`, `Ejercicio ${indice}`));
+    const buscarPaginado = vi.fn(async (_texto: string, _ids: string[], pagina: number, tamano: number) => ({
+      resultados: catalogo.slice(pagina * tamano, (pagina + 1) * tamano),
+      total: catalogo.length,
+    }));
+    configurar({
+      idRuta: 'plan-1',
+      planificacionExistente: { id: 'plan-1', nombre: 'Semana', dias },
+      ejercicios: [catalogo[59]],
+      buscarPaginado,
+    });
+    const fixture = await crearComponente();
+    const raiz = fixture.nativeElement as HTMLElement;
+    abrirSelectorDia(raiz, 'Lunes');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(raiz.querySelectorAll('mat-list-option')).toHaveLength(50);
+    expect(raiz.textContent).toContain('Mostrando 50 de 60');
+    expect(raiz.textContent).toContain('1 ejercicio seleccionado');
+    expect(buscarPaginado).toHaveBeenCalledWith('', [], 0, 50);
+
+    const cargarMas = Array.from(raiz.querySelectorAll('button'))
+      .find((boton) => boton.textContent?.includes('Cargar más'));
+    cargarMas?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(raiz.querySelectorAll('mat-list-option')).toHaveLength(60);
+    expect(raiz.querySelectorAll('mat-list-option')[59].getAttribute('aria-selected')).toBe('true');
   });
 
   it('muestra la descripción completa y las categorías al añadir ejercicios en una planificación editada', async () => {
@@ -303,6 +413,46 @@ describe('PlanificacionConstructorComponent', () => {
     expect(asignarEjercicioADia).toHaveBeenCalledWith('plan-1', 'lunes', 'ej-1');
     expect(fixture.componentInstance.ejerciciosPorDia().lunes).toEqual([]);
     expect(fixture.componentInstance.errorDia()).toContain('No se pudo asignar');
+    expect(raiz.querySelector('[role="alert"]')?.textContent).toContain('No se pudo asignar');
+    expect(raiz.querySelector('mat-list-option')?.getAttribute('aria-selected')).toBe('false');
+  });
+
+  it('mantiene marcada la opción y los ids del día si falla la eliminación persistida', async () => {
+    const dias = crearDiasVacios();
+    dias[0].ejercicioIds = ['ej-1'];
+    const quitarEjercicioDeDia = vi.fn()
+      .mockRejectedValueOnce(new Error('No se pudo quitar.'))
+      .mockResolvedValue(undefined);
+    configurar({
+      idRuta: 'plan-1',
+      planificacionExistente: { id: 'plan-1', nombre: 'Semana', dias },
+      ejercicios: [ejercicio('ej-1', 'Sentadilla')],
+      quitarEjercicioDeDia,
+    });
+    const fixture = await crearComponente();
+    const raiz = fixture.nativeElement as HTMLElement;
+    abrirSelectorDia(raiz, 'Lunes');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(raiz.querySelector('mat-list-option')?.getAttribute('aria-selected')).toBe('true');
+    raiz.querySelector<HTMLElement>('mat-list-option')?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(quitarEjercicioDeDia).toHaveBeenCalledWith('plan-1', 'lunes', 'ej-1');
+    expect(fixture.componentInstance.ejerciciosPorDia().lunes).toEqual(['ej-1']);
+    expect(fixture.componentInstance.errorDia()).toContain('No se pudo quitar');
+    expect(raiz.querySelector('[role="alert"]')?.textContent).toContain('No se pudo quitar');
+    expect(raiz.querySelector('mat-list-option')?.getAttribute('aria-selected')).toBe('true');
+
+    raiz.querySelector<HTMLElement>('mat-list-option')?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.ejerciciosPorDia().lunes).toEqual([]);
+    expect(fixture.componentInstance.errorDia()).toBeNull();
+    expect(raiz.querySelector('[role="alert"]')).toBeNull();
   });
 
   it('identifica la plantilla o la planificación activa desde el formulario', async () => {

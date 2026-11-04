@@ -43,6 +43,8 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+*.tmp
+*.swp
 
 
 # Entradas adicionales del proyecto (añadidas antes de ng new)

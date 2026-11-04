@@ -36,5 +36,8 @@ export interface Ejercicio {
   subidoRepositorioComun: boolean;
 }
 
+/** Datos ligeros para listados; los medios solo se consultan en la ficha. */
+export type EjercicioResumen = Pick<Ejercicio, 'id' | 'nombre' | 'descripcion' | 'categoriaIds'>;
+
 /** Datos de alta de un ejercicio: `subidoRepositorioComun` siempre arranca en `false`, no se recibe como entrada. */
 export type DatosNuevoEjercicio = Omit<Ejercicio, 'id' | 'subidoRepositorioComun'>;

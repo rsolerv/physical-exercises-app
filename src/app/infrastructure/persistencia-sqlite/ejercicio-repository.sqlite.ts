@@ -7,7 +7,8 @@ import type {
 } from '../../domain/ejercicio/ejercicio.entity';
 import { validarEjercicio } from '../../domain/ejercicio/validar-ejercicio';
 import { EjercicioRepositoryPort } from '../../application/ports/ejercicio-repository.port';
-import { ErrorNoEncontrado } from '../../domain/errores/errores-dominio';
+import type { CriteriosBusquedaEjercicios, PaginaEjercicios } from '../../application/models/busqueda-ejercicios';
+import { ErrorNoEncontrado, ErrorValidacion } from '../../domain/errores/errores-dominio';
 import { SqliteConexionService } from './sqlite-conexion.service';
 
 interface FilaEjercicio {
@@ -36,25 +37,60 @@ export class EjercicioRepositorySqlite implements EjercicioRepositoryPort {
     return Promise.all(filas.map((fila) => this.hidratar(fila)));
   }
 
-  async buscarPorTexto(texto: string): Promise<Ejercicio[]> {
-    const patron = `%${texto.toLowerCase()}%`;
-    const filas = await this.conexion.ejecutar<FilaEjercicio>(
-      'SELECT * FROM ejercicio WHERE LOWER(nombre) LIKE ? OR LOWER(descripcion) LIKE ? ORDER BY nombre',
-      [patron, patron]
-    );
-    return Promise.all(filas.map((fila) => this.hidratar(fila)));
+  async contarTodos(): Promise<number> {
+    const filas = await this.conexion.ejecutar<{ total: number }>('SELECT COUNT(*) AS total FROM ejercicio');
+    return filas[0].total;
   }
 
-  async buscarPorCategorias(categoriaIds: string[]): Promise<Ejercicio[]> {
-    if (categoriaIds.length === 0) return [];
-    const marcadores = categoriaIds.map(() => '?').join(', ');
-    const filas = await this.conexion.ejecutar<FilaEjercicio>(
-      `SELECT DISTINCT e.* FROM ejercicio e ` +
-        `JOIN ejercicio_categoria ec ON ec.ejercicio_id = e.id ` +
-        `WHERE ec.categoria_id IN (${marcadores}) ORDER BY e.nombre`,
-      categoriaIds
+  async buscarPaginado(criterios: CriteriosBusquedaEjercicios): Promise<PaginaEjercicios> {
+    const { texto, categoriaIds, pagina, tamanoPagina } = criterios;
+    if (!Number.isSafeInteger(pagina) || pagina < 0 ||
+      !Number.isSafeInteger(tamanoPagina) || tamanoPagina < 1 || tamanoPagina > 100 ||
+      !Number.isSafeInteger(pagina * tamanoPagina)) {
+      throw new ErrorValidacion('La página o el tamaño de página no son válidos.');
+    }
+    const condiciones: string[] = [];
+    const parametros: (string | number)[] = [];
+    if (texto) {
+      condiciones.push('(LOWER(e.nombre) LIKE ? OR LOWER(e.descripcion) LIKE ?)');
+      const patron = `%${texto.toLowerCase()}%`;
+      parametros.push(patron, patron);
+    }
+    if (categoriaIds.length) {
+      condiciones.push(
+        `EXISTS (SELECT 1 FROM ejercicio_categoria ec WHERE ec.ejercicio_id = e.id ` +
+        `AND ec.categoria_id IN (${categoriaIds.map(() => '?').join(', ')}))`
+      );
+      parametros.push(...categoriaIds);
+    }
+    const filtro = condiciones.length ? ` WHERE ${condiciones.join(' AND ')}` : '';
+    const [conteo] = await this.conexion.ejecutar<{ total: number }>(
+      `SELECT COUNT(*) AS total FROM ejercicio e${filtro}`, parametros
     );
-    return Promise.all(filas.map((fila) => this.hidratar(fila)));
+    const filas = await this.conexion.ejecutar<Pick<FilaEjercicio, 'id' | 'nombre' | 'descripcion'>>(
+      `SELECT e.id, e.nombre, e.descripcion FROM ejercicio e${filtro} ` +
+      'ORDER BY e.nombre, e.id LIMIT ? OFFSET ?',
+      [...parametros, tamanoPagina, pagina * tamanoPagina]
+    );
+    const categorias = filas.length ? await this.conexion.ejecutar<{
+      ejercicio_id: string; categoria_id: string;
+    }>(
+      `SELECT ejercicio_id, categoria_id FROM ejercicio_categoria ` +
+      `WHERE ejercicio_id IN (${filas.map(() => '?').join(', ')}) ORDER BY ejercicio_id, rowid`,
+      filas.map((fila) => fila.id)
+    ) : [];
+    const categoriasPorEjercicio = new Map<string, string[]>();
+    for (const categoria of categorias) {
+      const ids = categoriasPorEjercicio.get(categoria.ejercicio_id) ?? [];
+      ids.push(categoria.categoria_id);
+      categoriasPorEjercicio.set(categoria.ejercicio_id, ids);
+    }
+    return {
+      resultados: filas.map((fila) => ({
+        ...fila, categoriaIds: categoriasPorEjercicio.get(fila.id) ?? [],
+      })),
+      total: conteo.total,
+    };
   }
 
   async crear(datos: DatosNuevoEjercicio): Promise<Ejercicio> {

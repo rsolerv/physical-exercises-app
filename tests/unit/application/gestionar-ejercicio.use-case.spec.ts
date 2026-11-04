@@ -28,8 +28,8 @@ describe('GestionarEjercicioUseCase', () => {
     ejercicioRepo = {
       obtenerPorId: vi.fn().mockResolvedValue({ id: 'ej-1', ...datosValidos() }),
       listarTodos: vi.fn(),
-      buscarPorTexto: vi.fn(),
-      buscarPorCategorias: vi.fn(),
+      buscarPaginado: vi.fn(),
+      contarTodos: vi.fn(),
       crear: vi.fn().mockImplementation(async (datos: DatosNuevoEjercicio) => ({ id: 'nuevo-id', ...datos }) as Ejercicio),
       actualizar: vi.fn().mockImplementation(async (id: string, cambios: Partial<DatosNuevoEjercicio>) => ({ id, ...datosValidos(), ...cambios }) as Ejercicio),
       eliminar: vi.fn(),

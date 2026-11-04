@@ -7,6 +7,7 @@ import { EjercicioRepositoryPort } from '../app/application/ports/ejercicio-repo
 import { PlanificacionRepositoryPort } from '../app/application/ports/planificacion-repository.port';
 import { ProgresoDiarioRepositoryPort } from '../app/application/ports/progreso-diario-repository.port';
 import { BuscarEjerciciosUseCase } from '../app/application/casos-uso/buscar-ejercicios.use-case';
+import type { CriteriosBusquedaEjercicios } from '../app/application/models/busqueda-ejercicios';
 import { ConsultarPlanificacionUseCase } from '../app/application/casos-uso/consultar-planificacion.use-case';
 import { GestionarCategoriaUseCase } from '../app/application/casos-uso/gestionar-categoria.use-case';
 import { GestionarEjercicioUseCase } from '../app/application/casos-uso/gestionar-ejercicio.use-case';
@@ -111,6 +112,19 @@ export function ajustesSincronizacionDemo(cambios: Partial<AjustesAplicacion> = 
   return { ...AJUSTES_SINCRONIZACION_DEMO, ...cambios };
 }
 
+function buscarPaginaDemo({ texto, categoriaIds, pagina, tamanoPagina }: CriteriosBusquedaEjercicios) {
+  const patron = texto.trim().toLowerCase();
+  const coincidencias = EJERCICIOS_DEMO.filter((ejercicio) =>
+    (!patron || `${ejercicio.nombre} ${ejercicio.descripcion}`.toLowerCase().includes(patron)) &&
+    (!categoriaIds.length || ejercicio.categoriaIds.some((id) => categoriaIds.includes(id)))
+  ).sort((a, b) => a.nombre.localeCompare(b.nombre) || a.id.localeCompare(b.id));
+  return {
+    total: coincidencias.length,
+    resultados: coincidencias.slice(pagina * tamanoPagina, (pagina + 1) * tamanoPagina)
+      .map(({ id, nombre, descripcion, categoriaIds: ids }) => ({ id, nombre, descripcion, categoriaIds: ids })),
+  };
+}
+
 const conflictoEstado = new ConflictoSincronizacionEstadoService();
 conflictoEstado.conflictoActual.set(CONFLICTO_DEMO);
 
@@ -120,10 +134,8 @@ export const DEMO_PROVIDERS: Provider[] = [
     useValue: {
       obtenerPorId: async (id: string) => EJERCICIOS_DEMO.find((ejercicio) => ejercicio.id === id) ?? null,
       listarTodos: async () => EJERCICIOS_DEMO,
-      buscarPorTexto: async (texto: string) =>
-        EJERCICIOS_DEMO.filter((ejercicio) => `${ejercicio.nombre} ${ejercicio.descripcion}`.toLowerCase().includes(texto.toLowerCase())),
-      buscarPorCategorias: async (ids: string[]) =>
-        EJERCICIOS_DEMO.filter((ejercicio) => ejercicio.categoriaIds.some((id) => ids.includes(id))),
+      buscarPaginado: async (criterios: CriteriosBusquedaEjercicios) => buscarPaginaDemo(criterios),
+      contarTodos: async () => EJERCICIOS_DEMO.length,
       crear: async (datos: Omit<Ejercicio, 'id'>) => ({ ...datos, id: 'nuevo-ejercicio' }),
       actualizar: async (id: string, cambios: Partial<Ejercicio>) => ({
         ...EJERCICIOS_DEMO.find((ejercicio) => ejercicio.id === id)!,
@@ -191,7 +203,11 @@ export const DEMO_PROVIDERS: Provider[] = [
       marcarCatalogoPredefinidoCargado: async () => undefined,
     },
   },
-  { provide: BuscarEjerciciosUseCase, useValue: { buscar: async () => EJERCICIOS_DEMO } },
+  { provide: BuscarEjerciciosUseCase, useValue: {
+    buscarPaginado: async (texto: string, categoriaIds: string[], pagina = 0, tamanoPagina = 50) =>
+      buscarPaginaDemo({ texto, categoriaIds, pagina, tamanoPagina }),
+    contarTotal: async () => EJERCICIOS_DEMO.length,
+  } },
   { provide: ConsultarPlanificacionUseCase, useValue: { obtenerDeHoy: async () => PLANIFICACION_DEMO } },
   {
     provide: GestionarCategoriaUseCase,

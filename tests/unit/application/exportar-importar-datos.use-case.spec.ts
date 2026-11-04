@@ -12,6 +12,7 @@ import type { Ejercicio } from '../../../src/app/domain/ejercicio/ejercicio.enti
 import type { Categoria } from '../../../src/app/domain/categoria/categoria.entity';
 import type { Planificacion } from '../../../src/app/domain/planificacion/planificacion.entity';
 import type { ImagenArchivoJSON } from '../../../src/app/application/ports/github-sync.port';
+import { crearCatalogoPaginacion } from '../../fixtures/crear-catalogo-paginacion';
 
 const resolverImagenVacio = async (): Promise<ImagenArchivoJSON> => {
   throw new Error('No se esperaban imágenes de archivo.');
@@ -124,6 +125,7 @@ describe('ExportarImportarDatosUseCase', () => {
     const ejercicioConImagen = ejercicio({
       imagenes: [{ id: 'img-1', tipo: 'archivo', contenidoBase64: 'ABC123', tipoMime: 'image/png', nombreArchivo: 'foto.png' }],
     });
+
     const caso = configurar({ ejercicios: { listarTodos: vi.fn().mockResolvedValue([ejercicioConImagen]) } });
 
     const resultado = await caso.exportar();
@@ -132,6 +134,77 @@ describe('ExportarImportarDatosUseCase', () => {
     expect(resultado.imagenesParaSubir).toEqual([
       { id: 'img-1', nombreArchivo: 'foto.png', tipoMime: 'image/png', contenidoBase64: 'ABC123' },
     ]);
+  });
+
+  it('exporta e importa los 125 agregados completos y sus relaciones sin consultar páginas', async () => {
+    const catalogo = crearCatalogoPaginacion(125);
+    const listarTodos = vi.fn().mockResolvedValue(catalogo.ejerciciosLocales);
+    const buscarPaginado = vi.fn(() => { throw new Error('No se debe paginar una exportación.'); });
+    const contarTodos = vi.fn(() => { throw new Error('No se debe contar para exportar.'); });
+    const dias = catalogo.datos.planificaciones[0].dias;
+    const casoExportador = configurar({
+      ejercicios: { listarTodos, buscarPaginado, contarTodos },
+      categorias: { listarTodas: vi.fn().mockResolvedValue(catalogo.datos.categorias) },
+      planificaciones: { listarTodas: vi.fn().mockResolvedValue([{
+        id: 'plan-semana', nombre: 'Semana sintética', fechaInicio: '2026-10-12', dias,
+      }]) },
+      progreso: { obtenerPorFecha: vi.fn().mockImplementation(async (fecha: Date) =>
+        fecha.getFullYear() === 2026 && fecha.getMonth() === 9 && fecha.getDate() === 12
+          ? catalogo.datos.progresoDiario : []) },
+    });
+
+    const exportacion = await casoExportador.exportar();
+    expect(listarTodos).toHaveBeenCalledOnce();
+    expect(buscarPaginado).not.toHaveBeenCalled();
+    expect(contarTodos).not.toHaveBeenCalled();
+    expect(exportacion.datos).toEqual(catalogo.datos);
+    expect(exportacion.imagenesParaSubir).toEqual(Object.values(catalogo.imagenes));
+
+    TestBed.resetTestingModule();
+    const crearEjercicio = vi.fn().mockImplementation(async () =>
+      ({ id: `nuevo-${crearEjercicio.mock.calls.length}` }));
+    const asignarEjercicioADia = vi.fn().mockResolvedValue(undefined);
+    const marcar = vi.fn().mockResolvedValue(undefined);
+    const marcarSubidoRepositorioComun = vi.fn().mockResolvedValue(undefined);
+    const listarImportados = vi.fn().mockResolvedValue([]);
+    const buscarAlImportar = vi.fn(() => { throw new Error('No se debe paginar una restauración.'); });
+    const casoImportador = configurar({
+      ejercicios: {
+        listarTodos: listarImportados,
+        buscarPaginado: buscarAlImportar,
+        crear: crearEjercicio,
+        marcarSubidoRepositorioComun,
+      },
+      categorias: { crear: vi.fn().mockImplementation(async (nombre: string) =>
+        ({ id: `nueva-${nombre}`, nombre })) },
+      planificaciones: {
+        crear: vi.fn().mockResolvedValue({ id: 'plan-nueva', nombre: 'Semana sintética', dias: crearDiasVacios() }),
+        asignarEjercicioADia,
+      },
+      progreso: { marcar },
+    });
+    const resolverImagen = vi.fn(async (ruta: string) => {
+      const imagen = catalogo.imagenes[ruta];
+      if (!imagen) throw new Error(`Imagen ausente: ${ruta}`);
+      return imagen;
+    });
+
+    await expect(casoImportador.importar(exportacion.datos, resolverImagen)).resolves.toEqual({ imagenesOmitidas: 0 });
+    expect(listarImportados).toHaveBeenCalledOnce();
+    expect(buscarAlImportar).not.toHaveBeenCalled();
+    expect(crearEjercicio).toHaveBeenCalledTimes(125);
+    expect(crearEjercicio.mock.calls.map(([datos]) => datos.nombre)).toEqual(catalogo.datos.ejercicios.map((e) => e.nombre));
+    expect(crearEjercicio.mock.calls[119][0]).toMatchObject({
+      descripcion: catalogo.datos.ejercicios[119].descripcion,
+      categoriaIds: ['nueva-General', 'nueva-Movilidad'],
+      enlaces: catalogo.datos.ejercicios[119].enlaces,
+      imagenes: catalogo.ejerciciosLocales[119].imagenes,
+      series: 3, repeticiones: 12, observaciones: 'Mantener la postura.',
+    });
+    expect(resolverImagen).toHaveBeenCalledTimes(Object.keys(catalogo.imagenes).length);
+    expect(asignarEjercicioADia).toHaveBeenCalledWith('plan-nueva', dias[0].diaSemana, 'nuevo-125');
+    expect(marcar).toHaveBeenCalledWith(expect.any(Date), 'nuevo-125', true);
+    expect(marcarSubidoRepositorioComun).toHaveBeenCalledWith('nuevo-125');
   });
 
   it('importar() reemplaza los datos locales: elimina lo existente y crea lo importado', async () => {

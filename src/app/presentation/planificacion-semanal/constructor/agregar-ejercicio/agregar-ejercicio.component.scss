@@ -83,3 +83,23 @@
 .busqueda-ejercicios__error {
   color: var(--mat-sys-error);
 }
+
+.agregar-ejercicio__paginacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 16px 8px max(24px, env(safe-area-inset-bottom));
+}
+
+.agregar-ejercicio__paginacion p {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+@media (max-width: 599px) {
+  .agregar-ejercicio__paginacion button {
+    width: 100%;
+    min-height: 48px;
+  }
+}

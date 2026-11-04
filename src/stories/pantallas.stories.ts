@@ -76,8 +76,8 @@ export const SinConflictoPendiente = pantalla('/sincronizacion/conflicto', 'escr
 ]);
 
 export const BibliotecaVacia = pantalla('/buscar', 'escritorio', [
-  { provide: EjercicioRepositoryPort, useValue: { listarTodos: async () => [], buscarPorTexto: async () => [], buscarPorCategorias: async () => [] } },
-  { provide: BuscarEjerciciosUseCase, useValue: { buscar: async () => [] } },
+  { provide: EjercicioRepositoryPort, useValue: { listarTodos: async () => [], buscarPaginado: async () => ({ resultados: [], total: 0 }), contarTodos: async () => 0 } },
+  { provide: BuscarEjerciciosUseCase, useValue: { buscarPaginado: async () => ({ resultados: [], total: 0 }), contarTotal: async () => 0 } },
 ]);
 
 export const CalendarioSinPlanificaciones = pantalla('/planificacion', 'escritorio', [

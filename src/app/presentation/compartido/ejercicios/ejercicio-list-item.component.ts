@@ -2,7 +2,7 @@ import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatListModule } from '@angular/material/list';
-import type { Ejercicio } from '../../../domain/ejercicio/ejercicio.entity';
+import type { EjercicioResumen } from '../../../domain/ejercicio/ejercicio.entity';
 
 @Component({
   selector: 'app-ejercicio-list-item',
@@ -12,6 +12,6 @@ import type { Ejercicio } from '../../../domain/ejercicio/ejercicio.entity';
   styleUrl: './ejercicio-list-item.component.scss',
 })
 export class EjercicioListItemComponent {
-  readonly ejercicio = input.required<Ejercicio>();
+  readonly ejercicio = input.required<EjercicioResumen>();
   readonly nombresCategorias = input.required<string[]>();
 }

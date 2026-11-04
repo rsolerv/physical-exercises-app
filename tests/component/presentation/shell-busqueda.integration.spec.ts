@@ -28,7 +28,7 @@ const ejercicioConVideo: Ejercicio = {
 };
 
 describe('Integración de rutas de búsqueda y componentes embebidos (US2)', () => {
-  function configurar() {
+  function configurar(datos: { ejercicios: Ejercicio[] } = { ejercicios: [ejercicioConVideo] }) {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
@@ -37,7 +37,12 @@ describe('Integración de rutas de búsqueda y componentes embebidos (US2)', () 
         {
           provide: EjercicioRepositoryPort,
           useValue: {
-            listarTodos: vi.fn().mockResolvedValue([ejercicioConVideo]),
+            listarTodos: vi.fn().mockImplementation(async () => datos.ejercicios),
+            buscarPaginado: vi.fn().mockImplementation(async (criterios: { pagina: number; tamanoPagina: number }) => ({
+              resultados: datos.ejercicios.slice(criterios.pagina * criterios.tamanoPagina, (criterios.pagina + 1) * criterios.tamanoPagina),
+              total: datos.ejercicios.length,
+            })),
+            contarTodos: vi.fn().mockImplementation(async () => datos.ejercicios.length),
             obtenerPorId: vi.fn().mockResolvedValue(ejercicioConVideo),
           },
         },
@@ -99,5 +104,26 @@ describe('Integración de rutas de búsqueda y componentes embebidos (US2)', () 
     harness.routeNativeElement?.querySelector<HTMLButtonElement>('[aria-label="Más acciones del ejercicio"]')?.click();
     await harness.fixture.whenStable();
     expect(document.body.textContent).toContain('Eliminar');
+  });
+
+  it('al volver de la ficha consulta de nuevo el catálogo tras una importación o sincronización aplicada', async () => {
+    const datos = { ejercicios: [ejercicioConVideo] };
+    configurar(datos);
+    const harness = await RouterTestingHarness.create('/buscar');
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(harness.routeNativeElement?.textContent).toContain('Sentadilla');
+    await harness.navigateByUrl('/ejercicios/ej-1');
+    await harness.fixture.whenStable();
+
+    datos.ejercicios = [
+      ejercicioConVideo,
+      { ...ejercicioConVideo, id: 'ej-importado', nombre: 'Plancha importada' },
+    ];
+    await harness.navigateByUrl('/buscar');
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(harness.routeNativeElement?.textContent).toContain('Plancha importada');
+    expect(harness.routeNativeElement?.textContent).toContain('1–2 de 2');
   });
 });

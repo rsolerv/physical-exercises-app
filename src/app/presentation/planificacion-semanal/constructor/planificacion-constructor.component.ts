@@ -226,6 +226,7 @@ export class PlanificacionConstructorComponent {
   }
 
   async quitarEjercicioDeDia(dia: DiaSemana, ejercicioId: string): Promise<void> {
+    this.errorDia.set(null);
     if (this.modoEdicion && this.planificacionId) {
       try {
         await this.gestionarPlanificacion.quitarEjercicioDeDia(this.planificacionId, dia, ejercicioId);
