@@ -34,7 +34,7 @@ Abre la URL que muestra `npm start`. El primer arranque debe cargar el catálogo
 
 ## US2 — Buscar y consultar
 
-1. Abre "Buscar" sin texto ni categorías seleccionadas. **Esperado**: aparece el catálogo completo.
+1. Abre "Buscar" sin texto ni categorías seleccionadas. **Esperado**: el catálogo completo es accesible por páginas; aparecen inicialmente hasta 50 resultados, no solo los ejercicios que se consultaron anteriormente.
 2. Busca por nombre y filtra por categoría. Comprueba el estado de carga con placeholders que anticipan el contenido, que el buscador permanece disponible al recorrer resultados, que los filtros de categoría forman una sola fila desplazable horizontalmente y que el texto largo no provoca desplazamiento horizontal de la página.
 3. En móvil, confirma que los resultados muestran nombre, descripción y categorías separadas visualmente; no muestran imagen, miniatura ni vista previa. Selecciona uno y comprueba que abre su ficha.
 4. En escritorio, confirma el mismo flujo: seleccionar un resultado abre su ficha en una pantalla dedicada y "Volver" regresa a "Buscar".
@@ -88,6 +88,54 @@ Con el catálogo cargado y los datos de prueba preparados, usa un cronómetro de
 7. **SC-026**: inicia al seleccionar un día y detén el cronómetro cuando se haya añadido por búsqueda un ejercicio y se pueda consultar la semana. Objetivo: menos de 30 segundos.
 8. **SC-031**: con los datos ya cargados, mide desde la búsqueda o selección del día hasta que el contenido visible se actualice. Objetivo: menos de 1 segundo, sin bloquear la interacción.
 
+## Enmienda de paginación 2026-11-04: preparación y aprobación visual
+
+Estos recorridos verifican FR-086–FR-095 y SC-035–SC-038. No requieren inspeccionar SQL, registros ni la estructura del ZIP.
+
+- Trabaja con una copia de prueba, sin sustituir datos personales no respaldados. Prepara conjuntos con 0, 49, 50, 51 y 125 coincidencias utilizando filtros/categorías y datos sintéticos importables. El ZIP existente `tests/fixtures/copia-100-ejercicios.zip` permite una comprobación de dos páginas, pero no sustituye los conjuntos de 51 y 125 para validar límites y última página parcial. Las tareas incluyen preparar las copias adicionales.
+- En el conjunto de 125, incluye dos nombres iguales con ejercicios distintos, un ejercicio asociado a dos categorías seleccionadas y, después de los 100 primeros, un ejercicio reconocible con imagen local, enlace, series, repeticiones y observaciones. Asigna un ejercicio de ese último tramo a una planificación.
+- Para SC-038, prepara además 1000 ejercicios sintéticos. Anota navegador, dispositivo, tamaño de ventana y los tres tiempos por acción; SQLite local no exime de medir el coste de búsqueda/renderizado.
+- Antes de implementar presentación, el agente `ux-ui-expert` ejecuta `npm run build-storybook` y `npm run storybook`, presenta ambas pantallas con shell y rutas reales, capturas 390/834/1280 px y sus URL, y solicita aprobación explícita. Incluye datos/vacío/cargando/error/éxito, bloque intermedio y selección en varios bloques. Registra aprobación o mejoras pendientes en [tasks.md](./tasks.md); no dar el gate por superado con la aprobación textual de la propuesta.
+
+### Buscar: paginación y retorno
+
+1. Con 125 coincidencias abre Buscar: **esperado** hasta 50 elementos y rango "1–50 de 125". Avanza: "51–100 de 125"; avanza otra vez: "101–125 de 125" sin siguiente habilitado. Vuelve a la primera sin perder ni repetir ejercicios del conjunto estable.
+2. Prueba 49, 50 y 51 coincidencias con tamaño inicial: en 49/50 no puedes avanzar; en 51 puedes consultar el ejercicio restante. Cero coincidencias con catálogo no vacío indica cambiar criterios; catálogo vacío muestra el mensaje de no tener ejercicios.
+3. En tablet/escritorio cambia a 25 y 100: vuelve a primera página y se ajustan rangos y avance al tamaño activo. Vuelve a 50. En móvil no se muestra el selector; cambiar de ancho no altera por sí solo el tamaño ni la página.
+4. Desde una página posterior cambia texto y categorías: muestra la primera página y el total de la nueva búsqueda. Escribe rápidamente varios textos: no debe reaparecer el resultado de uno anterior después del último.
+5. Abre la ficha de un resultado de la tercera página: la lista no tenía medios, pero la ficha sí muestra imágenes, enlaces y pauta cuando existen. Vuelve: conserva criterios y página. Edita o elimina y vuelve: datos y total se actualizan; si desapareció la última página, se muestra la última válida. Deshacer conserva el comportamiento existente.
+6. Recorre con teclado y lector de pantalla: controles en español, foco visible conservado al paginar y anuncio del rango. Confirma pie accesible a 320/390/834/1280 px, anchos intermedios y zoom 200 %, sin quedar tapado por navegación o área segura.
+
+### Agregar ejercicios: carga incremental y selección
+
+1. Con 125 candidatos abre el selector para un día con asignaciones previas. **Esperado**: primeros 50, "Mostrando 50 de 125", contador global de ejercicios de ese día y casillas previamente asignadas marcadas.
+2. Selecciona un ejercicio del primer bloque; pulsa "Cargar 50 más": se conservan los primeros 50 y aparecen hasta 100. Selecciona otro y carga los 25 restantes: muestra 125 y desaparece el botón. El contador y las asignaciones incluyen ambos, sin duplicados.
+3. Filtra para ocultar uno de los seleccionados: candidatos vuelven al primer bloque del nuevo filtro, pero ni asignación ni contador se pierden. Limpia filtros y vuelve a cargar: los ejercicios ya asignados aparecen marcados. Cambia de día y verifica sus propias asignaciones.
+4. Carga con teclado: tras el éxito el foco llega a la primera opción nueva y se anuncia la cantidad añadida. No se mueve el foco mientras escribes en el filtro. En móvil el botón aprovecha el ancho; en tablet/escritorio se centra y ajusta al texto.
+5. Cambia rápidamente el filtro mientras se está cargando un bloque: solo debe quedar el conjunto del filtro nuevo. Un doble clic en cargar no duplica el bloque ni salta resultados. La selección sigue incorporándose sin una confirmación adicional, conservando el guardado existente de la planificación.
+
+### Errores y cambios de catálogo
+
+En las historias con fallo controlado, provoca un error al avanzar o cargar y usa el reintento visible. Buscar no muestra cero coincidencias como si la consulta hubiera terminado; el selector conserva bloques/selecciones y reintenta exactamente el bloque pendiente. Estas historias permiten reproducir errores sin manipular la base de datos. Repite con las pruebas automatizadas del adaptador para cubrir el fallo de persistencia real.
+
+Tras importar o aplicar una sincronización que cambie el catálogo, vuelve a las búsquedas: resultados y totales deben reflejar los datos nuevos; el selector no concatena bloques obsoletos y las asignaciones válidas del día se conservan.
+
+### Integridad: sincronizar y restaurar el total
+
+1. Con más de 100 ejercicios consulta **solo la primera página**, aplica un filtro restrictivo y no visites los últimos ejercicios.
+2. Exporta una copia manual y restáurala en otro perfil de prueba. Busca por nombre el ejercicio del último tramo: debe existir con imagen, enlace, pauta y observaciones originales; su planificación y categorías también deben conservarse.
+3. Repite con sincronización GitHub y con Google, cada destino por separado y con las reglas de activación de la feature 002. Comprueba en el segundo perfil un ejercicio no visitado y sus medios; sincronizar no transporta únicamente los resultados visibles. Usa cuentas/repositorios de prueba autorizados, sin compartir credenciales.
+4. Verifica los flujos existentes de conflictos, restauración y copia anterior a la enmienda. No cambia la versión del formato ni se pierden medios por convertir un resumen en ejercicio incompleto.
+5. Consulta el día, calendario, constructor y recuentos de categorías con referencias a ejercicios posteriores al número 50: no deben faltar nombres ni relaciones.
+
+### Rendimiento y validación técnica complementaria
+
+Con SQLite inicializado y 1000 ejercicios, mide tres veces desde cambiar filtro/página o pulsar cargar hasta mostrar el bloque solicitado. Objetivo SC-038: menos de 1 segundo por recorrido sin bloquear la interacción; registra los resultados a 390/834/1280 px y el dispositivo real utilizado. También comprueba las descripciones largas y el desplazamiento del acumulador.
+
+La ausencia de lecturas de imágenes/enlaces y la paginación real en SQL se comprueban con tests del repositorio SQLite en memoria y espías de conexión: hasta tres consultas por página, sin hidratador completo; no son pasos de inspección exigidos a la propietaria. Ejecuta las pruebas dirigidas de Application/SQLite/Presentation y de exportación/sincronización/copia definidas en [tasks.md](./tasks.md), antes de las comprobaciones generales existentes.
+
 ## Criterio de aceptación global
 
 La validación se supera cuando los flujos principales de las seis historias funcionan según sus resultados esperados en móvil, tablet y escritorio; los cambios de progreso y eliminaciones se deshacen dentro del periodo de notificación; no hay errores visibles sin explicación y una persona puede completar las tareas principales con teclado o tacto.
+
+La enmienda de paginación exige además el prototipo aprobado, SC-035–SC-038 verificados y regresiones que demuestren que copias/sincronización incluyen los ejercicios no visitados. Preparar estos documentos no equivale a haber ejecutado dichas validaciones.

@@ -1,4 +1,8 @@
----
+---
+
+
+
+
 
 description: "Implementación incremental del rediseño visual y funcional de la gestión de ejercicios"
 ---
@@ -175,7 +179,7 @@ description: "Implementación incremental del rediseño visual y funcional de la
 
 - [X] T032 Ejecutar el conjunto Vitest de `tests/unit/` y `tests/component/`; resolver fallos y comprobar los umbrales de cobertura global del 80 % y Domain del 100 % definidos en `package.json` y en `.specify/memory/constitution.md`.
 - [X] T033 Ejecutar `npm run lint` y `npm run build` según `package.json`; corregir errores de lint y build sin añadir dependencias.
-- [ ] T034 Completar los recorridos de US1–US6, sincronización, anchos de 320 a 1366 px, teclado, contraste, estados y controles táctiles, registrar los tiempos de SC-001/002/004/006/009/023/026 y comprobar SC-031 (actualización en menos de 1 segundo) según `specs/001-gestion-ejercicios-fisicos/quickstart.md`; corregir incumplimientos del contrato de `specs/001-gestion-ejercicios-fisicos/contracts/interfaz-usuario.md`.
+- [X] T034 Completar los recorridos de US1–US6, sincronización, anchos de 320 a 1366 px, teclado, contraste, estados y controles táctiles, registrar los tiempos de SC-001/002/004/006/009/023/026 y comprobar SC-031 (actualización en menos de 1 segundo) según `specs/001-gestion-ejercicios-fisicos/quickstart.md`; corregir incumplimientos del contrato de `specs/001-gestion-ejercicios-fisicos/contracts/interfaz-usuario.md`.
 
 ---
 
@@ -241,7 +245,7 @@ Completar primero la base visual y de navegación de US6, en particular T004, y 
 4. Entregar US4 tras la planificación y US5 cuando estén disponibles los datos que debe conservar y sincronizar.
 5. Ejecutar T032–T034 antes de aceptar el rediseño completo.
 
-## Validation Summary
+## Validation Summary (anterior a la enmienda de paginación)
 
 - **Total**: 41 tareas, incluidas 2 tareas de convergencia pendientes, 3 tareas de convergencia cerradas por decisión de producto y 2 tareas de la ampliación de US1.
 - **Por historia**: US1 = 9; US6 = 5; US2 = 4; US3 = 4; US4 = 4; US5 = 6.
@@ -260,3 +264,76 @@ Completar primero la base visual y de navegación de US6, en particular T004, y 
 - [X] T038 Cerrada por decisión de producto (2026-10-23): no implementar vista maestro-detalle en "Buscar"; seleccionar un resultado abre su ficha en una pantalla dedicada.
 - [X] T039 Cerrada por decisión de producto (2026-10-23): priorizar la rapidez; cada ejercicio se incorpora al seleccionarlo sin confirmación adicional.
 - [X] T040 Cerrada por decisión de producto (2026-10-23): no se exige deduplicar las categorías mostradas en los resultados de búsqueda.
+
+## Phase 12: Enmienda 2026-11-04 — Preparación y aprobación visual
+
+**Alcance aprobado**: FR-086–FR-095 y SC-035–SC-038 de [spec.md](./spec.md). SQL paginado, resúmenes sin medios, 50 inicialmente; Buscar usa anterior/siguiente y selector 25/50/100 en tablet/escritorio; Agregar acumula bloques de 50. Preservar todas las tareas y estados previos: esta ampliación no los da por ejecutados.
+
+**Gate**: la propietaria ha aprobado la propuesta funcional, no un prototipo ejecutable. T043 bloquea los cambios de presentación T050/T052.
+
+- [] T041 Confirmar el contexto `.specify/feature.json` en `001-gestion-ejercicios-fisicos`, leer la enmienda de `specs/001-gestion-ejercicios-fisicos/plan.md` y localizar todos los consumidores/dobles de `EjercicioRepositoryPort` antes de cambiar sus firmas; no añadir dependencias ni redefinir `listarTodos()`.
+- [] T042 Encargar al agente `ux-ui-expert` la creación/actualización de `src/stories/paginacion-ejercicios.stories.ts` y las historias afectadas de `src/stories/pantallas.stories.ts`, con prototipos aislados cuando hagan falta: ambas pantallas, shell/rutas reales, 390/834/1280 px, 0/49/50/51/125 coincidencias, bloques/páginas intermedias, selección global, cargas, error/reintento y éxito. No implementar aún la presentación real.
+- [] T043 Ejecutar `npm run build-storybook` y `npm run storybook` según `package.json`, comprobar que Storybook responde, y hacer que `ux-ui-expert` presente URL y capturas por dispositivo; registrar aquí la aprobación explícita del prototipo o las mejoras solicitadas, iterando antes de desbloquear T050/T052.
+
+**Registro de aprobación visual**: Pendiente. No hay todavía historias ni capturas aprobadas para esta enmienda.
+
+## Phase 13: Enmienda — Fundamentos de lectura paginada
+
+**Meta**: Implementar el contrato SQL sin cambiar las operaciones completas. Test-first obligatorio por constitución. Esta fase puede avanzar durante la revisión visual, pero no permite anticipar T050/T052.
+
+- [ ] T044 [P] Añadir primero pruebas fallidas en `tests/unit/infrastructure/ejercicio-repository.sqlite.spec.ts`: 0/49/50/51/125 coincidencias, texto/categorías/ambos, categoría múltiple sin duplicados, categorías completas de cada resumen, nombres iguales con desempate por id, total filtrado, página fuera de rango y errores propagados; espiar la conexión para exigir como máximo tres consultas, cero lecturas a `ejercicio_enlace`/`ejercicio_imagen` y ningún hidratador completo incluso con medios presentes. Verificar índices e inicialización idempotente sobre base nueva/existente.
+- [ ] T045 [P] Añadir primero pruebas fallidas en `tests/unit/application/buscar-ejercicios.use-case.spec.ts`: valores iniciales página 0/tamaño 50, `trim()`, categorías sin repetir, delegación a búsqueda SQL/conteo, sin `listarTodos()` ni intersección JS; rechazo explícito de página que no sea entero seguro mayor o igual que 0, tamaño fuera del intervalo entero 1–100 y desplazamiento inseguro; propagación de errores.
+- [ ] T046 Añadir `EjercicioResumen` puro con solo id/nombre/descripcion/categoriaIds en `src/app/domain/ejercicio/ejercicio.entity.ts`, crear los tipos `CriteriosBusquedaEjercicios`/`PaginaEjercicios` en `src/app/application/models/busqueda-ejercicios.ts` y migrar `src/app/application/ports/ejercicio-repository.port.ts` según `specs/001-gestion-ejercicios-fisicos/contracts/ejercicio-repository.port.md`; mantener `Ejercicio`, `listarTodos()` y detalle completo.
+- [ ] T047 Implementar `buscarPaginado`/`contarTodos` en `src/app/infrastructure/persistencia-sqlite/ejercicio-repository.sqlite.ts`: SQL parametrizado con texto AND `EXISTS`, conteo con idéntico predicado, `ORDER BY nombre, id`, límite/desplazamiento y categorías en un lote; añadir índices idempotentes `(nombre, id)` y `(categoria_id, ejercicio_id)` en `src/app/infrastructure/persistencia-sqlite/esquema.ts`. No leer medios en la ruta paginada ni cambiar escrituras/exportaciones.
+- [ ] T048 Migrar `src/app/application/casos-uso/buscar-ejercicios.use-case.ts` a normalización/validación y delegación `buscarPaginado`/`contarTotal`; retirar los métodos de búsqueda antiguos y actualizar todos los dobles afectados en `tests/`, `src/stories/demo-data.ts` y `src/stories/pantallas.stories.ts`. No simular agregados completos rellenando medios vacíos.
+
+**Checkpoint**: T044/T045 pasan con SQLite real en memoria; ninguna búsqueda paginada carga el catálogo completo ni sus medios.
+
+## Phase 14: Enmienda — US2 Buscar y consultar (P2)
+
+**Prueba independiente**: Con 125 resultados, recorrer 1–50/51–100/101–125, cambiar filtros/tamaño y abrir/volver de ficha sin omisiones ni pérdida de contexto. Abrir la ficha sigue cargando medios.
+
+- [ ] T049 [US2] Añadir antes de implementar pruebas en `tests/component/presentation/busqueda-ejercicios.component.spec.ts` y `tests/component/presentation/shell-busqueda.integration.spec.ts`: tamaño inicial 50, límites, total SQL, cambio de filtro/tamaño, error y reintento, respuestas fuera de orden, vuelta desde ficha, borrado de última página, invalidación tras importación/sincronización y ausencia de `listarTodos()` en las consultas de Buscar.
+- [ ] T050 [US2] Después de T043 y T049, implementar página/tamaño/clave activa, conteo ligero, `MatPaginator` traducido, estados/foco/anuncios y maquetación aprobada en `src/app/presentation/busqueda-ejercicios/busqueda-ejercicios.component.ts`, `.html` y `.scss`; cambiar el input de `src/app/presentation/compartido/ejercicios/ejercicio-list-item.component.ts` a `EjercicioResumen`, actualizar sus usos y coordinar el retorno/invalidación con `src/app/presentation/biblioteca-ejercicios/ejercicio-ficha.component.ts`. Sin componentes personalizados que dupliquen Material.
+
+## Phase 15: Enmienda — US3 Seleccionar ejercicios de planificación (P3)
+
+**Prueba independiente**: Con 125 candidatos, cargar 50/100/125 y seleccionar en distintos bloques/filtros, conservando asignaciones del día y contador global; fallar/reintentar no pierde ni duplica datos.
+
+- [ ] T051 [US3] Crear primero `tests/component/presentation/agregar-ejercicio.component.spec.ts` y ampliar las pruebas del constructor en `tests/component/presentation/planificacion-constructor.component.spec.ts`: páginas SQL de 50, acumulación, último bloque parcial, contador global, ids previamente asignados, cambio de filtro/día, doble clic, respuesta obsoleta, error/reintento sin saltos, no emitir deselección por desmontar opciones y conservar errores/reglas de incorporación existentes.
+- [ ] T052 [US3] Después de T043 y T051, implementar el acumulador por consulta vigente, carga serial de la siguiente página, error/reintento, foco/anuncios y botón Material "Cargar más" según el prototipo en `src/app/presentation/planificacion-semanal/constructor/agregar-ejercicio/agregar-ejercicio.component.ts`, `.html` y `.scss`; enlazar ids/contador del día y `[selected]` desde `src/app/presentation/planificacion-semanal/constructor/planificacion-constructor.component.ts` y `.html`. Conservar asignaciones al filtrar/inicializar bloques y al refrescar catálogo, sin convertir lecturas completas del padre en una primera página.
+
+## Phase 16: Enmienda — US5 Integridad de los datos completos (P5)
+
+**Prueba independiente**: Habiendo visitado solo 50 resultados, exportar/sincronizar/restaurar más de 100 y recuperar ejercicios, medios y relaciones de páginas no visitadas.
+
+- [ ] T053 [US5] Añadir regresiones en `tests/unit/application/exportar-importar-datos.use-case.spec.ts`, `tests/unit/application/sincronizar.use-case.spec.ts` y `tests/unit/application/copia-manual.use-case.spec.ts` con más de 100 ejercicios: todos los ids/campos/medios/relaciones se exportan/restauran para GitHub, Google y copia manual sin depender de filtros/páginas, y estas operaciones no usan el método paginado. Mantener el formato y compatibilidad vigentes; corregir solo regresiones provocadas por la migración.
+
+## Phase 17: Enmienda — Validación transversal
+
+- [ ] T054 Preparar datos sintéticos importables y reutilizables para 51/125/1000 ejercicios bajo `tests/fixtures/`, siguiendo el formato existente de `tests/fixtures/generar-copia-100-ejercicios.ts`, con nombres repetidos, varias categorías, planificación y medios en ejercicios fuera del primer bloque; usar filtros para conjuntos de 0/49/50. No usar datos personales ni regenerar fixtures ajenas innecesariamente.
+- [ ] T055 Ejecutar primero las pruebas dirigidas T044/T045/T049/T051/T053; después validar cobertura y regresiones de `tests/unit/` y `tests/component/` con la configuración de `package.json`, manteniendo 80 % global y 100 % Domain, y ejecutar `npm run lint`, `npm run build` y `npm run build-storybook`. Resolver referencias antiguas al puerto sin añadir dependencias.
+- [ ] T056 Completar y registrar resultados de `specs/001-gestion-ejercicios-fisicos/quickstart.md` para SC-035–SC-038: 390/834/1280 px, 320/intermedios, zoom, tacto/teclado/lector, errores de historias y tres medidas de cada recorrido con 1000 ejercicios; sincronizar con ambos destinos autorizados por separado y restaurar una copia en otro perfil para verificar datos no visitados. No marcar verificaciones no realizadas como superadas.
+
+### Dependencias de la enmienda
+
+```text
+T041 → T042 → T043 (gate visual)
+T041 → T044 + T045 (pruebas independientes)
+T044 + T045 → T046 → T047 → T048
+T048 → T049 → T050 (requiere además T043)
+T048 → T051 → T052 (requiere además T043)
+T048 → T053
+T041 → T054
+T050 + T052 + T053 → T055
+T043 + T054 + T055 → T056
+```
+
+T049/T051 se pueden preparar en paralelo después del contrato migrado: trabajan pruebas diferentes. T050 y T052 son incrementos funcionales independientes tras sus pruebas y el gate visual, pero hay que coordinar cualquier utilidad compartida de anuncios/invalidación para no duplicarla. T053 puede prepararse en paralelo con las pruebas de pantallas. T054 puede avanzar durante la revisión visual.
+
+### Resumen y estrategia de entrega de la enmienda
+
+- **16 tareas nuevas**, T041–T056, todas pendientes: preparación/gate 3; fundamentos 5; US2 2; US3 2; US5 1; validación transversal 3. No se renumeran ni se cierran las tareas previas.
+- **Primer incremento**: contrato/datos SQL y resúmenes test-first; tras la aprobación visual, Buscar (US2) es la primera entrega utilizable. Después se integra el selector US3, manteniendo las regresiones de datos completos US5.
+- **Trazabilidad**: T044–T048 cubren FR-086/089; T049–T050 FR-087/090/092/093/095; T051–T052 FR-088/090/091/092/093/095; T053 FR-094; T042–T043 el gate constitucional; T054–T056 SC-035–SC-038 y regresiones transversales.
+- **Formato**: tareas con casilla, id único, etiqueta de historia en fases de historia y rutas concretas. `[P]` solo identifica las pruebas de fundamentos realmente independientes; las demás oportunidades están condicionadas al grafo anterior.

@@ -2,8 +2,10 @@
 
 
 
+
 **Ámbito**: Interacción visible de la aplicación de gestión de ejercicios.  
 **Especificación normativa**: [spec.md](../spec.md), en especial FR-038–FR-084.
+**Ampliación vigente**: FR-086–FR-095, paginación SQL de búsquedas y selector (2026-11-04).
 **Plan**: [plan.md](../plan.md).
 
 Este contrato resume las respuestas observables de la aplicación. La especificación es la fuente normativa para los detalles y criterios de aceptación; este documento no añade reglas de negocio.
@@ -40,6 +42,31 @@ En móvil, las cabeceras no dejan más de 24 px entre el área segura superior y
 - La ficha permite volver a los resultados y editar; la eliminación está dentro de un menú secundario identificado como destructivo.
 - Los medios fallidos no ocultan el resto de la ficha. El vídeo requiere una acción explícita para iniciar la reproducción.
 - Las vistas previas de medios pertenecen a la ficha y muestran título y miniatura cuando están disponibles. Las observaciones pueden destacar series/repeticiones recomendadas existentes; no se inventan si faltan.
+
+#### Paginación de Buscar
+
+- Los resultados se consultan en SQLite con el [contrato de lectura paginada](./ejercicio-repository.port.md); no se recorta una lista completa en memoria. Son resúmenes sin enlaces ni imágenes, incluso cuando el ejercicio los tiene almacenados.
+- Tamaño inicial 50. El paginador Angular Material muestra el rango "1–50 de 125" y controles anterior/siguiente al final de la lista, fuera del bloque fijo de filtros. No se construye una botonera personalizada de números de página.
+- En móvil (hasta 599 px), rango y flechas se adaptan al ancho, sin selector de tamaño. En tablet y escritorio se ofrece "Ejercicios por página" con 25, 50 y 100; cambiar tamaño reinicia a la primera página. A 600–1279 px se conserva una disposición utilizable con el riel de navegación y sin depender de un ancho fijo; en anchos estrechos los controles se redistribuyen en filas, sin recortar el rango.
+- Con tamaño inicial y 0–50 coincidencias no hay avance a otra página. La capacidad de avanzar depende siempre del tamaño activo y del total filtrado, no de cuántos ejercicios hay en el catálogo sin filtrar. Cambiar el ancho no altera el tamaño ni la página; si se eligió 25 o 100 antes de pasar a móvil se conserva ese valor aunque el selector no sea visible.
+- Texto/categorías vuelven a página 0. Al cargar se indica el estado y se impide avanzar repetidamente; el rango solo confirma la nueva página tras el éxito. Un fallo tiene mensaje y reintento, no se interpreta como búsqueda vacía. Las respuestas antiguas se descartan.
+- El foco permanece en el control de paginación que inició el cambio y el lector de pantalla recibe el rango actualizado; no se fuerza el foco a resultados durante la escritura. Al volver desde la ficha se restauran criterios, tamaño y página de esa búsqueda durante la navegación, y se reconsulta si hubo cambios. Si un borrado deja el índice fuera de rango, se carga la última página válida.
+
+#### Selector de ejercicios: bloques acumulativos
+
+Este contrato complementa "Planificación y constructor":
+
+- Primera consulta de 50 y después páginas SQL de 50 distintas, no consultas cada vez mayores del prefijo completo. Solo los resúmenes ya recibidos se acumulan en memoria para su visualización.
+- El pie muestra "Mostrando 50 de 125" y un botón "Cargar 50 más"; cuando quedan 25, muestra "Cargar 25 más". El botón desaparece al mostrar todos; no hay carga automática al desplazar.
+- En móvil el botón ocupa el ancho disponible; en tablet/escritorio se centra y ajusta al contenido. El pie permanece en el flujo normal con 16 px de separación y respeta el espacio que reserva el shell para la barra inferior y el área segura, sin duplicar esa reserva.
+- El contador "N ejercicios en este día" permanece visible con la cabecera/filtros, también cuando el filtro oculta asignados. Las casillas se vinculan al conjunto de ids del día que mantiene el constructor, incluidas las asignaciones previas. Cambiar de día cambia esa fuente; la paginación nunca elimina asignaciones.
+- Cambiar filtros descarta los bloques de candidatos y solicita el primero, sin borrar los ejercicios asignados. Fallar una carga conserva lo acumulado y las asignaciones, muestra el error al lado del botón y permite reintentar el mismo bloque sin saltos ni duplicados.
+- Tras una carga explícita, el foco de teclado pasa a la primera opción nueva y el lector de pantalla anuncia cuántos se añadieron y cuántos se muestran del total. No se mueve el foco al escribir filtros. Mientras hay una petición de avance pendiente, la acción está deshabilitada.
+- Un cambio conocido del catálogo invalida las respuestas pendientes y reinicia candidatos sobre los datos nuevos; no se intenta ocultar inconsistencias de paginación únicamente deduplicando arrays.
+
+#### Prototipo pendiente antes de implementar presentación
+
+El agente `ux-ui-expert` debe actualizar las historias en `src/stories/` a partir de este contrato y presentarlas con el shell y rutas reales, datos en español y capturas a 390, 834 y 1280 px. También se comprueban 320 px, anchos intermedios y zoom 200 %. Debe cubrir 0/49/50/51/125 resultados, primera/intermedia/última página, selección entre bloques, carga inicial/adicional, error con reintento y éxito. La aprobación funcional de la enmienda no es la aprobación del prototipo: no se implementa la presentación real hasta recibir esta última explícitamente y registrarla.
 
 ### Planificación y constructor
 

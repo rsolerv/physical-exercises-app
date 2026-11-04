@@ -5,15 +5,25 @@
 
 
 
+
+
 **Feature Branch**: `001-gestion-ejercicios-fisicos`
 
-**Created**: 2026-10-14
+**cargar 50
+
+
+
+
+
+Created**: 2026-10-14
 
 **Status**: Draft
 
 **Input**: Enmienda de la especificación vigente a partir de la propuesta de experiencia visual y flujos de pantalla de [pre-spec-diseño.md](../pre-spec-diseño.md), sin crear una feature independiente.
 
-## Decisiones de producto
+**Enmienda aprobada 2026-11-04**: Paginación de búsquedas locales y proyección ligera de ejercicios (FR-086–FR-095). La aprobación funcional de esta enmienda no sustituye la aprobación visual del prototipo de Storybook, pendiente antes de implementar la presentación.
+
+cargar 50## Decisiones de producto
 
 - Una planificación concreta está activa automáticamente cuando la semana actual (de lunes a domingo) cae dentro de su semana; no existe activación manual.
 - La sincronización con GitHub requiere que el usuario introduzca un token fine-grained limitado a un único repositorio privado de datos, con permisos de lectura y escritura de contenidos. El token se muestra oculto, no se incluye en los datos sincronizados y puede eliminarse mediante la acción "Olvidar token". Se acepta guardarlo sin cifrar en el almacenamiento local del navegador.
@@ -29,6 +39,7 @@
 - La interfaz mantiene un tema claro y una identidad visual cálida y profesional, con la paleta, tipografía, espaciado y componentes definidos en los requisitos de experiencia visual de esta especificación.
 - Los ejercicios planificados se pueden marcar como realizados desde "Hoy" y, si están planificados para el día actual, desde su ficha. La persona puede deshacer una marca o eliminación mientras se muestra la notificación de confirmación.
 - En móvil, la pantalla "Hoy" prioriza los ejercicios y el progreso del día; si no hay ejercicios para hoy, informa del descanso y presenta la próxima sesión cuando exista.
+- Buscar y añadir ejercicios a una planificación consultan SQLite por páginas de resúmenes sin medios, con 50 resultados inicialmente en todos los dispositivos. Buscar sustituye la página; el selector acumula bloques mediante "Cargar más". Con 50 resultados o menos no hay controles para avanzar. Sincronización, copias de seguridad y exportaciones conservan siempre el conjunto completo de datos y medios.
 
 ## Clarifications
 
@@ -96,6 +107,10 @@ Como usuario quiero consultar el catálogo completo, buscar ejercicios por categ
 10. **Given** que el usuario consulta un ejercicio con imágenes o vídeos, **When** abre su ficha, **Then** los medios se muestran en proporciones coherentes, las imágenes conservan su contenido completo y el vídeo puede iniciarse desde una vista previa identificable.
 11. **Given** que un vídeo asociado no está disponible o una imagen no carga, **When** el usuario consulta la ficha, **Then** se informa de ese medio no disponible sin ocultar el resto de la información del ejercicio.
 12. **Given** que el usuario abre la ficha desde “Hoy”, “Planificación semanal” o “Buscar”, **When** activa “Volver”, **Then** regresa a la pantalla desde la que abrió el ejercicio; si no se conoce el contexto de navegación, regresa a “Buscar”.
+13. **Given** una búsqueda con 125 coincidencias, **When** se abre "Buscar", **Then** aparecen los primeros 50 resultados, el rango "1–50 de 125" y controles anterior/siguiente; avanzar muestra "51–100 de 125" y después "101–125 de 125", sin omisiones ni duplicados si el catálogo no cambia.
+14. **Given** una búsqueda en una página posterior, **When** cambia el texto o las categorías, **Then** se muestra la primera página del nuevo conjunto, su total real y, si no hay coincidencias, el estado vacío correspondiente; no aparecen después resultados de una consulta anterior.
+15. **Given** búsquedas con 0, 49, 50 y 51 coincidencias, **When** se consulta cada una, **Then** no hay navegación a otra página con 50 o menos y con 51 se pueden consultar los primeros 50 y el resultado restante. Abrir la ficha sigue mostrando sus imágenes, enlaces y pauta cuando existan.
+16. **Given** que falla la carga de una página, **When** se muestra el error, **Then** se puede reintentar sin presentar el fallo como cero coincidencias ni cambiar de página como si hubiera terminado correctamente.
 
 ---
 
@@ -127,6 +142,9 @@ Como usuario quiero crear planificaciones semanales (concretas o como plantillas
 16. **Given** que el usuario añade ejercicios desde la pantalla de selección, **When** busca por una parte del nombre o filtra por categoría, **Then** cada resultado muestra el nombre, la descripción completa y las categorías, y cada ejercicio seleccionado se añade inmediatamente al día elegido, sin exigir una confirmación adicional.
 17. **Given** que el usuario edita una planificación en un móvil, **When** cambia su fecha de inicio, **Then** puede abrir y usar el calendario desde un control visible y accesible, sin que lo oculten el teclado o la navegación.
 18. **Given** que el usuario consulta la planificación semanal en móvil, **When** se abre la semana actual, **Then** el día actual ya está seleccionado y no se muestra un control o rótulo redundante “Hoy” que comprima la tira de días.
+19. **Given** 125 candidatos para un día de planificación, **When** se abre el selector, **Then** aparecen 50 y "Mostrando 50 de 125"; pulsar "Cargar más" muestra 100, y la siguiente carga incorpora los 25 restantes y retira el botón.
+20. **Given** ejercicios del día ya seleccionados en distintos bloques, **When** se carga otro bloque o se cambia el filtro, **Then** las asignaciones no se pierden, cada resultado ya asignado aparece marcado y el contador incluye todos los ejercicios del día, también los no visibles; cambiar de día no arrastra selecciones del anterior.
+21. **Given** un bloque ya mostrado y ejercicios seleccionados, **When** falla "Cargar más", **Then** ambos permanecen disponibles y se muestra un error con reintento; reintentar incorpora el bloque pendiente una sola vez, sin saltarse resultados.
 19. **Given** que el usuario selecciona un ejercicio en la pantalla de edición de una planificación, **When** lo desmarca antes de salir del selector, **Then** el ejercicio se elimina inmediatamente de ese día y de la planificación persistida.
 20. **Given** que hoy no tiene ejercicios programados, **When** el usuario consulta la pantalla “Hoy”, **Then** se ofrece “Crear una planificación” solo si no existe una planificación activa.
 
@@ -336,6 +354,19 @@ Como usuario quiero reconocer rápidamente dónde estoy, encontrar las acciones 
 - **FR-084**: En móvil, el botón flotante "+" DEBE situarse en la zona superior de la pantalla para no cubrir contenido. Si abre un menú de acciones, DEBE mostrar un control de cierre que oculte dicho menú al activarse por tacto o teclado.
 - **FR-085**: En la pantalla “Hoy”, cuando no hay ejercicios programados, el sistema DEBE ofrecer la acción “Crear una planificación” únicamente si no existe una planificación activa.
 
+#### Paginación de búsquedas locales (enmienda 2026-11-04)
+
+- **FR-086**: "Buscar" y el selector "Agregar ejercicio" DEBEN consultar las coincidencias por páginas en SQLite, con filtrado por texto y categorías, ordenación y límite aplicados en la base de datos. NO DEBEN recuperar todos los ejercicios para filtrarlos, intersectarlos o recortarlos en memoria. El texto sigue buscando en nombre o descripción, las categorías seleccionadas se combinan por cualquiera de ellas y ambos criterios se combinan por intersección.
+- **FR-087**: Ambas pantallas DEBEN mostrar inicialmente hasta 50 resultados en móvil, tablet y escritorio. Con el tamaño inicial y 50 coincidencias o menos NO DEBEN ofrecer avance a otro bloque. "Buscar" DEBE sustituir sus resultados al avanzar/retroceder y mostrar el rango y el total; en tablet/escritorio permite tamaños de 25, 50 y 100, con 50 inicial. Si se elige otro tamaño, el avance depende de si existen más resultados que ese tamaño. En móvil no se muestra el selector de tamaño. Cambiar de ancho NO DEBE modificar por sí solo el tamaño ni la posición elegidos.
+- **FR-088**: El selector de ejercicios DEBE cargar bloques de 50 mediante una acción explícita "Cargar más", conservar los bloques ya mostrados e indicar cuántos resultados se muestran del total. La última carga incorpora solo los restantes; el control desaparece al agotarlos. NO DEBE cargar automáticamente por desplazamiento.
+- **FR-089**: Cada resultado de estas búsquedas DEBE contener únicamente su identificador, nombre, descripción y referencias a categorías. La lectura del listado NO DEBE consultar ni transferir imágenes, sus contenidos base64, enlaces ni otros campos exclusivos del detalle. Abrir la ficha DEBE conservar el ejercicio completo y sus medios; esta optimización no elimina datos almacenados.
+- **FR-090**: Cambiar texto o categorías DEBE volver a la primera página o al primer bloque y actualizar el total de coincidencias. "No hay ejercicios" y "No hay coincidencias" siguen siendo estados distintos. Una respuesta anterior NO DEBE reemplazar ni añadirse a los resultados de una consulta más reciente.
+- **FR-091**: Las selecciones del selector DEBEN depender de los ejercicios asignados al día, no de las opciones renderizadas. Cambiar bloque o filtros NO DEBE eliminarlas. El contador visible DEBE incluir todos los ejercicios asignados a ese día, incluso fuera del filtro o bloque visible, y las opciones ya asignadas DEBEN aparecer marcadas. Se conserva la incorporación inmediata y la prohibición de duplicados.
+- **FR-092**: El paginador y "Cargar más" DEBEN situarse después de los resultados, sin quedar tapados por la navegación inferior ni el área segura del dispositivo. El buscador y los filtros permanecen disponibles. Los controles DEBEN funcionar con teclado y tacto, tener etiquetas en español y anunciar el rango o la cantidad incorporada a los lectores de pantalla sin robar el foco al escribir.
+- **FR-093**: Mientras se carga una página o bloque, el sistema DEBE indicar la operación en curso y evitar peticiones duplicadas de avance. Un fallo DEBE mostrar un error contextual y permitir reintentar la misma petición. En la carga incremental se conservan los resultados y selecciones previos y no se avanza el bloque hasta el éxito.
+- **FR-094**: La paginación NO DEBE limitar la sincronización con GitHub o Google, las copias manuales, exportaciones, restauraciones ni importaciones de datos privados. Estas operaciones DEBEN conservar todos los ejercicios y sus campos, medios y relaciones, independientemente de los filtros, el tamaño de página o los bloques visitados. El catálogo común y su búsqueda por categoría conservan su contrato propio.
+- **FR-095**: Sin cambios en los datos, recorrer todas las páginas o bloques DEBE mostrar cada coincidencia exactamente una vez, incluso con nombres repetidos o ejercicios de varias categorías seleccionadas. Tras una modificación del catálogo conocida por la aplicación se DEBEN actualizar los resultados y totales; si una página deja de existir se muestra la última válida, y el selector reinicia sus bloques sin perder las asignaciones válidas del día. "Volver" desde una ficha mantiene los criterios y la página de búsqueda en la sesión de navegación, salvo el reajuste necesario por cambios.
+
 
 ### Key Entities *(include if feature involves data)*
 
@@ -384,6 +415,10 @@ Como usuario quiero reconocer rápidamente dónde estoy, encontrar las acciones 
 - **SC-032**: En la pantalla de selección de ejercicios, el usuario puede localizar ejercicios por nombre parcial o categoría, revisar su nombre y descripción completa y añadir varios al día elegido mediante selecciones sucesivas, sin una confirmación adicional ni duplicados.
 - **SC-033**: En una pantalla de 1366 × 768 px, el formulario de ejercicio y el editor de planificación utilizan el ancho disponible respetando los márgenes de escritorio, sin quedar limitados por un ancho máximo fijo.
 - **SC-034**: En una pantalla móvil de 375 × 812 px, la fecha de inicio puede editarse mediante el calendario; cabecera y acciones permanecen accesibles sin que el botón "+" tape contenido, y el menú del botón puede cerrarse.
+- **SC-035**: Con 125 coincidencias y tamaño inicial 50, "Buscar" permite recorrer los rangos 1–50, 51–100 y 101–125; el selector permite mostrar 50, 100 y 125 mediante dos cargas explícitas. Con 49 o 50 no hay avance, y con 51 se puede consultar el resultado restante.
+- **SC-036**: En móvil de 390 px, tablet de 834 px y escritorio de 1280 px, ambos recorridos funcionan con tacto o teclado, sin ocultar controles ni recortar las descripciones del selector; el lector de pantalla anuncia los cambios y las selecciones de varios bloques siguen marcadas tras cambiar filtros.
+- **SC-037**: Después de consultar solo la primera página de un catálogo con más de 100 ejercicios, sincronizar con cada destino autorizado o restaurar una copia manual en otro perfil permite encontrar también ejercicios y medios de páginas no visitadas, con sus relaciones y pauta intactas.
+- **SC-038**: Con un catálogo local de prueba de 1000 ejercicios, los cambios de búsqueda, página y carga de 50 resultados se muestran en menos de 1 segundo con la base inicializada, sin bloquear la interacción. La comprobación se repite tres veces por dispositivo de referencia y registra el entorno utilizado.
 
 ## Assumptions
 

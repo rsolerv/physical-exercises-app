@@ -38,6 +38,31 @@ Actividad física concreta que el usuario puede consultar, planificar y marcar c
 
 **Reglas de eliminación**: al eliminar un ejercicio, se retira de todas las planificaciones en las que apareciera, tanto localmente como en la siguiente sincronización (FR-028, CA13).
 
+## EjercicioResumen y consulta paginada (enmienda 2026-11-04)
+
+`EjercicioResumen` es una proyección de lectura de `Ejercicio`, no una entidad persistida ni un sustituto del agregado completo. Su tipo se declara junto a la entidad en Domain, sin dependencias de Angular. Los criterios y el resultado de página pertenecen a Application.
+
+| Tipo / campo | Tipo | Contrato |
+|---|---|---|
+| `EjercicioResumen.id` | `string` | Identificador original del ejercicio |
+| `EjercicioResumen.nombre` | `string` | Nombre original, sin alterar para la búsqueda |
+| `EjercicioResumen.descripcion` | `string` | Descripción original completa |
+| `EjercicioResumen.categoriaIds` | `string[]` | Todas las categorías del ejercicio, no solo las que coinciden con el filtro; sin duplicados |
+| `CriteriosBusquedaEjercicios.texto` | `string` | Vacío significa sin filtro de texto; Application aplica `trim()` |
+| `CriteriosBusquedaEjercicios.categoriaIds` | `string[]` | Vacío significa todas; coincidencia con cualquiera de las seleccionadas |
+| `CriteriosBusquedaEjercicios.pagina` | `number` | Entero seguro mayor o igual que 0, índice basado en cero |
+| `CriteriosBusquedaEjercicios.tamanoPagina` | `number` | Entero entre 1 y 100; por defecto 50 en el caso de uso; tamaños de interfaz 25/50/100 en Buscar y 50 fijo en el selector |
+| `PaginaEjercicios.resultados` | `EjercicioResumen[]` | Solo el bloque pedido; vacío válido si no coincide nada o el índice excede el total |
+| `PaginaEjercicios.total` | `number` | Número de ejercicios distintos que cumplen los mismos filtros, antes de paginar |
+
+No forman parte de `EjercicioResumen` los enlaces, imágenes, base64, series, repeticiones, observaciones ni la marca de subida al repositorio común. No se rellenan con valores vacíos para simular un `Ejercicio` completo. Los nombres de categoría se resuelven desde el catálogo de categorías que ya utiliza la interfaz.
+
+El estado de página, tamaño, bloques cargados y consulta activa es temporal de Presentation. Las asignaciones seleccionadas provienen de `ejerciciosPorDia` del constructor; no se derivan de las opciones montadas. Cargar candidatos no confirma ni guarda una planificación nueva: mantiene las reglas de guardado y de incorporación inmediata del flujo existente.
+
+No se añaden columnas, entidades ni versiones de exportación. Se añaden índices idempotentes para ordenar ejercicios por `(nombre, id)` y buscar asociaciones por `(categoria_id, ejercicio_id)`; el índice primario existente `(ejercicio_id, categoria_id)` sirve para recuperar las categorías de una página. La ficha y las operaciones completas siguen usando `Ejercicio`; ni estos tipos de consulta ni los índices se exportan o sincronizan como datos de negocio.
+
+Referencia normativa: FR-086–FR-095 de [spec.md](./spec.md) y [contrato del repositorio](./contracts/ejercicio-repository.port.md).
+
 ## Categoría
 
 Agrupación temática de ejercicios (p. ej. cuello, espalda, piernas, hombros, glúteos).
