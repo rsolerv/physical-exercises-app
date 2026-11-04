@@ -113,9 +113,10 @@ describe('BusquedaEjerciciosComponent', () => {
     const fixture = await crearComponente();
     const siguiente = () => (fixture.nativeElement as HTMLElement)
       .querySelector<HTMLButtonElement>('.mat-mdc-paginator-navigation-next');
-    const paginador = () => fixture.debugElement.query(By.directive(MatPaginator)).componentInstance as MatPaginator;
-    expect(paginador().hasNextPage()).toBe(total > 50);
+    const paginador = () => fixture.debugElement.query(By.directive(MatPaginator))?.componentInstance as
+      MatPaginator | undefined;
     if (total > 50) {
+      expect(paginador()?.hasNextPage()).toBe(true);
       siguiente()?.click();
       await fixture.whenStable();
       fixture.detectChanges();
@@ -125,8 +126,10 @@ describe('BusquedaEjerciciosComponent', () => {
         await fixture.whenStable();
         fixture.detectChanges();
         expect((fixture.nativeElement as HTMLElement).textContent).toContain('101–125 de 125');
-        expect(paginador().hasNextPage()).toBe(false);
+        expect(paginador()?.hasNextPage()).toBe(false);
       }
+    } else {
+      expect((fixture.nativeElement as HTMLElement).querySelector('mat-paginator')).toBeFalsy();
     }
   });
 
