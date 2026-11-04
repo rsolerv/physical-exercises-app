@@ -14,6 +14,8 @@ import { DEMO_PROVIDERS, EJERCICIOS_DEMO, estadoSinConflicto } from './demo-data
 /**
  * Cada historia muestra la pantalla dentro del marco real de la aplicación (menú, márgenes y
  * navegación) y con las rutas reales, de modo que los enlaces entre pantallas funcionan.
+ * La paginación aún NO está integrada en estas pantallas: las variantes aisladas
+ * para aprobación visual están en paginacion-ejercicios.stories.ts.
  */
 const meta: Meta = {
   title: 'Physical Exercises/Pantallas',
@@ -50,11 +52,13 @@ export const HoyTablet = pantalla('/inicio', 'tablet');
 
 export const BuscarEjercicios = pantalla('/buscar');
 export const BuscarEjerciciosMovil = pantalla('/buscar', 'movil');
+export const BuscarEjerciciosTablet = pantalla('/buscar', 'tablet');
 
 export const PlanificacionSemanal = pantalla('/planificacion');
 export const PlanificacionSemanalMovil = pantalla('/planificacion', 'movil');
 export const NuevaPlanificacion = pantalla('/planificacion/nueva');
 export const NuevaPlanificacionMovil = pantalla('/planificacion/nueva', 'movil');
+export const NuevaPlanificacionTablet = pantalla('/planificacion/nueva', 'tablet');
 
 export const Categorias = pantalla('/ejercicios/categorias');
 
@@ -84,12 +88,14 @@ export const CalendarioSinPlanificaciones = pantalla('/planificacion', 'escritor
 const NOMBRES: [Story, string][] = [
   [HoyMovil, 'Hoy (móvil)'],
   [HoyTablet, 'Hoy (tablet)'],
-  [BuscarEjercicios, 'Buscar ejercicios'],
-  [BuscarEjerciciosMovil, 'Buscar ejercicios (móvil)'],
+  [BuscarEjercicios, 'Buscar ejercicios (presentación actual; ver prototipo de paginación)'],
+  [BuscarEjerciciosMovil, 'Buscar ejercicios (móvil, presentación actual)'],
+  [BuscarEjerciciosTablet, 'Buscar ejercicios (tablet, presentación actual)'],
   [PlanificacionSemanal, 'Planificación semanal'],
   [PlanificacionSemanalMovil, 'Planificación semanal (móvil)'],
   [NuevaPlanificacion, 'Nueva planificación'],
   [NuevaPlanificacionMovil, 'Nueva planificación (móvil)'],
+  [NuevaPlanificacionTablet, 'Nueva planificación (tablet, presentación actual)'],
   [Categorias, 'Categorías'],
   [NuevoEjercicio, 'Nuevo ejercicio'],
   [NuevoEjercicioMovil, 'Nuevo ejercicio (móvil)'],
