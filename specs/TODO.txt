@@ -1,14 +1,3 @@
-Modificaciones a realizar en Ejercicios Fisicos
-------------------------------------------------
-- Scroll infinito en listados de ejercicios
-Todos los listados de ejercicios deberán tener el scroll infinito a los 20 ejercicios. Para ello quiero usar el IntersectionObserver o algo asi que detecta visualmente un componente oculto, y cuando lo detecta carga los siguientes 20 ejercicios.
-Para ello:
-  Modificar la usecase de buscarejerciciosUseCase y los ficheros necesarios para que busque de forma paginada los ejercicios, esto es pasandole el numero de
-   pagina y el numero de registros por pagina. Que sea opcional. 
-   Una vez lo tengas cambiar la presentación de busqueda-ejercicios para que inicialmente obtenga los 20 primeros registros y que cuando se ejecute loadMore 
-   agregará los 20 siguientes, y si vuelve a ejecutarse loadMore cargará los otros 20. Como siempre estará cargada una categoria no tendremos demasiados registros.
-
-
 Hecho
 -------
 - Eliminar el tratamiento de "Sin categoría": todos los ejercicios deben tener al menos una categoría; el borrado se bloquea si dejaría un ejercicio sin categoría.
@@ -37,3 +26,4 @@ los datos por usuario.
 - En la sincronización, Configuracion de Github no parece un link o algo pulsable, arreglar para que se entienda que se puede pulsar.
 - Repositorio común de ejercicios para subir y descargar mediante la aplicación
 - Formulario ejercicio: Las series y repeticiones en campos separados no obligatorios. Ademas deberian estar vinculados a la planificacion, no al ejercicio?.
+- Paginación.
