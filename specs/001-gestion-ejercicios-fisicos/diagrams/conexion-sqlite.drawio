@@ -1,0 +1,55 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="conexion-sqlite" name="Conexión SQLite">
+    <mxGraphModel adaptiveColors="auto" grid="1" gridSize="10" page="1" pageWidth="1100" pageHeight="650">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="app" value="&lt;b&gt;Aplicación Angular&lt;/b&gt;&lt;br&gt;AppInitializer&lt;br&gt;Pantallas y casos de uso" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F0FE;strokeColor=#4A6FA5;fontSize=14;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="30" y="180" width="190" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="repos" value="&lt;b&gt;Adaptadores SQLite&lt;/b&gt;&lt;br&gt;Ejercicio · Categoría&lt;br&gt;Planificación · Progreso · Ajustes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF4EA;strokeColor=#6A9B6A;fontSize=13;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="280" y="70" width="230" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="startup" value="&lt;b&gt;ArrancarAplicacionUseCase&lt;/b&gt;&lt;br&gt;1. Inicializa SQLite&lt;br&gt;2. Comprueba / siembra catálogo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4D6;strokeColor=#C69C36;fontSize=13;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="280" y="300" width="230" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="service" value="&lt;b&gt;SqliteConexionService&lt;/b&gt;&lt;br&gt;Punto único de acceso&lt;br&gt;Envía SQL y parámetros&lt;br&gt;Correlaciona respuestas por ID" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#8C65AA;fontSize=13;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="570" y="180" width="220" height="115" as="geometry"/>
+        </mxCell>
+        <mxCell id="worker" value="&lt;b&gt;Web Worker dedicado&lt;/b&gt;&lt;br&gt;Hilo separado del interfaz&lt;br&gt;Inicializa SQLite WASM&lt;br&gt;Aplica esquema y migraciones" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F6F8;strokeColor=#4C929C;fontSize=13;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="850" y="80" width="220" height="115" as="geometry"/>
+        </mxCell>
+        <mxCell id="opfs" value="&lt;b&gt;SQLite WASM + OPFS&lt;/b&gt;&lt;br&gt;VFS opfs-sahpool&lt;br&gt;physical-exercises.sqlite3&lt;br&gt;Persistente entre sesiones" style="shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#DFF3E4;strokeColor=#5A9367;fontSize=13;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="850" y="250" width="220" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="fallback" value="&lt;b&gt;Modo de reserva&lt;/b&gt;&lt;br&gt;SQLite WASM en memoria&lt;br&gt;Esquema aplicado localmente&lt;br&gt;Datos no persisten al cerrar&lt;br&gt;La app avisa al usuario" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDE9E7;strokeColor=#C96B63;fontSize=13;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="570" y="440" width="250" height="135" as="geometry"/>
+        </mxCell>
+        <mxCell id="note" value="&lt;b&gt;No hay servidor SQL remoto&lt;/b&gt;&lt;br&gt;La base de datos se ejecuta y guarda en el navegador." style="shape=note;whiteSpace=wrap;html=1;size=18;fillColor=#FFF9D9;strokeColor=#D6B656;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="30" y="450" width="280" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="e1" value="datos / acciones" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#4A6FA5;fontSize=11;" edge="1" parent="1" source="app" target="repos">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2" value="arranque" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#C69C36;fontSize=11;" edge="1" parent="1" source="app" target="startup">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3" value="consultas SQL / comandos" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#8C65AA;fontSize=11;" edge="1" parent="1" source="repos" target="service">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e4" value="inicializa y prepara catálogo" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#C69C36;fontSize=11;" edge="1" parent="1" source="startup" target="service">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e5" value="mensajes: init / ejecutar / respuesta" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=block;startFill=1;endArrow=block;endFill=1;strokeColor=#4C929C;fontSize=11;" edge="1" parent="1" source="service" target="worker">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e6" value="lecturas y escrituras" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#5A9367;fontSize=11;" edge="1" parent="1" source="worker" target="opfs">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e7" value="si Worker / OPFS falla" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#C96B63;fontSize=11;dashed=1;" edge="1" parent="1" source="service" target="fallback">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

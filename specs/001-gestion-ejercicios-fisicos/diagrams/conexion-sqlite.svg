@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="650" viewBox="0 0 1100 650" role="img" aria-labelledby="title description">
+  <title id="title">Conexión de la aplicación con SQLite</title>
+  <desc id="description">La aplicación Angular accede a SQLite WASM mediante adaptadores, un servicio de conexión y un Web Worker. La base de datos persiste en OPFS; si falla, se usa una base en memoria.</desc>
+  <defs>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#4A6FA5"/></marker>
+    <marker id="arrow-yellow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#C69C36"/></marker>
+    <marker id="arrow-purple" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8C65AA"/></marker>
+    <marker id="arrow-teal" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#4C929C"/></marker>
+    <marker id="arrow-green" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5A9367"/></marker>
+    <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#C96B63"/></marker>
+    <style>
+      text { font-family: Arial, sans-serif; fill: #243247; }
+      .title { font-size: 23px; font-weight: 700; }
+      .head { font-size: 15px; font-weight: 700; }
+      .body { font-size: 13px; }
+      .edge-label { font-size: 11px; fill: #445166; }
+      .card { stroke-width: 2; rx: 12; }
+      .edge { fill: none; stroke-width: 2.5; }
+    </style>
+  </defs>
+  <rect width="1100" height="650" fill="#ffffff"/>
+  <text class="title" x="30" y="38">Conexión de la aplicación con SQLite</text>
+
+  <path class="edge" d="M220 200 H250 V117 H280" stroke="#4A6FA5" marker-end="url(#arrow-blue)"/>
+  <text class="edge-label" x="225" y="155">datos / acciones</text>
+  <path class="edge" d="M220 250 H250 V350 H280" stroke="#C69C36" marker-end="url(#arrow-yellow)"/>
+  <text class="edge-label" x="225" y="320">arranque</text>
+  <path class="edge" d="M510 117 H540 V215 H570" stroke="#8C65AA" marker-end="url(#arrow-purple)"/>
+  <text class="edge-label" x="515" y="170">consultas SQL</text>
+  <path class="edge" d="M510 350 H540 V270 H570" stroke="#C69C36" marker-end="url(#arrow-yellow)"/>
+  <text class="edge-label" x="510" y="327">inicializa</text>
+  <path class="edge" d="M790 220 H820 V137 H850" stroke="#4C929C" marker-start="url(#arrow-teal)" marker-end="url(#arrow-teal)"/>
+  <text class="edge-label" x="795" y="188">mensajes y respuestas</text>
+  <path class="edge" d="M960 195 V250" stroke="#5A9367" marker-end="url(#arrow-green)"/>
+  <text class="edge-label" x="970" y="230">lecturas / escrituras</text>
+  <path class="edge" d="M680 295 V410 H695 V440" stroke="#C96B63" stroke-dasharray="7 5" marker-end="url(#arrow-red)"/>
+  <text class="edge-label" x="690" y="402">si falla Worker / OPFS</text>
+
+  <rect class="card" x="30" y="165" width="190" height="100" fill="#E8F0FE" stroke="#4A6FA5"/>
+  <text class="head" x="48" y="194">Aplicación Angular</text>
+  <text class="body" x="48" y="220">AppInitializer</text>
+  <text class="body" x="48" y="241">Pantallas y casos de uso</text>
+
+  <rect class="card" x="280" y="70" width="230" height="95" fill="#EAF4EA" stroke="#6A9B6A"/>
+  <text class="head" x="298" y="99">Adaptadores SQLite</text>
+  <text class="body" x="298" y="124">Ejercicio · Categoría</text>
+  <text class="body" x="298" y="145">Planificación · Progreso · Ajustes</text>
+
+  <rect class="card" x="280" y="300" width="230" height="100" fill="#FFF4D6" stroke="#C69C36"/>
+  <text class="head" x="298" y="330">ArrancarAplicacionUseCase</text>
+  <text class="body" x="298" y="355">1. Inicializa SQLite</text>
+  <text class="body" x="298" y="378">2. Comprueba / siembra catálogo</text>
+
+  <rect class="card" x="570" y="180" width="220" height="115" fill="#F3E8FF" stroke="#8C65AA"/>
+  <text class="head" x="588" y="209">SqliteConexionService</text>
+  <text class="body" x="588" y="235">Punto único de acceso</text>
+  <text class="body" x="588" y="256">Envía SQL y parámetros</text>
+  <text class="body" x="588" y="277">Correlaciona respuestas por ID</text>
+
+  <rect class="card" x="850" y="80" width="220" height="115" fill="#E8F6F8" stroke="#4C929C"/>
+  <text class="head" x="868" y="110">Web Worker dedicado</text>
+  <text class="body" x="868" y="136">Hilo separado del interfaz</text>
+  <text class="body" x="868" y="157">Inicializa SQLite WASM</text>
+  <text class="body" x="868" y="178">Aplica esquema y migraciones</text>
+
+  <path d="M850 274 Q850 250 874 250 H1046 Q1070 250 1070 274 V346 Q1070 370 1046 370 H874 Q850 370 850 346 Z" fill="#DFF3E4" stroke="#5A9367" stroke-width="2"/>
+  <text class="head" x="868" y="286">SQLite WASM + OPFS</text>
+  <text class="body" x="868" y="311">VFS opfs-sahpool</text>
+  <text class="body" x="868" y="332">physical-exercises.sqlite3</text>
+  <text class="body" x="868" y="353">Persistente entre sesiones</text>
+
+  <rect class="card" x="570" y="440" width="250" height="135" fill="#FDE9E7" stroke="#C96B63"/>
+  <text class="head" x="588" y="470">Modo de reserva</text>
+  <text class="body" x="588" y="496">SQLite WASM en memoria</text>
+  <text class="body" x="588" y="517">Esquema aplicado localmente</text>
+  <text class="body" x="588" y="538">Datos no persisten al cerrar</text>
+  <text class="body" x="588" y="559">La app avisa al usuario</text>
+
+  <path d="M30 470 H282 L310 498 V530 H30 Z" fill="#FFF9D9" stroke="#D6B656" stroke-width="2"/>
+  <path d="M282 470 V498 H310" fill="none" stroke="#D6B656" stroke-width="2"/>
+  <text class="head" x="48" y="498">No hay servidor SQL remoto</text>
+  <text class="body" x="48" y="519">La base de datos se ejecuta y guarda</text>
+  <text class="body" x="48" y="536">en el navegador.</text>
+</svg>
