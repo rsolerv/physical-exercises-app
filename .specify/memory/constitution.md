@@ -72,11 +72,11 @@ depender de conocimiento técnico.
 ### IV. Experiencia de Usuario Multiplataforma y Accesible
 
 La aplicación DEBE funcionar correctamente tanto en escritorio como en
-dispositivos móviles. El diseño responsive es obligatorio en todas las
+dispositivos móviles y tablets. El diseño responsive es obligatorio en todas las
 pantallas: ningún layout fijo puede romperse o quedar inutilizable en
 tamaños de pantalla reducidos. Toda interfaz DEBE orientarse a usuarios no
 técnicos: lenguaje sencillo sin jerga técnica, flujos de alta, modificación
-y borrado de ejercicios cortos y claros, y confirmación/feedback visible de
+y borrados cortos y claros, y confirmación/feedback visible de
 cada acción realizada.
 **Rationale**: El usuario final gestiona sus ejercicios de rehabilitación o
 entrenamiento desde cualquier dispositivo disponible en el momento, sin
@@ -192,10 +192,13 @@ repositorio (único usuario del proyecto) la acepta explícitamente.
 
 **Política de versionado**: esta constitución usa versionado semántico
 (MAJOR.MINOR.PATCH):
+
 - MAJOR: eliminación o redefinición incompatible de principios existentes.
 - MINOR: adición de un nuevo principio o ampliación material de una guía
+
   existente.
 - PATCH: aclaraciones de redacción, correcciones y refinamientos no
+
   semánticos.
 
 **Revisión de cumplimiento**: toda spec y todo plan generados por los

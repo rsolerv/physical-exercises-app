@@ -1,5 +1,23 @@
 # PhysicalExercises
 
+Aplicación ultrarápida (y sin anuncios!!) para escritorio, móvil y tablet que permite gestionar un calendario semanal de ejercicios físicos (de rehabilitación, para el gimnasio..).
+
+Para usar la aplicación simplemente ve a: https://rsolerv.github.io/physical-exercises-app/inicio
+
+Puedes crear tus ejercicios e incluir imágenes o vídeos de Youtube donde se explique cómo realizar correctamente el ejercicio.
+
+Crea un calendario semanal (o varios!) o plantillas de calendarios para reutilizar con los ejercicios de la semana.
+
+O bien conéctate al repositorio común y búsca uno para importar (hay pocos por ahora, contribuye!)
+
+Si quieres compartir tu ejercicio también lo puedes subir al repositorio común.
+
+Guarda tus datos entre dispositivos en la nube (en tu cuenta de Google o en la de Github).
+
+Create en el móvil un enlace directo a la url y ya la tienes en el incio :D
+
+## Design
+
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.2.
 
 ## Development server

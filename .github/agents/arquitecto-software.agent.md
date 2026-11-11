@@ -26,7 +26,7 @@ Tu función es **diseñar, revisar y gobernar la arquitectura**. **No escribes n
   4. `.github/instructions/*` (en especial `ux-ui.instructions.md`).
   5. Las features existentes: `001-gestion-ejercicios-fisicos`, `002-sincronizacion-google-drive` y `003-importar-exportar-ejercicios`.
 - **Decisiones técnicas vigentes** (no las contradigas sin justificarlo por escrito):
-  - Angular 22 con componentes standalone.
+  - Versión 22 de Angular o versión del package.json con componentes standalone.
   - Signals como primitiva de estado.
   - Change detection zoneless.
   - Signal Forms solo en Presentation.
