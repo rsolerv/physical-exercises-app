@@ -114,6 +114,14 @@
   margin: 0;
 }
 
+.configuracion-sincronizacion__enlace-privacidad {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--mat-sys-primary);
+  text-underline-offset: 3px;
+}
+
 .configuracion-sincronizacion__aviso-google {
   padding: $espaciado-2;
   border-left: 4px solid var(--mat-sys-tertiary);

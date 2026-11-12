@@ -39,6 +39,10 @@ const VERSION_APLICACION = '0.0.0';
         <mat-icon aria-hidden="true">sync</mat-icon>
         Sincronización
       </a>
+      <a mat-button href="politica-privacidad.html" matBottomSheetClose (click)="cerrar()">
+        <mat-icon aria-hidden="true">policy</mat-icon>
+        Política de privacidad
+      </a>
       <p class="panel-mas__version">Versión {{ version }}</p>
     </section>
   `,

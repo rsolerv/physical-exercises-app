@@ -117,7 +117,9 @@
         Esta política explica cómo se tratan los datos cuando utilizas Physical Exercises,
         una aplicación web para organizar ejercicios, planificaciones y progreso. La aplicación
         está diseñada para funcionar en tu dispositivo y no tiene un servidor propio que reciba
-        tus datos.
+        tus datos. La versión Android instalada mediante Google Play abre esta misma aplicación
+        web en el navegador compatible del dispositivo: no crea una base de datos Android aparte
+        ni añade analítica, publicidad o recopilación de datos.
       </p>
 
       <h2>Responsable y contacto</h2>
@@ -170,10 +172,18 @@
         token a ese servicio para realizar la operación.
       </p>
       <p>
-        También puedes exportar una copia de seguridad a un fichero JSON e importarla en otro
-        dispositivo. La exportación se descarga en el lugar que elijas; la aplicación no la envía a
-        ningún servicio. Tú eres responsable de proteger el fichero y eliminarlo cuando ya no lo
-        necesites.
+        La pantalla «Importar ejercicios» puede consultar públicamente el catálogo común de
+        ejercicios del repositorio
+        <code>rsolerv/common-data-physical-exercises</code>. Solo cuando pulsas explícitamente
+        «Subir al repositorio común» se envían a GitHub el ejercicio elegido y sus imágenes
+        asociadas, usando el token que hayas configurado. No existe sincronización automática ni
+        vínculo entre tu copia local y el catálogo.
+      </p>
+      <p>
+        También puedes exportar una copia de seguridad a un fichero ZIP (o JSON en versiones que
+        lo ofrezcan) e importarla en otro dispositivo. La exportación se descarga en el lugar que
+        elijas; la aplicación no la envía a ningún servicio. Tú eres responsable de proteger el
+        fichero y eliminarlo cuando ya no lo necesites.
       </p>
 
       <h2>Cómo se usan y comparten los datos</h2>
@@ -208,6 +218,13 @@
         en el almacenamiento local. Puedes retirar el acceso desde tu cuenta de Google. El token de
         GitHub se conserva localmente hasta que olvides esa configuración o elimines los datos del
         sitio; también puedes revocarlo desde GitHub.
+      </p>
+      <p>
+        Para retirar accesos, desconecta Google desde «Sincronización» y revoca el permiso en tu
+        cuenta de Google; para GitHub, pulsa «Olvidar token» y revoca el token desde GitHub. Para
+        eliminar datos, borra ejercicios, categorías o planificaciones desde la aplicación, borra
+        los datos del sitio en el navegador o Android y elimina las copias del espacio de Google
+        Drive o del repositorio de GitHub que controles.
       </p>
 
       <h2>Tus derechos</h2>

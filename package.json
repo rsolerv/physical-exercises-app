@@ -8,6 +8,10 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
+    "twa:init": "npx @bubblewrap/cli init --manifest=https://rsolerv.github.io/physical-exercises-app/manifest.webmanifest --directory=twa",
+    "twa:update": "npx @bubblewrap/cli update --manifest=twa",
+    "twa:build": "npx @bubblewrap/cli build --manifest=twa",
+    "twa:fingerprint": "npx @bubblewrap/cli fingerprint --manifest=twa",
     "storybook": "ng run physical-exercises-app:storybook",
     "build-storybook": "ng run physical-exercises-app:build-storybook"
   },

@@ -1,0 +1,20 @@
+{
+  "packageId": "io.github.rsolerv.physicalexercises",
+  "host": "rsolerv.github.io",
+  "name": "Gestión de Ejercicios Físicos",
+  "launcherName": "Ejercicios",
+  "startUrl": "/physical-exercises-app/",
+  "webManifestUrl": "https://rsolerv.github.io/physical-exercises-app/manifest.webmanifest",
+  "iconUrl": "https://rsolerv.github.io/physical-exercises-app/assets/icons/icon-512x512.png",
+  "maskableIconUrl": "https://rsolerv.github.io/physical-exercises-app/assets/icons/icon-maskable-512x512.png",
+  "display": "standalone",
+  "fallbackType": "customtabs",
+  "themeColor": "#00696b",
+  "navigationColor": "#f6f3ee",
+  "backgroundColor": "#f6f3ee",
+  "enableNotifications": false,
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "appVersionCode": 1,
+  "appVersionName": "1.0.0"
+}

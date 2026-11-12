@@ -39,6 +39,12 @@ jobs:
       - name: Compilar la aplicación
         run: npm run build -- --base-href /${{ github.event.repository.name }}/
 
+      - name: Verificar artefactos instalables
+        run: |
+          test -f dist/physical-exercises-app/browser/manifest.webmanifest
+          test -f dist/physical-exercises-app/browser/.well-known/assetlinks.json
+          test -f dist/physical-exercises-app/browser/politica-privacidad.html
+
       - name: Preparar carpeta de salida para GitHub Pages
         run: cp dist/physical-exercises-app/browser/index.html dist/physical-exercises-app/browser/404.html
 

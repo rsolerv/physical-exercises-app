@@ -24,6 +24,16 @@
       >
         <mat-icon>{{ accesoNuevoEjercicio.icono }}</mat-icon>
       </a>
+      <a
+        mat-icon-button
+        class="shell__privacidad"
+        href="politica-privacidad.html"
+        aria-label="Política de privacidad"
+        matTooltip="Política de privacidad"
+        matTooltipPosition="right"
+      >
+        <mat-icon>policy</mat-icon>
+      </a>
     </nav>
   } @else if (!esMovil()) {
     <nav class="shell__menu-escritorio" aria-label="Navegación principal">
@@ -51,6 +61,10 @@
       >
         <mat-icon>{{ accesoNuevoEjercicio.icono }}</mat-icon>
         {{ accesoNuevoEjercicio.etiqueta }}
+      </a>
+      <a mat-button class="shell__privacidad" href="politica-privacidad.html">
+        <mat-icon>policy</mat-icon>
+        Política de privacidad
       </a>
     </nav>
   }
