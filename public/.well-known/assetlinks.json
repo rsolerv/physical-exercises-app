@@ -1,13 +1,11 @@
 [
   {
-    "relation": [
-      "delegate_permission/common.handle_all_urls"
-    ],
+    "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
       "package_name": "io.github.rsolerv.physicalexercises",
       "sha256_cert_fingerprints": [
-        "PENDIENTE_HUELLA_CERTIFICADO_LOCAL",
+        "41:DC:EF:33:6B:81:95:93:49:49:E0:85:1F:9B:59:4C:F5:2A:8C:1D:3F:4B:EA:F6:DF:6D:48:D3:05:8C:E0:1B",
         "PENDIENTE_HUELLA_GOOGLE_PLAY"
       ]
     }

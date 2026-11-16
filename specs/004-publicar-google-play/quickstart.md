@@ -47,14 +47,14 @@ paquete localmente.
 Desde la carpeta `twa/` con el keystore privado del propietario fuera del repositorio:
 
 ```powershell
-# 1. Inicializar o actualizar el proyecto Android desde twa/twa-manifest.json
-npx @bubblewrap/cli update --manifest=twa/twa-manifest.json
+# 1. Actualizar el proyecto Android desde twa/twa-manifest.json
+npm run twa:update
 
 # 2. Construir el APK firmado para prueba directa y el AAB para Google Play
-npx @bubblewrap/cli build
+npm run twa:build
 
-# 3. (Opcional) Comprobar huellas SHA-256 y estado de Digital Asset Links
-npx @bubblewrap/cli fingerprint
+# 3. Obtener la huella SHA-256 del certificado local
+npm run twa:fingerprint
 ```
 
 Salidas esperadas en `twa/` (excluidas de Git por `.gitignore`):

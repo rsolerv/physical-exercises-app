@@ -41,8 +41,12 @@ Sustituye las dos entradas `PENDIENTE_*` por las huellas SHA-256 reales:
 
 | Huella | Origen | Estado |
 |---|---|---|
-| Firma local o de subida | `bubblewrap fingerprint` | Pendiente |
+| Firma local o de subida | `keytool` sobre `twa/android.keystore` | Pendiente |
 | Google Play App Signing | Play Console | Pendiente |
+
+Para obtener la huella local, ejecuta `npm run twa:fingerprint`, introduce la contraseña del
+almacén y copia el valor `SHA256` que muestra `keytool`. El subcomando `bubblewrap fingerprint`
+solo administra huellas ya registradas en `twa-manifest.json`; no calcula la huella del keystore.
 
 Hasta completar ambas huellas y publicar el archivo en la raíz del dominio, la entrega queda
 **BLOQUEADO_POR_PRERREQUISITO_EXTERNO** y no debe declararse verificada para Google Play.
