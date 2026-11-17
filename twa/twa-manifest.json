@@ -11,7 +11,7 @@
   "navigationDividerColor": "#000000",
   "navigationDividerColorDark": "#000000",
   "backgroundColor": "#F6F3EE",
-  "enableNotifications": true,
+  "enableNotifications": false,
   "startUrl": "/physical-exercises-app/",
   "iconUrl": "https://rsolerv.github.io/physical-exercises-app/assets/icons/icon-512x512.png",
   "maskableIconUrl": "https://rsolerv.github.io/physical-exercises-app/assets/icons/icon-maskable-512x512.png",

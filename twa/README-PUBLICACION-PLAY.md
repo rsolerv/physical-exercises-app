@@ -1,6 +1,7 @@
 # Publicación de Gestión de Ejercicios Físicos en Google Play
 
 
+
 Esta guía prepara una entrega Android mediante Trusted Web Activity (TWA). La aplicación
 continúa alojada en GitHub Pages y conserva el almacenamiento del navegador; no se añade un
 servidor ni una base de datos Android paralela.

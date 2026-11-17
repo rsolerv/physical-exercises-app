@@ -23,7 +23,6 @@
     package="io.github.rsolerv.twa">
 
     
-        <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     
 
     
@@ -194,7 +193,6 @@
         </service>
 
         
-            <activity android:name="com.google.androidbrowserhelper.trusted.NotificationPermissionRequestActivity" />
         
 
         
