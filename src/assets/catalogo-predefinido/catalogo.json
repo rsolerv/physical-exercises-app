@@ -58,9 +58,17 @@
         "Piernas",
         "Glúteos"
       ],
-      "enlacesYoutube": [],
+      "enlacesYoutube": [
+        "https://www.youtube.com/watch?v=6N38tqZ-6F4"
+      ],
       "enlacesWeb": [],
-      "imagenes": [],
+      "imagenes": [
+        {
+          "id": "miniatura-sentadilla-sumo",
+          "tipo": "url",
+          "valorUrl": "https://i.ytimg.com/vi/6N38tqZ-6F4/hqdefault.jpg"
+        }
+      ],
       "observaciones": ""
     },
     {
@@ -70,9 +78,17 @@
         "Piernas",
         "Glúteos"
       ],
-      "enlacesYoutube": [],
+      "enlacesYoutube": [
+        "https://www.youtube.com/watch?v=LOOHr7p-_XQ"
+      ],
       "enlacesWeb": [],
-      "imagenes": [],
+      "imagenes": [
+        {
+          "id": "miniatura-sentadilla-isometrica-pared",
+          "tipo": "url",
+          "valorUrl": "https://i.ytimg.com/vi/LOOHr7p-_XQ/hqdefault.jpg"
+        }
+      ],
       "observaciones": ""
     },
     {
@@ -82,9 +98,17 @@
         "Piernas",
         "Glúteos"
       ],
-      "enlacesYoutube": [],
+      "enlacesYoutube": [
+        "https://www.youtube.com/watch?v=umuACQ9Ks5c"
+      ],
       "enlacesWeb": [],
-      "imagenes": [],
+      "imagenes": [
+        {
+          "id": "miniatura-zancada-atras-alterna",
+          "tipo": "url",
+          "valorUrl": "https://i.ytimg.com/vi/umuACQ9Ks5c/hqdefault.jpg"
+        }
+      ],
       "observaciones": ""
     },
     {
@@ -93,9 +117,17 @@
       "categorias": [
         "Piernas"
       ],
-      "enlacesYoutube": [],
+      "enlacesYoutube": [
+        "https://www.youtube.com/watch?v=EyHze_DHQq0"
+      ],
       "enlacesWeb": [],
-      "imagenes": [],
+      "imagenes": [
+        {
+          "id": "miniatura-elevacion-talones",
+          "tipo": "url",
+          "valorUrl": "https://i.ytimg.com/vi/EyHze_DHQq0/hqdefault.jpg"
+        }
+      ],
       "observaciones": ""
     },
     {
@@ -105,9 +137,17 @@
         "Glúteos",
         "Piernas"
       ],
-      "enlacesYoutube": [],
+      "enlacesYoutube": [
+        "https://www.youtube.com/watch?v=M-mnbbpJmXI"
+      ],
       "enlacesWeb": [],
-      "imagenes": [],
+      "imagenes": [
+        {
+          "id": "miniatura-puente-gluteos",
+          "tipo": "url",
+          "valorUrl": "https://i.ytimg.com/vi/M-mnbbpJmXI/hqdefault.jpg"
+        }
+      ],
       "observaciones": ""
     },
     {
@@ -117,9 +157,17 @@
         "Glúteos",
         "Piernas"
       ],
-      "enlacesYoutube": [],
+      "enlacesYoutube": [
+        "https://www.youtube.com/watch?v=Ob3KfBiRoKs"
+      ],
       "enlacesWeb": [],
-      "imagenes": [],
+      "imagenes": [
+        {
+          "id": "miniatura-elevacion-lateral-pierna",
+          "tipo": "url",
+          "valorUrl": "https://i.ytimg.com/vi/Ob3KfBiRoKs/hqdefault.jpg"
+        }
+      ],
       "observaciones": ""
     },
     {
@@ -129,9 +177,17 @@
         "Glúteos",
         "Piernas"
       ],
-      "enlacesYoutube": [],
+      "enlacesYoutube": [
+        "https://www.youtube.com/watch?v=ysG2GAdq2Uw"
+      ],
       "enlacesWeb": [],
-      "imagenes": [],
+      "imagenes": [
+        {
+          "id": "miniatura-extension-cadera-pie",
+          "tipo": "url",
+          "valorUrl": "https://i.ytimg.com/vi/ysG2GAdq2Uw/hqdefault.jpg"
+        }
+      ],
       "observaciones": ""
     },
     {
@@ -141,9 +197,19 @@
         "Abdomen",
         "Espalda"
       ],
-      "enlacesYoutube": [],
-      "enlacesWeb": [],
-      "imagenes": [],
+      "enlacesYoutube": [
+        "https://www.youtube.com/watch?v=S9_mGViO2cc"
+      ],
+      "enlacesWeb": [
+        "https://es.wikipedia.org/wiki/Plancha_(ejercicio)"
+      ],
+      "imagenes": [
+        {
+          "id": "miniatura-plancha-frontal",
+          "tipo": "url",
+          "valorUrl": "https://i.ytimg.com/vi/S9_mGViO2cc/hqdefault.jpg"
+        }
+      ],
       "observaciones": ""
     },
     {
@@ -152,9 +218,19 @@
       "categorias": [
         "Abdomen"
       ],
-      "enlacesYoutube": [],
-      "enlacesWeb": [],
-      "imagenes": [],
+      "enlacesYoutube": [
+        "https://www.youtube.com/watch?v=fNsxKTKfMNI"
+      ],
+      "enlacesWeb": [
+        "https://en.wikipedia.org/wiki/Plank_(exercise)"
+      ],
+      "imagenes": [
+        {
+          "id": "miniatura-plancha-lateral",
+          "tipo": "url",
+          "valorUrl": "https://i.ytimg.com/vi/fNsxKTKfMNI/hqdefault.jpg"
+        }
+      ],
       "observaciones": ""
     },
     {
@@ -163,9 +239,17 @@
       "categorias": [
         "Abdomen"
       ],
-      "enlacesYoutube": [],
+      "enlacesYoutube": [
+        "https://www.youtube.com/watch?v=6VQZ2JokRtc"
+      ],
       "enlacesWeb": [],
-      "imagenes": [],
+      "imagenes": [
+        {
+          "id": "miniatura-bicho-muerto",
+          "tipo": "url",
+          "valorUrl": "https://i.ytimg.com/vi/6VQZ2JokRtc/hqdefault.jpg"
+        }
+      ],
       "observaciones": ""
     },
     {
@@ -176,9 +260,17 @@
         "Espalda",
         "Glúteos"
       ],
-      "enlacesYoutube": [],
+      "enlacesYoutube": [
+        "https://www.youtube.com/watch?v=Tjo5oYHoS8M"
+      ],
       "enlacesWeb": [],
-      "imagenes": [],
+      "imagenes": [
+        {
+          "id": "miniatura-extension-alterna-brazo-pierna",
+          "tipo": "url",
+          "valorUrl": "https://i.ytimg.com/vi/Tjo5oYHoS8M/hqdefault.jpg"
+        }
+      ],
       "observaciones": ""
     },
     {
@@ -188,9 +280,19 @@
         "Espalda",
         "Glúteos"
       ],
-      "enlacesYoutube": [],
-      "enlacesWeb": [],
-      "imagenes": [],
+      "enlacesYoutube": [
+        "https://www.youtube.com/watch?v=pvbURmMVjkw"
+      ],
+      "enlacesWeb": [
+        "https://www.healthline.com/health/fitness/superman-exercise"
+      ],
+      "imagenes": [
+        {
+          "id": "miniatura-superman",
+          "tipo": "url",
+          "valorUrl": "https://i.ytimg.com/vi/pvbURmMVjkw/hqdefault.jpg"
+        }
+      ],
       "observaciones": ""
     },
     {
@@ -199,9 +301,19 @@
       "categorias": [
         "Abdomen"
       ],
-      "enlacesYoutube": [],
-      "enlacesWeb": [],
-      "imagenes": [],
+      "enlacesYoutube": [
+        "https://www.youtube.com/watch?v=dNuGXV0nXGA"
+      ],
+      "enlacesWeb": [
+        "https://en.wikipedia.org/wiki/Crunch_(exercise)"
+      ],
+      "imagenes": [
+        {
+          "id": "miniatura-crunch-abdominal",
+          "tipo": "url",
+          "valorUrl": "https://i.ytimg.com/vi/dNuGXV0nXGA/hqdefault.jpg"
+        }
+      ],
       "observaciones": ""
     },
     {
@@ -253,9 +365,17 @@
         "Brazos",
         "Hombros"
       ],
-      "enlacesYoutube": [],
+      "enlacesYoutube": [
+        "https://www.youtube.com/watch?v=oVs-HluNKP0"
+      ],
       "enlacesWeb": [],
-      "imagenes": [],
+      "imagenes": [
+        {
+          "id": "miniatura-fondos-triceps-silla",
+          "tipo": "url",
+          "valorUrl": "https://i.ytimg.com/vi/oVs-HluNKP0/hqdefault.jpg"
+        }
+      ],
       "observaciones": ""
     },
     {
@@ -264,9 +384,19 @@
       "categorias": [
         "Brazos"
       ],
-      "enlacesYoutube": [],
-      "enlacesWeb": [],
-      "imagenes": [],
+      "enlacesYoutube": [
+        "https://www.youtube.com/watch?v=WrpQYs_n_Pw"
+      ],
+      "enlacesWeb": [
+        "https://es.wikipedia.org/wiki/Curl_de_b%C3%ADceps"
+      ],
+      "imagenes": [
+        {
+          "id": "miniatura-curl-biceps",
+          "tipo": "url",
+          "valorUrl": "https://i.ytimg.com/vi/WrpQYs_n_Pw/hqdefault.jpg"
+        }
+      ],
       "observaciones": ""
     },
     {
@@ -276,9 +406,17 @@
         "Brazos",
         "Hombros"
       ],
-      "enlacesYoutube": [],
+      "enlacesYoutube": [
+        "https://www.youtube.com/watch?v=fQ-KB40W3d8"
+      ],
       "enlacesWeb": [],
-      "imagenes": [],
+      "imagenes": [
+        {
+          "id": "miniatura-extension-triceps",
+          "tipo": "url",
+          "valorUrl": "https://i.ytimg.com/vi/fQ-KB40W3d8/hqdefault.jpg"
+        }
+      ],
       "observaciones": ""
     },
     {
@@ -288,9 +426,17 @@
         "Hombros",
         "Brazos"
       ],
-      "enlacesYoutube": [],
+      "enlacesYoutube": [
+        "https://www.youtube.com/watch?v=zBqZqAjCnR4"
+      ],
       "enlacesWeb": [],
-      "imagenes": [],
+      "imagenes": [
+        {
+          "id": "miniatura-elevacion-lateral-brazos",
+          "tipo": "url",
+          "valorUrl": "https://i.ytimg.com/vi/zBqZqAjCnR4/hqdefault.jpg"
+        }
+      ],
       "observaciones": ""
     },
     {
@@ -300,9 +446,17 @@
         "Hombros",
         "Brazos"
       ],
-      "enlacesYoutube": [],
+      "enlacesYoutube": [
+        "https://www.youtube.com/watch?v=IuR427toLXE"
+      ],
       "enlacesWeb": [],
-      "imagenes": [],
+      "imagenes": [
+        {
+          "id": "miniatura-press-hombros",
+          "tipo": "url",
+          "valorUrl": "https://i.ytimg.com/vi/IuR427toLXE/hqdefault.jpg"
+        }
+      ],
       "observaciones": ""
     },
     {
@@ -312,9 +466,17 @@
         "Espalda",
         "Brazos"
       ],
-      "enlacesYoutube": [],
+      "enlacesYoutube": [
+        "https://www.youtube.com/watch?v=KmpDowjBY2A"
+      ],
       "enlacesWeb": [],
-      "imagenes": [],
+      "imagenes": [
+        {
+          "id": "miniatura-remo-banda-elastica",
+          "tipo": "url",
+          "valorUrl": "https://i.ytimg.com/vi/KmpDowjBY2A/hqdefault.jpg"
+        }
+      ],
       "observaciones": ""
     },
     {
@@ -324,9 +486,17 @@
         "Piernas",
         "Hombros"
       ],
-      "enlacesYoutube": [],
+      "enlacesYoutube": [
+        "https://www.youtube.com/watch?v=8wea1VSiewE"
+      ],
       "enlacesWeb": [],
-      "imagenes": [],
+      "imagenes": [
+        {
+          "id": "miniatura-saltos-tijera",
+          "tipo": "url",
+          "valorUrl": "https://i.ytimg.com/vi/8wea1VSiewE/hqdefault.jpg"
+        }
+      ],
       "observaciones": ""
     }
   ]
